@@ -36,7 +36,10 @@ const Dashboard = () => {
   // Client gets simplified view
   if (role === "client") return <ClientDashboard />;
 
-  // Consultant/Admin get full sidebar layout
+  // Consultant gets full CRM dashboard
+  if (role === "consultant") return <ConsultantDashboard />;
+
+  // Admin gets full sidebar layout
   const ActiveSection = section ? (sectionComponents[section] || DashboardOverview) : DashboardOverview;
 
   return (
