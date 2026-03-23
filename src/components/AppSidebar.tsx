@@ -7,6 +7,7 @@ import {
   Brain,
   UsersRound,
   BarChart3,
+  Pen,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
