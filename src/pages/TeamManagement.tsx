@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { TeamChat } from "@/components/TeamChat";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -468,6 +469,7 @@ const TeamManagement = () => {
           <TabsTrigger value="members">חברי צוות</TabsTrigger>
           <TabsTrigger value="assignment">הקצאת לידים</TabsTrigger>
           <TabsTrigger value="performance">מעקב ביצועים</TabsTrigger>
+          <TabsTrigger value="chat">צ׳אט צוות</TabsTrigger>
         </TabsList>
 
         {/* Members Tab */}
@@ -741,6 +743,14 @@ const TeamManagement = () => {
               </div>
             )}
           </div>
+        </TabsContent>
+        {/* Team Chat Tab */}
+        <TabsContent value="chat" className="mt-4">
+          {currentTeam ? (
+            <TeamChat teamId={currentTeam.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">צור צוות כדי להתחיל צ׳אט</p>
+          )}
         </TabsContent>
       </Tabs>
 
