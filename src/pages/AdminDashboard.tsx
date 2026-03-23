@@ -231,6 +231,7 @@ const AdminDashboard = () => {
             lead={selectedClient!}
             onBack={() => setViewMode("clients")}
             profiles={allProfiles}
+            onLeadUpdated={refreshLeads}
           />
         )}
       </main>
