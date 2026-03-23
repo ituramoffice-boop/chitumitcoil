@@ -107,9 +107,21 @@ function calculateLeadScore(lead: Lead): number {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 70) return "text-success";
-  if (score >= 40) return "text-warning";
-  return "text-muted-foreground";
+  if (score >= 85) return "text-red-500";
+  if (score >= 50) return "text-orange-500";
+  return "text-blue-500";
+}
+
+function getScoreBg(score: number) {
+  if (score >= 85) return "bg-red-500/10";
+  if (score >= 50) return "bg-orange-500/10";
+  return "bg-blue-500/10";
+}
+
+function getTemperatureLabel(score: number) {
+  if (score >= 85) return { emoji: "🔥", label: "Hot", color: "text-red-500" };
+  if (score >= 50) return { emoji: "⚡", label: "Warm", color: "text-orange-500" };
+  return { emoji: "❄️", label: "Cold", color: "text-blue-500" };
 }
 
 function getScoreBg(score: number) {
