@@ -79,6 +79,7 @@ const SelfCheck = () => {
       });
       if (error) throw error;
       toast.success("קוד אימות נשלח למייל שלך!");
+      setResendTimer(60);
       setStep("verify");
     } catch (err: any) {
       toast.error(err.message || "שגיאה בשליחת הקוד");
