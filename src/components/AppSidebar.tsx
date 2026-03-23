@@ -35,6 +35,7 @@ const baseNavItems = [
   { title: "ניתוח היתכנות", url: "/dashboard/scenarios", icon: Calculator },
   { title: "דוחות סיכונים", url: "/dashboard/reports", icon: FileBarChart },
   { title: "ניהול לידים", url: "/dashboard/clients", icon: Users },
+  { title: "ניהול לקוחות", url: "/dashboard/client-management", icon: Briefcase },
   { title: "חתימות מרחוק", url: "/dashboard/signatures", icon: Pen },
   { title: "חייגן", url: "/dashboard/dialer", icon: Phone },
   { title: "תוצאות מכירות", url: "/dashboard/sales-results", icon: Trophy },

@@ -29,6 +29,7 @@ const sectionComponents: Record<string, React.FC> = {
   signatures: () => <SignatureManager />,
   dialer: () => <DialerDashboard />,
   "sales-results": () => <SalesLeaderboard />,
+  "client-management": () => <ClientManagement />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
 };
