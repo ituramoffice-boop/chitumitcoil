@@ -781,6 +781,15 @@ const LeadManagement = () => {
                               <DropdownMenuItem onClick={() => openEdit(lead)}>
                                 <Edit className="h-3.5 w-3.5 ml-2" />עריכה
                               </DropdownMenuItem>
+                              {!(lead as any).signed_at ? (
+                                <DropdownMenuItem onClick={() => setSignLead(lead)}>
+                                  <Pen className="h-3.5 w-3.5 ml-2 text-primary" />חתימה דיגיטלית
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => window.open((lead as any).signature_url, "_blank")}>
+                                  <Download className="h-3.5 w-3.5 ml-2 text-primary" />הורד הסכם חתום
+                                </DropdownMenuItem>
+                              )}
                               {lead.phone && (
                                 <DropdownMenuItem onClick={() => openWhatsApp(lead, `היי ${lead.full_name}, ראיתי שהעלית חלק מהמסמכים ל-SmartMortgage. חסר לנו מסמכים כדי להתקדם. אפשר לשלוח כאן? 📄`)}>
                                   <MessageCircle className="h-3.5 w-3.5 ml-2 text-green-500" />WhatsApp תזכורת
