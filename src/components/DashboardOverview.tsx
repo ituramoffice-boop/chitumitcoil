@@ -1,20 +1,21 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Users,
   TrendingUp,
   DollarSign,
   Heart,
-  CheckCircle2,
   AlertTriangle,
   Loader2,
   BarChart3,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DashboardOverview = () => {
-  const { role } = useAuth();
+  const navigate = useNavigate();
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["dash-leads"],
@@ -43,8 +44,7 @@ const DashboardOverview = () => {
 
   const highRiskLeads = leads.filter((l: any) => {
     if (!l.property_value || !l.mortgage_amount) return false;
-    const ltv = (l.mortgage_amount / l.property_value) * 100;
-    return ltv > 75;
+    return (l.mortgage_amount / l.property_value) * 100 > 75;
   });
 
   return (
@@ -54,26 +54,26 @@ const DashboardOverview = () => {
         סקירה כללית
       </h2>
 
-      {/* KPIs */}
+      {/* KPIs - clickable */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPI icon={Users} label="סה״כ לקוחות" value={leads.length} />
-        <KPI icon={DollarSign} label="היקף משכנתאות" value={`₪${(totalMortgage / 1000000).toFixed(1)}M`} color="text-primary" />
-        <KPI icon={TrendingUp} label="שיעור אישור" value={`${conversionRate}%`} color="text-success" />
-        <KPI icon={Heart} label="LTV ממוצע" value={`${avgLTV}%`} color="text-warning" />
+        <KPI icon={Users} label="סה״כ לקוחות" value={leads.length} onClick={() => navigate("/dashboard/clients")} />
+        <KPI icon={DollarSign} label="היקף משכנתאות" value={`₪${(totalMortgage / 1000000).toFixed(1)}M`} color="text-primary" onClick={() => navigate("/dashboard/reports")} />
+        <KPI icon={TrendingUp} label="שיעור אישור" value={`${conversionRate}%`} color="text-success" onClick={() => navigate("/dashboard/reports")} />
+        <KPI icon={Heart} label="LTV ממוצע" value={`${avgLTV}%`} color="text-warning" onClick={() => navigate("/dashboard/scenarios")} />
       </div>
 
-      {/* Status Grid */}
+      {/* Status Grid - clickable */}
       <div className="glass-card p-6 space-y-4">
         <h3 className="font-semibold text-foreground text-sm">סטטוס תיקים</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatusBox label="חדשים" count={statusCounts.new} color="text-primary" bg="bg-primary/10" />
-          <StatusBox label="בטיפול" count={statusCounts.in_progress} color="text-warning" bg="bg-warning/10" />
-          <StatusBox label="אושרו" count={statusCounts.approved} color="text-success" bg="bg-success/10" />
-          <StatusBox label="נדחו" count={statusCounts.rejected} color="text-destructive" bg="bg-destructive/10" />
+          <StatusBox label="חדשים" count={statusCounts.new} color="text-primary" bg="bg-primary/10" onClick={() => navigate("/dashboard/clients")} />
+          <StatusBox label="בטיפול" count={statusCounts.in_progress} color="text-warning" bg="bg-warning/10" onClick={() => navigate("/dashboard/clients")} />
+          <StatusBox label="אושרו" count={statusCounts.approved} color="text-success" bg="bg-success/10" onClick={() => navigate("/dashboard/clients")} />
+          <StatusBox label="נדחו" count={statusCounts.rejected} color="text-destructive" bg="bg-destructive/10" onClick={() => navigate("/dashboard/clients")} />
         </div>
       </div>
 
-      {/* High Risk */}
+      {/* High Risk - clickable */}
       {highRiskLeads.length > 0 && (
         <div className="glass-card p-6 space-y-3">
           <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
@@ -84,9 +84,16 @@ const DashboardOverview = () => {
             {highRiskLeads.slice(0, 5).map((lead: any) => {
               const ltv = ((lead.mortgage_amount / lead.property_value) * 100).toFixed(1);
               return (
-                <div key={lead.id} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5">
-                  <span className="text-sm font-medium text-foreground">{lead.full_name}</span>
-                  <span className="text-sm font-bold text-destructive">LTV: {ltv}%</span>
+                <div
+                  key={lead.id}
+                  onClick={() => navigate("/dashboard/clients")}
+                  className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 cursor-pointer hover:bg-destructive/10 transition-colors group"
+                >
+                  <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{lead.full_name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-destructive">LTV: {ltv}%</span>
+                    <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
               );
             })}
@@ -94,20 +101,33 @@ const DashboardOverview = () => {
         </div>
       )}
 
-      {/* Financial Summary */}
+      {/* Financial Summary + Recent Clients */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass-card p-6 space-y-3">
-          <h3 className="font-semibold text-foreground text-sm">סיכום פיננסי</h3>
+        <div className="glass-card p-6 space-y-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all" onClick={() => navigate("/dashboard/reports")}>
+          <h3 className="font-semibold text-foreground text-sm flex items-center justify-between">
+            סיכום פיננסי
+            <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+          </h3>
           <FinRow label="סה״כ שווי נכסים" value={`₪${totalPropertyValue.toLocaleString()}`} />
           <FinRow label="סה״כ היקף משכנתאות" value={`₪${totalMortgage.toLocaleString()}`} />
           <FinRow label="הכנסה ממוצעת" value={`₪${Math.round(avgIncome).toLocaleString()}`} />
         </div>
         <div className="glass-card p-6 space-y-3">
-          <h3 className="font-semibold text-foreground text-sm">לקוחות אחרונים</h3>
+          <h3 className="font-semibold text-foreground text-sm flex items-center justify-between">
+            לקוחות אחרונים
+            <span className="text-xs text-primary cursor-pointer hover:underline" onClick={() => navigate("/dashboard/clients")}>הצג הכל →</span>
+          </h3>
           {leads.slice(0, 5).map((lead: any) => (
-            <div key={lead.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary">
-              <span className="text-sm text-foreground">{lead.full_name}</span>
-              <span className="text-xs text-muted-foreground">{new Date(lead.created_at).toLocaleDateString("he-IL")}</span>
+            <div
+              key={lead.id}
+              onClick={() => navigate("/dashboard/clients")}
+              className="flex items-center justify-between p-3 rounded-lg bg-secondary cursor-pointer hover:bg-secondary/80 hover:ring-1 hover:ring-primary/20 transition-all group"
+            >
+              <span className="text-sm text-foreground group-hover:text-primary transition-colors font-medium">{lead.full_name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{new Date(lead.created_at).toLocaleDateString("he-IL")}</span>
+                <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
             </div>
           ))}
         </div>
@@ -116,15 +136,18 @@ const DashboardOverview = () => {
   );
 };
 
-function KPI({ icon: Icon, label, value, color }: { icon: any; label: string; value: any; color?: string }) {
+function KPI({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: any; color?: string; onClick?: () => void }) {
   return (
-    <div className="glass-card p-5">
+    <div
+      className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-primary/20 hover:shadow-md transition-all group"
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+          <p className="text-2xl font-bold text-foreground mt-1 group-hover:text-primary transition-colors">{value}</p>
         </div>
-        <div className="p-2 rounded-lg bg-secondary">
+        <div className="p-2 rounded-lg bg-secondary group-hover:bg-primary/10 transition-colors">
           <Icon className={cn("w-5 h-5", color || "text-muted-foreground")} />
         </div>
       </div>
@@ -132,9 +155,12 @@ function KPI({ icon: Icon, label, value, color }: { icon: any; label: string; va
   );
 }
 
-function StatusBox({ label, count, color, bg }: { label: string; count: number; color: string; bg: string }) {
+function StatusBox({ label, count, color, bg, onClick }: { label: string; count: number; color: string; bg: string; onClick?: () => void }) {
   return (
-    <div className={cn("rounded-xl p-4 text-center", bg)}>
+    <div
+      className={cn("rounded-xl p-4 text-center cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all", bg)}
+      onClick={onClick}
+    >
       <p className={cn("text-3xl font-bold", color)}>{count}</p>
       <p className="text-xs text-muted-foreground mt-1">{label}</p>
     </div>
