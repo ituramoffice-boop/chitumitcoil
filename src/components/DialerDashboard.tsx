@@ -551,24 +551,22 @@ export function DialerDashboard() {
         </TabsContent>
 
         <TabsContent value="queue" className="mt-4">
-          <Card>
-            <CardHeader className="pb-3">
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex flex-wrap items-center gap-3">
-                {/* Search */}
-                <div className="relative flex-1 min-w-[200px]">
+                <div className="relative flex-1 min-w-[220px]">
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="חיפוש לפי שם, טלפון, מייל..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="pr-9 text-sm"
+                    className="pr-9 text-sm h-9"
                   />
                 </div>
 
-                {/* Status Filter */}
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[140px] text-sm">
-                    <Filter className="h-3.5 w-3.5 ml-1.5" />
+                  <SelectTrigger className="w-[130px] text-xs h-9">
+                    <Filter className="h-3 w-3 ml-1" />
                     <SelectValue placeholder="סטטוס" />
                   </SelectTrigger>
                   <SelectContent>
@@ -579,9 +577,8 @@ export function DialerDashboard() {
                   </SelectContent>
                 </Select>
 
-                {/* Source Filter */}
                 <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                  <SelectTrigger className="w-[140px] text-sm">
+                  <SelectTrigger className="w-[130px] text-xs h-9">
                     <SelectValue placeholder="מקור" />
                   </SelectTrigger>
                   <SelectContent>
@@ -592,10 +589,9 @@ export function DialerDashboard() {
                   </SelectContent>
                 </Select>
 
-                {/* Sort */}
                 <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-                  <SelectTrigger className="w-[140px] text-sm">
-                    <ArrowUpDown className="h-3.5 w-3.5 ml-1.5" />
+                  <SelectTrigger className="w-[130px] text-xs h-9">
+                    <ArrowUpDown className="h-3 w-3 ml-1" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -605,102 +601,111 @@ export function DialerDashboard() {
                   </SelectContent>
                 </Select>
 
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">
                   {filteredLeads.length} לידים
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <ScrollArea className="max-h-[500px]">
-                <Table dir="rtl">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10 text-right">
-                        <Checkbox
-                          checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
-                          onCheckedChange={toggleAll}
-                        />
-                      </TableHead>
-                      <TableHead className="text-right">שם</TableHead>
-                      <TableHead className="text-right">טלפון</TableHead>
-                      <TableHead className="text-right">סטטוס</TableHead>
-                      <TableHead className="text-right">מקור</TableHead>
-                      <TableHead className="text-right">קשר אחרון</TableHead>
-                      <TableHead className="w-20 text-right">פעולות</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">
-                          <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full mx-auto" />
-                        </TableCell>
+              <ScrollArea className="max-h-[520px]">
+                <div className="min-w-[700px]">
+                  <Table dir="rtl">
+                    <TableHeader>
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="w-12 text-right pr-4">
+                          <Checkbox
+                            checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                            onCheckedChange={toggleAll}
+                          />
+                        </TableHead>
+                        <TableHead className="text-right font-semibold min-w-[140px]">שם</TableHead>
+                        <TableHead className="text-right font-semibold min-w-[130px]">טלפון</TableHead>
+                        <TableHead className="text-right font-semibold min-w-[90px]">סטטוס</TableHead>
+                        <TableHead className="text-right font-semibold min-w-[90px]">מקור</TableHead>
+                        <TableHead className="text-right font-semibold min-w-[120px]">קשר אחרון</TableHead>
+                        <TableHead className="text-right font-semibold w-24">פעולות</TableHead>
                       </TableRow>
-                    ) : filteredLeads.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          לא נמצאו לידים
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredLeads.map(lead => (
-                        <TableRow
-                          key={lead.id}
-                          className={cn(
-                            "cursor-pointer transition-colors",
-                            selectedLeads.has(lead.id) && "bg-primary/5"
-                          )}
-                          onClick={() => toggleSelect(lead.id)}
-                        >
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <Checkbox
-                              checked={selectedLeads.has(lead.id)}
-                              onCheckedChange={() => toggleSelect(lead.id)}
-                            />
-                          </TableCell>
-                          <TableCell className="font-medium">{lead.full_name}</TableCell>
-                          <TableCell className="font-mono text-sm" dir="ltr">{lead.phone}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={cn("text-[10px]", STATUS_COLORS[lead.status])}>
-                              {STATUS_LABELS[lead.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{lead.lead_source || "—"}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {lead.last_contact
-                              ? formatDistanceToNow(new Date(lead.last_contact), { locale: he, addSuffix: true })
-                              : "אין"}
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <div className="flex items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => {
-                                  setDialerQueue([lead]);
-                                  toast({ title: `📞 מחייג ל-${lead.full_name}` });
-                                }}
-                                title="חייג"
-                              >
-                                <Phone className="h-3.5 w-3.5 text-green-500" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/[^0-9+]/g, "")}`, "_blank")}
-                                title="WhatsApp"
-                              >
-                                <Zap className="h-3.5 w-3.5 text-green-600" />
-                              </Button>
-                            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-12">
+                            <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : filteredLeads.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                            <Phone className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                            לא נמצאו לידים
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredLeads.map(lead => (
+                          <TableRow
+                            key={lead.id}
+                            className={cn(
+                              "cursor-pointer transition-all duration-150 group",
+                              selectedLeads.has(lead.id)
+                                ? "bg-primary/5 hover:bg-primary/10"
+                                : "hover:bg-muted/40"
+                            )}
+                            onClick={() => toggleSelect(lead.id)}
+                          >
+                            <TableCell className="pr-4" onClick={e => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selectedLeads.has(lead.id)}
+                                onCheckedChange={() => toggleSelect(lead.id)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-semibold text-sm">{lead.full_name}</span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-mono text-sm tracking-wide" dir="ltr">{lead.phone}</span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={cn("text-[11px] font-medium", STATUS_COLORS[lead.status])}>
+                                {STATUS_LABELS[lead.status]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{lead.lead_source || "—"}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {lead.last_contact
+                                ? formatDistanceToNow(new Date(lead.last_contact), { locale: he, addSuffix: true })
+                                : "—"}
+                            </TableCell>
+                            <TableCell onClick={e => e.stopPropagation()}>
+                              <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full hover:bg-green-500/10"
+                                  onClick={() => {
+                                    setDialerQueue([lead]);
+                                    toast({ title: `📞 מחייג ל-${lead.full_name}` });
+                                  }}
+                                  title="חייג"
+                                >
+                                  <Phone className="h-4 w-4 text-green-500" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full hover:bg-green-500/10"
+                                  onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/[^0-9+]/g, "")}`, "_blank")}
+                                  title="WhatsApp"
+                                >
+                                  <Zap className="h-4 w-4 text-green-600" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </ScrollArea>
             </CardContent>
           </Card>
