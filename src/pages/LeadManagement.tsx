@@ -1068,17 +1068,7 @@ const LeadManagement = () => {
                           <LeadHeatPopup lead={lead}>
                             <p className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
                           </LeadHeatPopup>
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs">{getTemperatureLabel(score).emoji}</span>
-                            <div className={cn(
-                              "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border",
-                              score >= 85 ? "border-red-500/50 bg-red-500/10 text-red-500" :
-                              score >= 50 ? "border-orange-500/50 bg-orange-500/10 text-orange-500" :
-                              "border-blue-500/50 bg-blue-500/10 text-blue-500"
-                            )}>
-                              {score}
-                            </div>
-                          </div>
+                          <HeatIndicator score={score} />
                         </div>
                         {/* Phone */}
                         {lead.phone && (
