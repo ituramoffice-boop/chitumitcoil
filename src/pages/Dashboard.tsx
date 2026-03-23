@@ -10,17 +10,17 @@ import DashboardOverview from "@/components/DashboardOverview";
 import SmartBuckets from "@/components/SmartBuckets";
 import FinancialScenarios from "@/components/FinancialScenarios";
 import ReportsPage from "@/components/ReportsPage";
-import AdminDashboard from "./AdminDashboard";
 import ClientDashboard from "./ClientDashboard";
 import ConsultantDashboard from "./ConsultantDashboard";
 import TeamManagement from "./TeamManagement";
 import AgencyReports from "./AgencyReports";
+import LeadManagement from "./LeadManagement";
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
   scenarios: FinancialScenarios,
   reports: ReportsPage,
-  clients: () => <AdminDashboard />,
+  clients: () => <LeadManagement />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
 };
