@@ -1057,10 +1057,11 @@ const LeadManagement = () => {
                         draggable
                         onDragStart={() => handleDragStart(lead)}
                         className={cn(
-                          "p-3 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
-                          "hover:shadow-md transition-all group",
+                          "p-2.5 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
+                          "hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group",
+                          score >= 85 ? "heat-hot" : score >= 50 ? "heat-warm" : score >= 0 ? "heat-cold" : "",
                           fu.needed && "border-destructive/30",
-                          draggedLead?.id === lead.id && "opacity-50 scale-95"
+                          draggedLead?.id === lead.id && "opacity-40 scale-95 rotate-1"
                         )}
                       >
                         <div className="flex items-start justify-between mb-1.5">
