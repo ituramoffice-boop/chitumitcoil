@@ -57,6 +57,7 @@ const MortgageCalculatorLanding = () => {
   const [step, setStep] = useState<"calc" | "form" | "success" | "journey">("calc");
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", email: "" });
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [journeyStep, setJourneyStep] = useState(0);
   const [simAnswers, setSimAnswers] = useState<Record<string, string>>({});
   const [simScore, setSimScore] = useState<number | null>(null);
