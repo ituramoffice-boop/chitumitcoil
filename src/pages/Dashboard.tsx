@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, Phone } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -16,6 +16,44 @@ import TeamManagement from "./TeamManagement";
 import AgencyReports from "./AgencyReports";
 import LeadManagement from "./LeadManagement";
 import { SignatureManager } from "@/components/SignatureManager";
+import { PowerDialer } from "@/components/PowerDialer";
+import { supabase } from "@/integrations/supabase/client";
+
+const PowerDialerPage = () => {
+  const [leads, setLeads] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      const { data } = await supabase.from("leads").select("*").not("phone", "is", null);
+      if (data) setLeads(data);
+    };
+    fetchLeads();
+  }, []);
+
+  if (leads.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <Phone className="w-12 h-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-bold mb-2">חייגן אוטומטי</h2>
+        <p className="text-muted-foreground mb-4">בחר לידים מדף ניהול הלידים כדי להתחיל סשן חיוג</p>
+        <a href="/dashboard/clients" className="text-primary underline">עבור לניהול לידים →</a>
+      </div>
+    );
+  }
+
+  return (
+    <PowerDialer
+      queue={leads}
+      onClose={() => setLeads([])}
+      onCallComplete={async (leadId, notes) => {
+        await supabase.from("leads").update({ 
+          last_contact: new Date().toISOString(),
+          notes 
+        }).eq("id", leadId);
+      }}
+    />
+  );
+};
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
@@ -23,6 +61,7 @@ const sectionComponents: Record<string, React.FC> = {
   reports: ReportsPage,
   clients: () => <LeadManagement />,
   signatures: () => <SignatureManager />,
+  dialer: () => <PowerDialerPage />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
 };
