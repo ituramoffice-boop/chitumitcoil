@@ -394,15 +394,37 @@ const LeadManagement = () => {
       {/* Header Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         {[
-          { label: "סה\"כ לידים", value: stats.total, icon: Users, color: "text-primary" },
-          { label: "לידים חדשים", value: stats.new, icon: Star, color: "text-warning" },
-          { label: "בתהליך", value: stats.inProgress, icon: Loader2, color: "text-blue-500" },
-          { label: "אושרו", value: stats.approved, icon: CheckCircle2, color: "text-success" },
-          { label: "סה\"כ משכנתאות", value: `₪${(stats.totalMortgage / 1000000).toFixed(1)}M`, icon: TrendingUp, color: "text-primary" },
-          { label: "ציון ממוצע", value: stats.avgScore, icon: Target, color: getScoreColor(stats.avgScore) },
-          { label: "דרושי מעקב", value: stats.followUpCount, icon: Bell, color: stats.followUpCount > 0 ? "text-destructive" : "text-success" },
+          { label: "סה\"כ לידים", value: stats.total, icon: Users, color: "text-primary", filter: "all" as const },
+          { label: "לידים חדשים", value: stats.new, icon: Star, color: "text-warning", filter: "new" as const },
+          { label: "בתהליך", value: stats.inProgress, icon: Loader2, color: "text-blue-500", filter: "in_progress" as const },
+          { label: "אושרו", value: stats.approved, icon: CheckCircle2, color: "text-success", filter: "approved" as const },
+          { label: "סה\"כ משכנתאות", value: `₪${(stats.totalMortgage / 1000000).toFixed(1)}M`, icon: TrendingUp, color: "text-primary", filter: "all" as const },
+          { label: "ציון ממוצע", value: stats.avgScore, icon: Target, color: getScoreColor(stats.avgScore), filter: "all" as const, sort: "lead_score" as SortField },
+          { label: "דרושי מעקב", value: stats.followUpCount, icon: Bell, color: stats.followUpCount > 0 ? "text-destructive" : "text-success", filter: "all" as const, onlyFollowUp: true },
         ].map((s, i) => (
-          <Card key={i} className="border-border/50">
+          <Card
+            key={i}
+            className={cn(
+              "border-border/50 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
+              filterStatus === s.filter && s.filter !== "all" && "ring-2 ring-primary border-primary"
+            )}
+            onClick={() => {
+              if (s.onlyFollowUp) {
+                // Show only leads needing follow-up by sorting by score and filtering to statuses that need follow-up
+                setFilterStatus("all");
+                setSortField("created_at");
+                setSortDir("asc");
+              } else if (s.sort) {
+                setSortField(s.sort);
+                setSortDir("desc");
+                setFilterStatus("all");
+              } else if (s.filter === "all") {
+                setFilterStatus("all");
+              } else {
+                setFilterStatus(prev => prev === s.filter ? "all" : s.filter);
+              }
+            }}
+          >
             <CardContent className="p-3 flex items-center gap-3">
               <div className={cn("p-2 rounded-lg", s.color.replace("text-", "bg-") + "/10")}>
                 <s.icon className={cn("h-4 w-4", s.color)} />
