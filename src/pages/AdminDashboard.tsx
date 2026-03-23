@@ -35,6 +35,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   Target,
+  Pencil,
+  Save,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
