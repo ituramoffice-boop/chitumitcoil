@@ -877,6 +877,7 @@ const LeadManagement = () => {
                   {columnLeads.map(lead => {
                     const score = lead.lead_score;
                     const fu = needsFollowUp(lead);
+                    const src = SOURCE_CONFIG[lead.lead_source || "organic"];
                     return (
                       <div
                         key={lead.id}
@@ -886,17 +887,37 @@ const LeadManagement = () => {
                           "p-3 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
                           "hover:shadow-md transition-all group",
                           fu.needed && "border-destructive/30",
-                          draggedLead?.id === lead.id && "opacity-50"
+                          draggedLead?.id === lead.id && "opacity-50 scale-95"
                         )}
                       >
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start justify-between mb-1.5">
                           <p className="font-medium text-sm leading-tight">{lead.full_name}</p>
                           <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", getScoreBg(score), getScoreColor(score))}>
                             {score}
                           </div>
                         </div>
+                        {/* Phone */}
+                        {lead.phone && (
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1">
+                            <Phone className="h-3 w-3" />{lead.phone}
+                          </p>
+                        )}
+                        {/* Source */}
+                        {src && (
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+                            <src.icon className="h-3 w-3" />
+                            {src.label}
+                          </div>
+                        )}
+                        {/* Last Contacted */}
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
+                          <Clock className="h-3 w-3" />
+                          {lead.last_contact
+                            ? formatDistanceToNow(new Date(lead.last_contact), { locale: he, addSuffix: true })
+                            : "לא נוצר קשר"}
+                        </p>
                         {lead.mortgage_amount && (
-                          <p className="text-xs text-muted-foreground mb-1">₪{lead.mortgage_amount.toLocaleString()}</p>
+                          <p className="text-xs font-medium text-foreground mb-1">₪{lead.mortgage_amount.toLocaleString()}</p>
                         )}
                         {lead.next_step && (
                           <p className="text-[10px] text-primary bg-primary/5 rounded px-1.5 py-0.5 inline-block mb-1">{lead.next_step}</p>
