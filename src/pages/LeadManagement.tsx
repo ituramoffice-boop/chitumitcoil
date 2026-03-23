@@ -124,11 +124,6 @@ function getTemperatureLabel(score: number) {
   return { emoji: "❄️", label: "Cold", color: "text-blue-500" };
 }
 
-function getScoreBg(score: number) {
-  if (score >= 70) return "bg-success/10";
-  if (score >= 40) return "bg-warning/10";
-  return "bg-muted";
-}
 
 function getHeatLabel(score: number) {
   if (score >= 85) return { label: "🔥 בשל לקטיף!", color: "text-red-600 dark:text-red-400" };
