@@ -389,6 +389,22 @@ const ConsultantDashboard = () => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          title="הפקת קישור גישה"
+                          disabled={sendingMagicLink === lead.id || !lead.email}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSendMagicLink(lead);
+                          }}
+                        >
+                          {sendingMagicLink === lead.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          ) : (
+                            <Send className="w-4 h-4 text-primary" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedLead(lead);
