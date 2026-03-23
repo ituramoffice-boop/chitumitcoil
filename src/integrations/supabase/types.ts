@@ -78,8 +78,11 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          last_contact: string | null
+          lead_source: string | null
           monthly_income: number | null
           mortgage_amount: number | null
+          next_step: string | null
           notes: string | null
           phone: string | null
           property_value: number | null
@@ -93,8 +96,11 @@ export type Database = {
           email?: string | null
           full_name: string
           id?: string
+          last_contact?: string | null
+          lead_source?: string | null
           monthly_income?: number | null
           mortgage_amount?: number | null
+          next_step?: string | null
           notes?: string | null
           phone?: string | null
           property_value?: number | null
@@ -108,8 +114,11 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          last_contact?: string | null
+          lead_source?: string | null
           monthly_income?: number | null
           mortgage_amount?: number | null
+          next_step?: string | null
           notes?: string | null
           phone?: string | null
           property_value?: number | null
