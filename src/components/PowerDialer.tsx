@@ -135,6 +135,7 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
     // Run AI analysis
     setCallState("processing_ai");
     setAiLoading(true);
+    let analysisResult: AIAnalysis | null = null;
     try {
       const { data, error } = await supabase.functions.invoke("analyze-call", {
         body: {
@@ -149,7 +150,6 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
           },
         },
       });
-      let analysisResult: AIAnalysis | null = null;
       if (!error && data) {
         analysisResult = data;
         setAiAnalysis(data);
