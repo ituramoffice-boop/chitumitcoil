@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -32,6 +35,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   Target,
+  Pencil,
+  Save,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -72,9 +78,14 @@ type ViewMode = "dashboard" | "clients" | "client-detail";
 
 const AdminDashboard = () => {
   const { signOut } = useAuth();
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
   const [selectedClient, setSelectedClient] = useState<Lead | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const refreshLeads = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+  };
 
   const { data: allLeads = [], isLoading: leadsLoading } = useQuery({
     queryKey: ["admin-leads"],
@@ -220,6 +231,7 @@ const AdminDashboard = () => {
             lead={selectedClient!}
             onBack={() => setViewMode("clients")}
             profiles={allProfiles}
+            onLeadUpdated={refreshLeads}
           />
         )}
       </main>
@@ -408,58 +420,153 @@ function ClientsView({ leads, searchTerm, onSearchChange, onViewClient, profiles
 }
 
 // Client Detail View
-function ClientDetailView({ lead, onBack, profiles }: { lead: Lead; onBack: () => void; profiles: Profile[] }) {
-  const sc = STATUS_CONFIG[lead.status];
-  const ltv = lead.property_value ? ((lead.mortgage_amount || 0) / lead.property_value * 100).toFixed(1) : null;
-  const dti = lead.monthly_income ? (((lead.mortgage_amount || 0) / 240) / lead.monthly_income * 100).toFixed(1) : null;
+function ClientDetailView({ lead, onBack, profiles, onLeadUpdated }: { lead: Lead; onBack: () => void; profiles: Profile[]; onLeadUpdated: () => void }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    full_name: lead.full_name,
+    phone: lead.phone || "",
+    email: lead.email || "",
+    mortgage_amount: lead.mortgage_amount?.toString() || "",
+    property_value: lead.property_value?.toString() || "",
+    monthly_income: lead.monthly_income?.toString() || "",
+    status: lead.status,
+    notes: lead.notes || "",
+  });
 
-  // Parse insurance info from notes
-  const hasInsurance = lead.notes?.includes("ביטוח חיים קיים") || lead.notes?.includes("יש ביטוח");
-  const needsInsurance = lead.notes?.includes("ללא ביטוח") || lead.notes?.includes("צריך ביטוח") || lead.notes?.includes("צריכים ביטוח");
-  const insurancePotential = lead.notes?.includes("פוטנציאל");
+  const updateMutation = useMutation({
+    mutationFn: async (data: typeof editData) => {
+      const { error } = await supabase
+        .from("leads")
+        .update({
+          full_name: data.full_name,
+          phone: data.phone || null,
+          email: data.email || null,
+          mortgage_amount: data.mortgage_amount ? Number(data.mortgage_amount) : null,
+          property_value: data.property_value ? Number(data.property_value) : null,
+          monthly_income: data.monthly_income ? Number(data.monthly_income) : null,
+          status: data.status as LeadStatus,
+          notes: data.notes || null,
+        })
+        .eq("id", lead.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "עודכן בהצלחה", description: "פרטי הלקוח עודכנו" });
+      setIsEditing(false);
+      onLeadUpdated();
+    },
+    onError: () => {
+      toast({ title: "שגיאה", description: "לא ניתן לעדכן את הנתונים", variant: "destructive" });
+    },
+  });
+
+  const displayLead = isEditing ? {
+    ...lead,
+    full_name: editData.full_name,
+    phone: editData.phone || null,
+    email: editData.email || null,
+    mortgage_amount: editData.mortgage_amount ? Number(editData.mortgage_amount) : null,
+    property_value: editData.property_value ? Number(editData.property_value) : null,
+    monthly_income: editData.monthly_income ? Number(editData.monthly_income) : null,
+    status: editData.status as LeadStatus,
+    notes: editData.notes || null,
+  } : lead;
+
+  const sc = STATUS_CONFIG[displayLead.status];
+  const ltv = displayLead.property_value ? ((displayLead.mortgage_amount || 0) / displayLead.property_value * 100).toFixed(1) : null;
+  const dti = displayLead.monthly_income ? (((displayLead.mortgage_amount || 0) / 240) / displayLead.monthly_income * 100).toFixed(1) : null;
+
+  const hasInsurance = displayLead.notes?.includes("ביטוח חיים קיים") || displayLead.notes?.includes("יש ביטוח");
+  const needsInsurance = displayLead.notes?.includes("ללא ביטוח") || displayLead.notes?.includes("צריך ביטוח") || displayLead.notes?.includes("צריכים ביטוח");
+  const insurancePotential = displayLead.notes?.includes("פוטנציאל");
 
   return (
     <div className="space-y-6">
-      <Button variant="outline" size="sm" onClick={onBack}>
-        <ArrowLeft className="w-4 h-4 ml-1" />
-        חזרה לרשימה
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="outline" size="sm" onClick={onBack}>
+          <ArrowLeft className="w-4 h-4 ml-1" />
+          חזרה לרשימה
+        </Button>
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
+                <X className="w-4 h-4 ml-1" />
+                ביטול
+              </Button>
+              <Button size="sm" onClick={() => updateMutation.mutate(editData)} disabled={updateMutation.isPending}>
+                <Save className="w-4 h-4 ml-1" />
+                {updateMutation.isPending ? "שומר..." : "שמור"}
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+              <Pencil className="w-4 h-4 ml-1" />
+              עריכה
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Client Header */}
       <div className="glass-card p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">{lead.full_name}</h2>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              {lead.phone && (
-                <span className="flex items-center gap-1">
-                  <Phone className="w-4 h-4" />{lead.phone}
-                </span>
-              )}
-              {lead.email && (
-                <span className="flex items-center gap-1">
-                  <Mail className="w-4 h-4" />{lead.email}
-                </span>
-              )}
-            </div>
+            {isEditing ? (
+              <Input value={editData.full_name} onChange={(e) => setEditData({ ...editData, full_name: e.target.value })} className="text-xl font-bold" />
+            ) : (
+              <h2 className="text-2xl font-bold text-foreground">{displayLead.full_name}</h2>
+            )}
+            {isEditing ? (
+              <div className="flex items-center gap-3">
+                <Input value={editData.phone} onChange={(e) => setEditData({ ...editData, phone: e.target.value })} placeholder="טלפון" className="w-40" />
+                <Input value={editData.email} onChange={(e) => setEditData({ ...editData, email: e.target.value })} placeholder="אימייל" className="w-52" />
+              </div>
+            ) : (
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                {displayLead.phone && <span className="flex items-center gap-1"><Phone className="w-4 h-4" />{displayLead.phone}</span>}
+                {displayLead.email && <span className="flex items-center gap-1"><Mail className="w-4 h-4" />{displayLead.email}</span>}
+              </div>
+            )}
           </div>
-          <span className={cn("text-sm px-3 py-1.5 rounded-full font-medium", sc.color, sc.bg)}>
-            {sc.label}
-          </span>
+          {isEditing ? (
+            <Select value={editData.status} onValueChange={(v) => setEditData({ ...editData, status: v as LeadStatus })}>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
+                  <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className={cn("text-sm px-3 py-1.5 rounded-full font-medium", sc.color, sc.bg)}>{sc.label}</span>
+          )}
         </div>
       </div>
 
       {/* Financial Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <DetailCard label="סכום משכנתא" value={lead.mortgage_amount ? `₪${Number(lead.mortgage_amount).toLocaleString()}` : "לא צוין"} icon={DollarSign} />
-        <DetailCard label="שווי נכס" value={lead.property_value ? `₪${Number(lead.property_value).toLocaleString()}` : "לא צוין"} icon={TrendingUp} />
-        <DetailCard label="הכנסה חודשית" value={lead.monthly_income ? `₪${Number(lead.monthly_income).toLocaleString()}` : "לא צוין"} icon={BarChart3} />
-        <DetailCard label="יחס מימון (LTV)" value={ltv ? `${ltv}%` : "לא זמין"} icon={PieChart} />
+        {isEditing ? (
+          <>
+            <EditableDetailCard label="סכום משכנתא" value={editData.mortgage_amount} onChange={(v) => setEditData({ ...editData, mortgage_amount: v })} icon={DollarSign} />
+            <EditableDetailCard label="שווי נכס" value={editData.property_value} onChange={(v) => setEditData({ ...editData, property_value: v })} icon={TrendingUp} />
+            <EditableDetailCard label="הכנסה חודשית" value={editData.monthly_income} onChange={(v) => setEditData({ ...editData, monthly_income: v })} icon={BarChart3} />
+            <DetailCard label="יחס מימון (LTV)" value={ltv ? `${ltv}%` : "לא זמין"} icon={PieChart} />
+          </>
+        ) : (
+          <>
+            <DetailCard label="סכום משכנתא" value={displayLead.mortgage_amount ? `₪${Number(displayLead.mortgage_amount).toLocaleString()}` : "לא צוין"} icon={DollarSign} />
+            <DetailCard label="שווי נכס" value={displayLead.property_value ? `₪${Number(displayLead.property_value).toLocaleString()}` : "לא צוין"} icon={TrendingUp} />
+            <DetailCard label="הכנסה חודשית" value={displayLead.monthly_income ? `₪${Number(displayLead.monthly_income).toLocaleString()}` : "לא צוין"} icon={BarChart3} />
+            <DetailCard label="יחס מימון (LTV)" value={ltv ? `${ltv}%` : "לא זמין"} icon={PieChart} />
+          </>
+        )}
       </div>
 
       {/* Analysis Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Financial Analysis */}
         <div className="glass-card p-6 space-y-4">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary" />
@@ -468,11 +575,10 @@ function ClientDetailView({ lead, onBack, profiles }: { lead: Lead; onBack: () =
           <div className="space-y-3">
             <AnalysisRow label="יחס החזר להכנסה (DTI)" value={dti ? `${dti}%` : "N/A"} status={dti && Number(dti) < 30 ? "good" : dti && Number(dti) < 40 ? "warning" : "danger"} />
             <AnalysisRow label="יחס מימון (LTV)" value={ltv ? `${ltv}%` : "N/A"} status={ltv && Number(ltv) < 60 ? "good" : ltv && Number(ltv) < 75 ? "warning" : "danger"} />
-            <AnalysisRow label="הכנסה חודשית" value={lead.monthly_income ? `₪${Number(lead.monthly_income).toLocaleString()}` : "N/A"} status={(lead.monthly_income || 0) > 20000 ? "good" : (lead.monthly_income || 0) > 12000 ? "warning" : "danger"} />
+            <AnalysisRow label="הכנסה חודשית" value={displayLead.monthly_income ? `₪${Number(displayLead.monthly_income).toLocaleString()}` : "N/A"} status={(displayLead.monthly_income || 0) > 20000 ? "good" : (displayLead.monthly_income || 0) > 12000 ? "warning" : "danger"} />
           </div>
         </div>
 
-        {/* Insurance Opportunities */}
         <div className="glass-card p-6 space-y-4">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
@@ -490,7 +596,7 @@ function ClientDetailView({ lead, onBack, profiles }: { lead: Lead; onBack: () =
               <Target className="w-5 h-5 text-amber-600" />
               <div>
                 <p className="text-sm font-medium text-foreground">ביטוח משכנתא</p>
-                <p className="text-xs text-muted-foreground">{lead.mortgage_amount ? "נדרש ביטוח — הזדמנות מכירה" : "אין משכנתא"}</p>
+                <p className="text-xs text-muted-foreground">{displayLead.mortgage_amount ? "נדרש ביטוח — הזדמנות מכירה" : "אין משכנתא"}</p>
               </div>
             </div>
             {insurancePotential && (
@@ -502,7 +608,7 @@ function ClientDetailView({ lead, onBack, profiles }: { lead: Lead; onBack: () =
                 </div>
               </div>
             )}
-            {(lead.monthly_income || 0) > 20000 && (
+            {(displayLead.monthly_income || 0) > 20000 && (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
                 <DollarSign className="w-5 h-5 text-primary" />
                 <div>
@@ -516,12 +622,26 @@ function ClientDetailView({ lead, onBack, profiles }: { lead: Lead; onBack: () =
       </div>
 
       {/* Notes */}
-      {lead.notes && (
-        <div className="glass-card p-6 space-y-3">
-          <h3 className="font-semibold text-foreground">הערות</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{lead.notes}</p>
-        </div>
-      )}
+      <div className="glass-card p-6 space-y-3">
+        <h3 className="font-semibold text-foreground">הערות</h3>
+        {isEditing ? (
+          <Textarea value={editData.notes} onChange={(e) => setEditData({ ...editData, notes: e.target.value })} rows={4} placeholder="הוסף הערות..." />
+        ) : (
+          <p className="text-sm text-muted-foreground leading-relaxed">{displayLead.notes || "אין הערות"}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EditableDetailCard({ label, value, onChange, icon: Icon }: { label: string; value: string; onChange: (v: string) => void; icon: any }) {
+  return (
+    <div className="glass-card p-5 space-y-2">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Icon className="w-4 h-4" />
+        <span className="text-sm">{label}</span>
+      </div>
+      <Input type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder="₪" className="font-bold" />
     </div>
   );
 }
