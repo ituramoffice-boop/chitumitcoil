@@ -19,7 +19,7 @@ const arcPath = (cx: number, cy: number, r: number, startAngle: number, endAngle
   const end = polarToSvg(cx, cy, r, endAngle);
   const sweep = startAngle - endAngle;
   const largeArc = sweep > 180 ? 1 : 0;
-  return `M ${start.x.toFixed(1)} ${start.y.toFixed(1)} A ${r} ${r} 0 ${largeArc} 0 ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
+  return `M ${start.x.toFixed(1)} ${start.y.toFixed(1)} A ${r} ${r} 0 ${largeArc} 1 ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
 };
 
 const CX = 100;
