@@ -140,6 +140,7 @@ const LeadManagement = () => {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [filterStatus, setFilterStatus] = useState<LeadStatus | "all">("all");
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [filterDateRange, setFilterDateRange] = useState<"all" | "today" | "week" | "month">("all");
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -202,6 +203,12 @@ const LeadManagement = () => {
     }
     if (filterStatus !== "all") result = result.filter(l => l.status === filterStatus);
     if (filterSource !== "all") result = result.filter(l => l.lead_source === filterSource);
+    if (filterDateRange !== "all") {
+      const now = Date.now();
+      const ranges = { today: 1, week: 7, month: 30 };
+      const days = ranges[filterDateRange];
+      result = result.filter(l => (now - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24) <= days);
+    }
 
     result.sort((a, b) => {
       let cmp = 0;
@@ -269,7 +276,19 @@ const LeadManagement = () => {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: async ({ ids, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["lead-management"] });
+      const previous = queryClient.getQueryData<Lead[]>(["lead-management"]);
+      queryClient.setQueryData<Lead[]>(["lead-management"], old =>
+        old?.map(l => ids.includes(l.id) ? { ...l, status, last_contact: new Date().toISOString() } : l)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(["lead-management"], context.previous);
+      toast({ title: "שגיאה בעדכון סטטוס", variant: "destructive" });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["lead-management"] });
       setSelectedLeads(new Set());
       toast({ title: "סטטוס עודכן" });
@@ -497,28 +516,43 @@ const LeadManagement = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={filterDateRange} onValueChange={v => setFilterDateRange(v as any)}>
+            <SelectTrigger className="w-[130px]"><SelectValue placeholder="תקופה" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">כל התקופות</SelectItem>
+              <SelectItem value="today">היום</SelectItem>
+              <SelectItem value="week">שבוע אחרון</SelectItem>
+              <SelectItem value="month">חודש אחרון</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          <div className="flex bg-muted rounded-lg p-0.5">
-            <Button
-              variant={viewMode === "table" ? "default" : "ghost"}
-              size="sm"
+          <div className="flex items-center gap-2 bg-muted/80 backdrop-blur rounded-full p-1 border border-border/50">
+            <button
               onClick={() => setViewMode("table")}
-              className="h-8 px-3"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                viewMode === "table"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <TableProperties className="h-4 w-4 ml-1" />
+              <TableProperties className="h-3.5 w-3.5" />
               טבלה
-            </Button>
-            <Button
-              variant={viewMode === "kanban" ? "default" : "ghost"}
-              size="sm"
+            </button>
+            <button
               onClick={() => setViewMode("kanban")}
-              className="h-8 px-3"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                viewMode === "kanban"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <LayoutGrid className="h-4 w-4 ml-1" />
+              <LayoutGrid className="h-3.5 w-3.5" />
               קנבן
-            </Button>
+            </button>
           </div>
 
           <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
@@ -843,6 +877,7 @@ const LeadManagement = () => {
                   {columnLeads.map(lead => {
                     const score = lead.lead_score;
                     const fu = needsFollowUp(lead);
+                    const src = SOURCE_CONFIG[lead.lead_source || "organic"];
                     return (
                       <div
                         key={lead.id}
@@ -852,17 +887,37 @@ const LeadManagement = () => {
                           "p-3 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
                           "hover:shadow-md transition-all group",
                           fu.needed && "border-destructive/30",
-                          draggedLead?.id === lead.id && "opacity-50"
+                          draggedLead?.id === lead.id && "opacity-50 scale-95"
                         )}
                       >
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start justify-between mb-1.5">
                           <p className="font-medium text-sm leading-tight">{lead.full_name}</p>
                           <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", getScoreBg(score), getScoreColor(score))}>
                             {score}
                           </div>
                         </div>
+                        {/* Phone */}
+                        {lead.phone && (
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1">
+                            <Phone className="h-3 w-3" />{lead.phone}
+                          </p>
+                        )}
+                        {/* Source */}
+                        {src && (
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+                            <src.icon className="h-3 w-3" />
+                            {src.label}
+                          </div>
+                        )}
+                        {/* Last Contacted */}
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
+                          <Clock className="h-3 w-3" />
+                          {lead.last_contact
+                            ? formatDistanceToNow(new Date(lead.last_contact), { locale: he, addSuffix: true })
+                            : "לא נוצר קשר"}
+                        </p>
                         {lead.mortgage_amount && (
-                          <p className="text-xs text-muted-foreground mb-1">₪{lead.mortgage_amount.toLocaleString()}</p>
+                          <p className="text-xs font-medium text-foreground mb-1">₪{lead.mortgage_amount.toLocaleString()}</p>
                         )}
                         {lead.next_step && (
                           <p className="text-[10px] text-primary bg-primary/5 rounded px-1.5 py-0.5 inline-block mb-1">{lead.next_step}</p>
