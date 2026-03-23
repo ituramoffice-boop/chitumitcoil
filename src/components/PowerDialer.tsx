@@ -45,7 +45,10 @@ interface AIAnalysis {
   objections?: string[];
   salesTechnique?: string;
   closingLine?: string;
+  closingStrategy?: string;
   heatScore?: number;
+  leadScore?: number;
+  leadScoreBreakdown?: { intent: number; urgency: number; authority: number };
 }
 
 interface PowerDialerProps {
