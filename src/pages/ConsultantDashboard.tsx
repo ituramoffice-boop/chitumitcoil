@@ -79,6 +79,7 @@ const ConsultantDashboard = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [sendingMagicLink, setSendingMagicLink] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -89,6 +90,26 @@ const ConsultantDashboard = () => {
     monthly_income: "",
     status: "new" as LeadStatus,
   });
+
+  const handleSendMagicLink = async (lead: Lead) => {
+    if (!lead.email) {
+      toast.error("ללקוח זה לא הוגדר כתובת מייל");
+      return;
+    }
+    setSendingMagicLink(lead.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-magic-link", {
+        body: { email: lead.email, leadName: lead.full_name },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`קישור גישה נשלח בהצלחה ל-${lead.email}`);
+    } catch (e: any) {
+      toast.error(`שגיאה בשליחת קישור: ${e.message}`);
+    } finally {
+      setSendingMagicLink(null);
+    }
+  };
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["leads"],
