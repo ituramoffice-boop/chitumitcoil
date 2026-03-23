@@ -17,6 +17,7 @@ import AgencyReports from "./AgencyReports";
 import LeadManagement from "./LeadManagement";
 import { SignatureManager } from "@/components/SignatureManager";
 import { DialerDashboard } from "@/components/DialerDashboard";
+import { SalesLeaderboard } from "@/components/SalesLeaderboard";
 import { supabase } from "@/integrations/supabase/client";
 
 const sectionComponents: Record<string, React.FC> = {
