@@ -515,7 +515,7 @@ const MortgageCalculatorLanding = () => {
                     )}
 
                     {/* Step 1: Interactive Feasibility Simulation */}
-                    {journeyStep === 1 && (
+                    {journeyStep === 2 && (
                       <div className="animate-[fadeSlideUp_0.5s_ease-out] w-full max-w-md">
                         <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(280,70%,50%)]/20 to-[hsl(280,70%,50%)]/5 flex items-center justify-center mb-6">
                           <Brain className="w-10 h-10 text-[hsl(280,70%,60%)]" />
