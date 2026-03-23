@@ -14,6 +14,7 @@ import AdminDashboard from "./AdminDashboard";
 import ClientDashboard from "./ClientDashboard";
 import ConsultantDashboard from "./ConsultantDashboard";
 import TeamManagement from "./TeamManagement";
+import AgencyReports from "./AgencyReports";
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
@@ -21,7 +22,7 @@ const sectionComponents: Record<string, React.FC> = {
   reports: ReportsPage,
   clients: () => <AdminDashboard />,
   team: () => <TeamManagement />,
-  "agency-reports": ReportsPage,
+  "agency-reports": () => <AgencyReports />,
 };
 
 const Dashboard = () => {
