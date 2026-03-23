@@ -1039,7 +1039,7 @@ const LeadManagement = () => {
                 onDragLeave={handleDragLeave}
                 onDrop={() => handleDrop(status)}
               >
-                <div className={cn("p-3 rounded-t-xl flex items-center justify-between", cfg.bg)}>
+                <div className={cn("p-2.5 rounded-t-xl flex items-center justify-between", cfg.bg)}>
                   <div className="flex items-center gap-2">
                     <cfg.icon className={cn("h-4 w-4", cfg.color)} />
                     <span className={cn("text-sm font-semibold", cfg.color)}>{cfg.label}</span>
