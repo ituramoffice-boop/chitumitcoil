@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, LogOut } from "lucide-react";
@@ -22,6 +23,7 @@ const sectionComponents: Record<string, React.FC> = {
 const Dashboard = () => {
   const { user, role, loading } = useAuth();
   const { section } = useParams<{ section?: string }>();
+  const [adminMode, setAdminMode] = useState<"crm" | "admin">("crm");
 
   if (loading) {
     return (
@@ -36,28 +38,41 @@ const Dashboard = () => {
   // Client gets simplified view
   if (role === "client") return <ClientDashboard />;
 
-  // Consultant or Admin without specific section gets full CRM dashboard
-  if (role === "consultant" || (role === "admin" && !section)) return <ConsultantDashboard />;
+  // Consultant always gets CRM dashboard
+  if (role === "consultant") return <ConsultantDashboard />;
 
-  // Admin with specific section gets sidebar layout
-  const ActiveSection = section ? (sectionComponents[section] || DashboardOverview) : DashboardOverview;
+  // Admin: toggle between CRM and Admin dashboard
+  if (role === "admin") {
+    if (adminMode === "crm" && !section) {
+      return <ConsultantDashboard onSwitchToAdmin={() => setAdminMode("admin")} />;
+    }
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 sticky top-0 z-50">
-            <SidebarTrigger />
-            <SignOutButton />
-          </header>
-          <main className="flex-1 p-6 overflow-auto">
-            <ActiveSection />
-          </main>
+    const ActiveSection = section ? (sectionComponents[section] || DashboardOverview) : DashboardOverview;
+
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 sticky top-0 z-50">
+              <SidebarTrigger />
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setAdminMode("crm")}>
+                  🔄 מצב מכירות
+                </Button>
+                <SignOutButton />
+              </div>
+            </header>
+            <main className="flex-1 p-6 overflow-auto">
+              <ActiveSection />
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
-  );
+      </SidebarProvider>
+    );
+  }
+
+  return <Navigate to="/auth" replace />;
 };
 
 function SignOutButton() {
