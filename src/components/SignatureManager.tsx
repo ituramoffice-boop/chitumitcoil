@@ -25,6 +25,8 @@ interface Lead {
   phone: string | null;
   email: string | null;
   mortgage_amount: number | null;
+  property_value: number | null;
+  monthly_income: number | null;
   status: string;
   signed_at: string | null;
   signature_url: string | null;
