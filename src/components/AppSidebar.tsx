@@ -53,10 +53,6 @@ export function AppSidebar() {
               </div>
             </div>
           )}
-              <h1 className="text-sm font-bold text-foreground">SmartMortgage AI</h1>
-              <p className="text-[10px] text-muted-foreground">מנוע חיתום חכם</p>
-            </div>
-          )}
         </div>
       </SidebarHeader>
 
