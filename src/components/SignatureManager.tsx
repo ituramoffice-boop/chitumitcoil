@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import {
   Search, FileText, CheckCircle2, Clock, Send, Copy, Download,
   Loader2, MessageCircle, ExternalLink, Pen, RefreshCw, Sparkles,
+  AlertTriangle, Bell, RotateCcw,
 } from "lucide-react";
 import { SmartPdfSigner } from "@/components/SmartPdfSigner";
 import { formatDistanceToNow } from "date-fns";
@@ -52,11 +53,29 @@ export function SignatureManager() {
     },
   });
 
-  // Realtime sync
+  // Realtime sync with signature alert
   useEffect(() => {
     const channel = supabase
       .channel("sig-mgmt-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "leads" }, (payload) => {
+        const newRecord = payload.new as any;
+        const oldRecord = payload.old as any;
+        // If signed_at just appeared — real-time alert!
+        if (newRecord.signed_at && !oldRecord.signed_at) {
+          toast({
+            title: "🎉 חתימה חדשה התקבלה!",
+            description: `${newRecord.full_name} חתם/ה על ההסכם ברגע זה`,
+          });
+          // Play notification sound
+          try {
+            const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczHjyQwN/Vu2Q+Ij2Hv+HfxHdKMC+CuuLjyHxSQi96ttzAdkY4ccTL");
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+          } catch {}
+        }
+        queryClient.invalidateQueries({ queryKey: ["signature-management"] });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, () => {
         queryClient.invalidateQueries({ queryKey: ["signature-management"] });
       })
       .subscribe();
@@ -73,10 +92,29 @@ export function SignatureManager() {
     );
   }, [leads, search]);
 
+  const EXPIRY_DAYS = 7;
+
+  const isExpired = (lead: Lead) => {
+    if (lead.signed_at) return false;
+    const created = new Date(lead.created_at);
+    const now = new Date();
+    const diffDays = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays > EXPIRY_DAYS;
+  };
+
+  const daysLeft = (lead: Lead) => {
+    const created = new Date(lead.created_at);
+    const expiry = new Date(created.getTime() + EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const diff = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, diff);
+  };
+
   const stats = useMemo(() => ({
     total: leads.length,
     signed: leads.filter(l => l.signed_at).length,
-    pending: leads.filter(l => !l.signed_at).length,
+    pending: leads.filter(l => !l.signed_at && !isExpired(l)).length,
+    expired: leads.filter(l => isExpired(l)).length,
   }), [leads]);
 
   const getSignUrl = (lead: Lead) => {
@@ -100,6 +138,32 @@ export function SignatureManager() {
     window.open(`https://wa.me/${intlPhone}?text=${message}`, "_blank");
   };
 
+  const sendReminder = (lead: Lead) => {
+    if (!lead.phone) return;
+    const cleanPhone = lead.phone.replace(/\D/g, "");
+    const intlPhone = cleanPhone.startsWith("0") ? `972${cleanPhone.slice(1)}` : cleanPhone;
+    const url = getSignUrl(lead);
+    const days = daysLeft(lead);
+    const urgency = days <= 2 ? "⚠️ נותרו רק " + days + " ימים לחתימה!" : "";
+    const message = encodeURIComponent(
+      `שלום ${lead.full_name} 👋\n\nתזכורת: טרם חתמת על הסכם ייעוץ המשכנתא שלך.\n${urgency}\n\nקישור לחתימה:\n${url}\n\nניתן לחתום ישירות מהטלפון 📱\n\nתודה, SmartMortgage`
+    );
+    window.open(`https://wa.me/${intlPhone}?text=${message}`, "_blank");
+  };
+
+  const regenerateToken = async (lead: Lead) => {
+    const { error } = await supabase
+      .from("leads")
+      .update({ sign_token: crypto.randomUUID(), created_at: new Date().toISOString() } as any)
+      .eq("id", lead.id);
+    if (error) {
+      toast({ title: "שגיאה בחידוש הקישור", variant: "destructive" });
+    } else {
+      toast({ title: "קישור חודש בהצלחה! 🔄" });
+      queryClient.invalidateQueries({ queryKey: ["signature-management"] });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -111,7 +175,7 @@ export function SignatureManager() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card className="border-border/50">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-primary/10">
@@ -142,6 +206,17 @@ export function SignatureManager() {
             <div>
               <p className="text-2xl font-bold">{stats.pending}</p>
               <p className="text-xs text-muted-foreground">ממתינים לחתימה</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-destructive/10">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.expired}</p>
+              <p className="text-xs text-muted-foreground">פגי תוקף</p>
             </div>
           </CardContent>
         </Card>
@@ -193,21 +268,26 @@ export function SignatureManager() {
                           <CheckCircle2 className="h-3 w-3 ml-1" />
                           חתום
                         </Badge>
+                      ) : isExpired(lead) ? (
+                        <Badge className="bg-destructive/10 text-destructive border-destructive/20" variant="outline">
+                          <AlertTriangle className="h-3 w-3 ml-1" />
+                          פג תוקף
+                        </Badge>
                       ) : (
                         <Badge className="bg-warning/10 text-warning border-warning/20" variant="outline">
                           <Clock className="h-3 w-3 ml-1" />
-                          ממתין
+                          ממתין ({daysLeft(lead)} ימים)
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {lead.signed_at
                         ? formatDistanceToNow(new Date(lead.signed_at), { locale: he, addSuffix: true })
-                        : "—"}
+                        : isExpired(lead) ? "פג תוקף" : `${daysLeft(lead)} ימים נותרו`}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        {!lead.signed_at && (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {!lead.signed_at && !isExpired(lead) && (
                           <>
                             <Button
                               variant="ghost"
@@ -230,15 +310,53 @@ export function SignatureManager() {
                               העתק קישור
                             </Button>
                             {lead.phone && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs gap-1 text-green-600 hover:text-green-700"
+                                  onClick={() => sendWhatsApp(lead)}
+                                  title="שלח בוואטסאפ"
+                                >
+                                  <MessageCircle className="h-3 w-3" />
+                                  שלח
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs gap-1 text-amber-600 hover:text-amber-700"
+                                  onClick={() => sendReminder(lead)}
+                                  title="שלח תזכורת חתימה"
+                                >
+                                  <Bell className="h-3 w-3" />
+                                  תזכורת
+                                </Button>
+                              </>
+                            )}
+                          </>
+                        )}
+                        {!lead.signed_at && isExpired(lead) && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs gap-1 text-primary hover:text-primary"
+                              onClick={() => regenerateToken(lead)}
+                              title="חדש קישור חתימה"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              חדש קישור
+                            </Button>
+                            {lead.phone && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-xs gap-1 text-green-600 hover:text-green-700"
-                                onClick={() => sendWhatsApp(lead)}
-                                title="שלח בוואטסאפ"
+                                onClick={() => sendReminder(lead)}
+                                title="שלח תזכורת"
                               >
                                 <MessageCircle className="h-3 w-3" />
-                                שלח בוואטסאפ
+                                תזכורת
                               </Button>
                             )}
                           </>

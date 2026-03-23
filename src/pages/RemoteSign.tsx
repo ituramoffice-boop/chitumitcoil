@@ -23,6 +23,7 @@ interface Lead {
   signed_at: string | null;
   signature_url: string | null;
   sign_token: string | null;
+  created_at: string;
 }
 
 export default function RemoteSign() {
@@ -34,6 +35,8 @@ export default function RemoteSign() {
   const [signed, setSigned] = useState(false);
   const [strokes, setStrokes] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const EXPIRY_DAYS = 7;
 
   useEffect(() => {
     if (!token) { setError("קישור לא תקין"); setLoading(false); return; }
@@ -47,8 +50,15 @@ export default function RemoteSign() {
         setError("הקישור לא נמצא או פג תוקף");
       } else {
         const leadData = data as unknown as Lead;
-        setLead(leadData);
-        if (leadData.signed_at) setSigned(true);
+        // Check expiration
+        const created = new Date(leadData.created_at || "");
+        const diffDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+        if (!leadData.signed_at && diffDays > EXPIRY_DAYS) {
+          setError("הקישור פג תוקף. אנא פנה ליועץ המשכנתא שלך לקבלת קישור חדש.");
+        } else {
+          setLead(leadData);
+          if (leadData.signed_at) setSigned(true);
+        }
       }
       setLoading(false);
     })();
