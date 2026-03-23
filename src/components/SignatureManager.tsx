@@ -13,8 +13,9 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   Search, FileText, CheckCircle2, Clock, Send, Copy, Download,
-  Loader2, MessageCircle, ExternalLink, Pen, RefreshCw,
+  Loader2, MessageCircle, ExternalLink, Pen, RefreshCw, Sparkles,
 } from "lucide-react";
+import { SmartPdfSigner } from "@/components/SmartPdfSigner";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
