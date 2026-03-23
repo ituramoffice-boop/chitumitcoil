@@ -14,8 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      documents: {
+        Row: {
+          classification: string | null
+          consultant_id: string | null
+          created_at: string
+          extracted_data: Json | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          lead_id: string | null
+          risk_flags: Json | null
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          classification?: string | null
+          consultant_id?: string | null
+          created_at?: string
+          extracted_data?: Json | null
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type: string
+          id?: string
+          lead_id?: string | null
+          risk_flags?: Json | null
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          classification?: string | null
+          consultant_id?: string | null
+          created_at?: string
+          extracted_data?: Json | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          lead_id?: string | null
+          risk_flags?: Json | null
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
+          client_user_id: string | null
           consultant_id: string
           created_at: string
           email: string | null
@@ -30,6 +87,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          client_user_id?: string | null
           consultant_id: string
           created_at?: string
           email?: string | null
@@ -44,6 +102,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          client_user_id?: string | null
           consultant_id?: string
           created_at?: string
           email?: string | null
