@@ -32,6 +32,7 @@ const baseNavItems = [
   { title: "ניתוח היתכנות", url: "/dashboard/scenarios", icon: Calculator },
   { title: "דוחות סיכונים", url: "/dashboard/reports", icon: FileBarChart },
   { title: "ניהול לידים", url: "/dashboard/clients", icon: Users },
+  { title: "חתימות מרחוק", url: "/dashboard/signatures", icon: Pen },
 ];
 
 const agencyNavItems = [
