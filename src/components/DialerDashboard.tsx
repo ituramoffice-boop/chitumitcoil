@@ -612,21 +612,21 @@ export function DialerDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="max-h-[500px]">
-                <Table>
+                <Table dir="rtl">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-10">
+                      <TableHead className="w-10 text-right">
                         <Checkbox
                           checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
                           onCheckedChange={toggleAll}
                         />
                       </TableHead>
-                      <TableHead>שם</TableHead>
-                      <TableHead>טלפון</TableHead>
-                      <TableHead>סטטוס</TableHead>
-                      <TableHead>מקור</TableHead>
-                      <TableHead>קשר אחרון</TableHead>
-                      <TableHead className="w-20">פעולות</TableHead>
+                      <TableHead className="text-right">שם</TableHead>
+                      <TableHead className="text-right">טלפון</TableHead>
+                      <TableHead className="text-right">סטטוס</TableHead>
+                      <TableHead className="text-right">מקור</TableHead>
+                      <TableHead className="text-right">קשר אחרון</TableHead>
+                      <TableHead className="w-20 text-right">פעולות</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
