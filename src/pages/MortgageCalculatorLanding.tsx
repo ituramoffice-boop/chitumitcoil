@@ -52,9 +52,10 @@ const MortgageCalculatorLanding = () => {
   const [loanAmount, setLoanAmount] = useState(1000000);
   const [years, setYears] = useState(25);
   const [rate, setRate] = useState(4.5);
-  const [step, setStep] = useState<"calc" | "form" | "success">("calc");
+  const [step, setStep] = useState<"calc" | "form" | "success" | "journey">("calc");
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", email: "" });
+  const [journeyStep, setJourneyStep] = useState(0);
   const formRef = useRef<HTMLDivElement>(null);
 
   const result = calculateMortgage(loanAmount, years, rate);
