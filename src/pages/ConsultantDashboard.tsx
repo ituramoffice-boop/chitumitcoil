@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -220,6 +220,23 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   });
 
   const lastSyncTime = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
+
+  // Realtime: auto-refresh leads & documents on any change
+  useEffect(() => {
+    const channel = supabase
+      .channel('consultant-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
+        queryClient.invalidateQueries({ queryKey: ["leads"] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => {
+        queryClient.invalidateQueries({ queryKey: ["all-documents"] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'activity_log' }, () => {
+        queryClient.invalidateQueries({ queryKey: ["activity-log"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
