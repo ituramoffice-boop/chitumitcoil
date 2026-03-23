@@ -50,13 +50,22 @@ import {
   Facebook,
   Share2,
   Globe,
+  RefreshCw,
+  AlertCircle,
+  FileX,
+  Banknote,
+  ChevronLeft,
+  Upload,
+  ClipboardCheck,
+  Building,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import RiskAnalysisView from "@/components/RiskAnalysisView";
 import DataMasker from "@/components/DataMasker";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { he } from "date-fns/locale";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
@@ -75,6 +84,14 @@ interface Lead {
   lead_source: string | null;
   last_contact: string | null;
   next_step: string | null;
+}
+
+interface Document {
+  lead_id: string | null;
+  classification: string | null;
+  created_at: string;
+  risk_flags: any;
+  extracted_data: any;
 }
 
 const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string; pulse?: boolean }> = {
@@ -103,6 +120,26 @@ const SOURCE_CONFIG: Record<string, { label: string; color: string; icon: any }>
   organic: { label: "אורגני", color: "hsl(38, 92%, 50%)", icon: Globe },
 };
 
+// Conversion funnel stages
+const FUNNEL_STAGES: { key: LeadStatus | "all"; label: string; icon: any; statuses: LeadStatus[] }[] = [
+  { key: "all", label: "כל הלידים", icon: Users, statuses: [] },
+  { key: "new", label: "לידים חדשים", icon: Plus, statuses: ["new"] },
+  { key: "contacted", label: "העלאת מסמכים", icon: Upload, statuses: ["contacted"] },
+  { key: "in_progress", label: "בדיקת חיתום", icon: ClipboardCheck, statuses: ["in_progress"] },
+  { key: "submitted", label: "הוגש לבנק", icon: Building, statuses: ["submitted"] },
+  { key: "approved", label: "אושר", icon: CheckCircle2, statuses: ["approved"] },
+  { key: "closed", label: "סגור", icon: Lock, statuses: ["closed"] },
+];
+
+type AlertCategory = "expiring" | "missing_docs" | "anomalies";
+
+interface CriticalAlert {
+  lead: Lead;
+  reason: string;
+  category: AlertCategory;
+  missingDoc?: string;
+}
+
 const ConsultantDashboard = () => {
   const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
@@ -110,6 +147,8 @@ const ConsultantDashboard = () => {
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sendingMagicLink, setSendingMagicLink] = useState<string | null>(null);
+  const [funnelFilter, setFunnelFilter] = useState<LeadStatus | "all">("all");
+  const [alertTab, setAlertTab] = useState<AlertCategory>("expiring");
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -143,10 +182,12 @@ const ConsultantDashboard = () => {
     }
   };
 
-  const openWhatsApp = (phone: string, name: string) => {
+  const openWhatsApp = (phone: string, name: string, missingDoc?: string) => {
     const cleanPhone = phone.replace(/\D/g, "");
     const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
-    window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(`שלום ${name}, `)}`, "_blank");
+    const docText = missingDoc || "מסמך חסר";
+    const message = `היי ${name}, ראיתי שהעלית חלק מהמסמכים ל-SmartMortgage. חסר לנו רק את ${docText} כדי להתקדם לאישור מהבנק. אפשר לשלוח כאן או להעלות למערכת. 📄`;
+    window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
   const { data: leads = [], isLoading } = useQuery({
@@ -161,17 +202,19 @@ const ConsultantDashboard = () => {
     },
   });
 
-  const { data: documents = [] } = useQuery({
+  const { data: documents = [], dataUpdatedAt } = useQuery({
     queryKey: ["all-documents"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
-        .select("lead_id, classification, created_at")
+        .select("lead_id, classification, created_at, risk_flags, extracted_data")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      return data as Document[];
     },
   });
+
+  const lastSyncTime = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -281,7 +324,13 @@ const ConsultantDashboard = () => {
     }
   };
 
-  // Computed stats
+  const refreshData = () => {
+    queryClient.invalidateQueries({ queryKey: ["leads"] });
+    queryClient.invalidateQueries({ queryKey: ["all-documents"] });
+    toast.success("הנתונים עודכנו");
+  };
+
+  // Stats
   const stats = useMemo(() => ({
     total: leads.length,
     new: leads.filter((l) => l.status === "new").length,
@@ -289,33 +338,107 @@ const ConsultantDashboard = () => {
     approved: leads.filter((l) => l.status === "approved").length,
   }), [leads]);
 
-  // Urgent tasks: leads missing documents or needing attention
-  const urgentTasks = useMemo(() => {
-    const tasks: { lead: Lead; reason: string; type: "missing_docs" | "expired" | "no_contact" }[] = [];
+  // Critical alerts - 3 categories
+  const criticalAlerts = useMemo(() => {
+    const alerts: CriticalAlert[] = [];
+
     leads.forEach((lead) => {
+      if (lead.status === "closed" || lead.status === "rejected") return;
       const leadDocs = documents.filter((d) => d.lead_id === lead.id);
-      if (lead.status !== "closed" && lead.status !== "rejected") {
-        if (leadDocs.length === 0) {
-          tasks.push({ lead, reason: "חסרים מסמכים", type: "missing_docs" });
-        }
-        if (lead.last_contact) {
-          const daysSince = (Date.now() - new Date(lead.last_contact).getTime()) / (1000 * 60 * 60 * 24);
-          if (daysSince > 7) {
-            tasks.push({ lead, reason: `לא היה קשר ${Math.floor(daysSince)} ימים`, type: "no_contact" });
-          }
-        }
-        if (lead.status === "submitted") {
-          const daysSinceCreated = (Date.now() - new Date(lead.created_at).getTime()) / (1000 * 60 * 60 * 24);
-          if (daysSinceCreated > 30) {
-            tasks.push({ lead, reason: "אישור עקרוני עלול לפוג", type: "expired" });
-          }
+
+      // 1. Expiring approvals (submitted > 25 days ago)
+      if (lead.status === "submitted") {
+        const daysSince = (Date.now() - new Date(lead.created_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSince > 25) {
+          const daysLeft = Math.max(0, 30 - Math.floor(daysSince));
+          alerts.push({
+            lead,
+            reason: daysLeft > 0 ? `אישור עקרוני פג בעוד ${daysLeft} ימים` : "אישור עקרוני פג תוקף!",
+            category: "expiring",
+          });
         }
       }
+
+      // 2. Missing critical documents
+      if (leadDocs.length > 0) {
+        const classifications = leadDocs.map((d) => d.classification?.toLowerCase() || "");
+        const hasBankStatement = classifications.some((c) => c.includes("bank") || c.includes("עו"));
+        const hasPaySlip = classifications.some((c) => c.includes("pay") || c.includes("תלוש") || c.includes("salary"));
+
+        if (!hasBankStatement) {
+          alerts.push({
+            lead,
+            reason: "חסר דף חשבון בנק (עו\"ש)",
+            category: "missing_docs",
+            missingDoc: "דף חשבון בנק (עו\"ש)",
+          });
+        }
+        if (!hasPaySlip) {
+          alerts.push({
+            lead,
+            reason: "חסר תלוש שכר",
+            category: "missing_docs",
+            missingDoc: "תלוש שכר",
+          });
+        }
+      } else if (lead.status !== "new") {
+        alerts.push({
+          lead,
+          reason: "לא הועלו מסמכים כלל",
+          category: "missing_docs",
+        });
+      }
+
+      // 3. Bank anomalies (returned checks / risk flags in recent docs)
+      leadDocs.forEach((doc) => {
+        const age = (Date.now() - new Date(doc.created_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (age > 1) return; // last 24 hours only
+
+        const flags = Array.isArray(doc.risk_flags) ? doc.risk_flags : [];
+        const hasReturn = flags.some((f: any) => {
+          const text = typeof f === "string" ? f : JSON.stringify(f);
+          return text.includes("אכ") || text.includes("החזר") || text.includes("return") || text.includes("חריג");
+        });
+        if (hasReturn) {
+          alerts.push({
+            lead,
+            reason: "זוהו אכ\"מ / החזרות בעו\"ש",
+            category: "anomalies",
+          });
+        }
+      });
     });
-    return tasks.slice(0, 5);
+
+    return alerts;
   }, [leads, documents]);
 
-  // Lead source chart data
+  const filteredAlerts = useMemo(() => criticalAlerts.filter((a) => a.category === alertTab), [criticalAlerts, alertTab]);
+  const alertCounts = useMemo(() => ({
+    expiring: criticalAlerts.filter((a) => a.category === "expiring").length,
+    missing_docs: criticalAlerts.filter((a) => a.category === "missing_docs").length,
+    anomalies: criticalAlerts.filter((a) => a.category === "anomalies").length,
+  }), [criticalAlerts]);
+
+  // Funnel counts
+  const funnelCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: leads.length };
+    FUNNEL_STAGES.forEach((stage) => {
+      if (stage.key !== "all") {
+        counts[stage.key] = leads.filter((l) => stage.statuses.includes(l.status)).length;
+      }
+    });
+    return counts;
+  }, [leads]);
+
+  // Filtered leads by funnel
+  const filteredLeads = useMemo(() => {
+    if (funnelFilter === "all") return leads;
+    const stage = FUNNEL_STAGES.find((s) => s.key === funnelFilter);
+    if (!stage) return leads;
+    return leads.filter((l) => stage.statuses.includes(l.status));
+  }, [leads, funnelFilter]);
+
+  // Lead source chart
   const sourceData = useMemo(() => {
     const counts: Record<string, number> = { facebook: 0, referral: 0, organic: 0 };
     leads.forEach((l) => {
@@ -340,15 +463,13 @@ const ConsultantDashboard = () => {
       const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
       return age < 1 && (!d.classification || d.classification === "unclassified");
     }).length;
-    const expiring = leads.filter(
-      (l) => l.status === "submitted" && (Date.now() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24) > 25
-    ).length;
     const parts: string[] = [];
     if (newDocs > 0) parts.push(`${newDocs} מסמכים חדשים לסיווג`);
-    if (expiring > 0) parts.push(`${expiring} אישורים עקרוניים שפגים בקרוב`);
+    if (alertCounts.expiring > 0) parts.push(`${alertCounts.expiring} אישורים עקרוניים שפגים בקרוב`);
+    if (alertCounts.missing_docs > 0) parts.push(`${alertCounts.missing_docs} חוסרים קריטיים`);
     if (stats.new > 0) parts.push(`${stats.new} לידים חדשים ממתינים`);
     return { greeting, parts };
-  }, [documents, leads, stats]);
+  }, [documents, alertCounts, stats]);
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -364,10 +485,21 @@ const ConsultantDashboard = () => {
               <p className="text-xs text-muted-foreground">פאנל יועץ</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={signOut}>
-            <LogOut className="w-4 h-4 ml-2" />
-            יציאה
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Last Sync */}
+            <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={refreshData} title="רענן נתונים">
+                <RefreshCw className="w-3.5 h-3.5" />
+              </Button>
+              {lastSyncTime && (
+                <span>סנכרון אחרון: {format(lastSyncTime, "HH:mm", { locale: he })}</span>
+              )}
+            </div>
+            <Button variant="ghost" size="sm" onClick={signOut}>
+              <LogOut className="w-4 h-4 ml-2" />
+              יציאה
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -382,9 +514,7 @@ const ConsultantDashboard = () => {
               <div className="flex-1">
                 <p className="text-sm font-semibold text-foreground">
                   {summary.greeting}! <span className="font-normal text-muted-foreground">
-                    {summary.parts.length > 0
-                      ? `יש לך ${summary.parts.join(" ו-")}.`
-                      : "הכל מעודכן! 🎉"}
+                    יש לך {summary.parts.join(" ו-")}.
                   </span>
                 </p>
               </div>
@@ -401,53 +531,143 @@ const ConsultantDashboard = () => {
           <StatCard icon={CheckCircle2} title="אושרו" value={stats.approved} variant="success" />
         </div>
 
-        {/* Urgent Tasks + Lead Source */}
+        {/* Conversion Funnel */}
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">משפך מכירות</h3>
+          </div>
+          <div className="flex items-stretch gap-0 overflow-x-auto pb-1">
+            {FUNNEL_STAGES.map((stage, i) => {
+              const count = funnelCounts[stage.key] || 0;
+              const isActive = funnelFilter === stage.key;
+              const Icon = stage.icon;
+              return (
+                <div key={stage.key} className="flex items-center flex-1 min-w-0">
+                  <button
+                    onClick={() => setFunnelFilter(stage.key)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg transition-all duration-200 w-full group",
+                      isActive
+                        ? "bg-primary/10 border border-primary/30 shadow-sm"
+                        : "hover:bg-secondary/50 border border-transparent"
+                    )}
+                  >
+                    <div className={cn(
+                      "p-1.5 rounded-full transition-colors",
+                      isActive ? "bg-primary/20" : "bg-secondary group-hover:bg-primary/10"
+                    )}>
+                      <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary")} />
+                    </div>
+                    <span className={cn(
+                      "text-lg font-bold",
+                      isActive ? "text-primary" : "text-foreground"
+                    )}>{count}</span>
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{stage.label}</span>
+                  </button>
+                  {i < FUNNEL_STAGES.length - 1 && (
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground/30 shrink-0 mx-0.5" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Urgent Tasks */}
+          {/* Critical Alerts - 3 categories */}
           <div className="lg:col-span-2 glass-card p-5">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="w-5 h-5 text-warning" />
-              <h3 className="font-semibold text-foreground">משימות דחופות</h3>
-              {urgentTasks.length > 0 && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-warning/10 text-warning font-medium">
-                  {urgentTasks.length}
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              <h3 className="font-semibold text-foreground">דחוף לטיפול</h3>
+              {criticalAlerts.length > 0 && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-bold">
+                  {criticalAlerts.length}
                 </span>
               )}
             </div>
-            {urgentTasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">אין משימות דחופות כרגע 🎉</p>
+
+            {/* Alert category tabs */}
+            <div className="flex gap-2 mb-4">
+              <AlertTabButton
+                active={alertTab === "expiring"}
+                onClick={() => setAlertTab("expiring")}
+                icon={Clock}
+                label="פגי תוקף"
+                count={alertCounts.expiring}
+                variant="destructive"
+              />
+              <AlertTabButton
+                active={alertTab === "missing_docs"}
+                onClick={() => setAlertTab("missing_docs")}
+                icon={FileX}
+                label="חוסרים קריטיים"
+                count={alertCounts.missing_docs}
+                variant="warning"
+              />
+              <AlertTabButton
+                active={alertTab === "anomalies"}
+                onClick={() => setAlertTab("anomalies")}
+                icon={Banknote}
+                label="חריגים בעו״ש"
+                count={alertCounts.anomalies}
+                variant="primary"
+              />
+            </div>
+
+            {/* Alert list */}
+            {filteredAlerts.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                אין התראות בקטגוריה זו 🎉
+              </p>
             ) : (
-              <div className="space-y-2">
-                {urgentTasks.map((task, i) => (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {filteredAlerts.map((alert, i) => (
                   <div
-                    key={`${task.lead.id}-${task.type}-${i}`}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors cursor-pointer group"
-                    onClick={() => setSelectedLead(task.lead)}
+                    key={`${alert.lead.id}-${alert.category}-${i}`}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-lg border transition-all duration-200 cursor-pointer group",
+                      "hover:bg-secondary/50 hover:shadow-sm hover:-translate-y-0.5",
+                      alert.category === "expiring" ? "border-destructive/20" :
+                      alert.category === "anomalies" ? "border-primary/20" : "border-warning/20"
+                    )}
+                    onClick={() => setSelectedLead(alert.lead)}
                   >
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "p-1.5 rounded-lg",
-                        task.type === "missing_docs" ? "bg-warning/10" : task.type === "expired" ? "bg-destructive/10" : "bg-muted"
+                        alert.category === "expiring" ? "bg-destructive/10" :
+                        alert.category === "anomalies" ? "bg-primary/10" : "bg-warning/10"
                       )}>
-                        <FileWarning className={cn(
-                          "w-4 h-4",
-                          task.type === "missing_docs" ? "text-warning" : task.type === "expired" ? "text-destructive" : "text-muted-foreground"
-                        )} />
+                        {alert.category === "expiring" ? (
+                          <Clock className="w-4 h-4 text-destructive" />
+                        ) : alert.category === "anomalies" ? (
+                          <Banknote className="w-4 h-4 text-primary" />
+                        ) : (
+                          <FileWarning className="w-4 h-4 text-warning" />
+                        )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{task.lead.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{task.reason}</p>
+                        <p className="text-sm font-medium text-foreground">{alert.lead.full_name}</p>
+                        <p className={cn(
+                          "text-xs",
+                          alert.category === "expiring" ? "text-destructive" : "text-muted-foreground"
+                        )}>
+                          {alert.reason}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {task.lead.phone && (
+                    <div className="flex items-center gap-1">
+                      {alert.lead.phone && (
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="שלח WhatsApp"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openWhatsApp(task.lead.phone!, task.lead.full_name);
+                            openWhatsApp(alert.lead.phone!, alert.lead.full_name, alert.missingDoc);
                           }}
                         >
                           <MessageCircle className="w-4 h-4 text-success" />
@@ -512,7 +732,20 @@ const ConsultantDashboard = () => {
         {/* Leads Table */}
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-foreground">ניהול לידים</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-foreground">ניהול לידים</h2>
+              {funnelFilter !== "all" && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                  {FUNNEL_STAGES.find((s) => s.key === funnelFilter)?.label}
+                  <button
+                    onClick={() => setFunnelFilter("all")}
+                    className="mr-1.5 hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+            </div>
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
               if (!open) { setEditingLead(null); resetForm(); }
@@ -610,16 +843,25 @@ const ConsultantDashboard = () => {
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : leads.length === 0 ? (
+          ) : filteredLeads.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>עדיין אין לידים. לחץ על "ליד חדש" כדי להתחיל.</p>
+              <p>{funnelFilter !== "all" ? "אין לידים בשלב זה." : "עדיין אין לידים. לחץ על \"ליד חדש\" כדי להתחיל."}</p>
+              {funnelFilter !== "all" && (
+                <Button variant="link" size="sm" onClick={() => setFunnelFilter("all")} className="mt-2">
+                  הצג את כל הלידים
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
-              {leads.map((lead) => {
+              {filteredLeads.map((lead) => {
                 const sc = STATUS_CONFIG[lead.status];
                 const isSelected = selectedLead?.id === lead.id;
+                const leadMissingDoc = criticalAlerts.find(
+                  (a) => a.lead.id === lead.id && a.category === "missing_docs"
+                )?.missingDoc;
+
                 return (
                   <div key={lead.id} className="animate-fade-in">
                     <div
@@ -683,7 +925,7 @@ const ConsultantDashboard = () => {
                             title="WhatsApp"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openWhatsApp(lead.phone!, lead.full_name);
+                              openWhatsApp(lead.phone!, lead.full_name, leadMissingDoc);
                             }}
                           >
                             <MessageCircle className="w-4 h-4 text-success" />
@@ -784,10 +1026,56 @@ const ConsultantDashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Mobile last sync */}
+        <div className="flex md:hidden items-center justify-center gap-2 text-xs text-muted-foreground pb-4">
+          <Button variant="ghost" size="sm" className="h-7 gap-1.5" onClick={refreshData}>
+            <RefreshCw className="w-3 h-3" />
+            רענן
+          </Button>
+          {lastSyncTime && (
+            <span>סנכרון אחרון: {format(lastSyncTime, "HH:mm", { locale: he })}</span>
+          )}
+        </div>
       </main>
     </div>
   );
 };
+
+/* ---------- Sub-components ---------- */
+
+function AlertTabButton({ active, onClick, icon: Icon, label, count, variant }: {
+  active: boolean;
+  onClick: () => void;
+  icon: any;
+  label: string;
+  count: number;
+  variant: "destructive" | "warning" | "primary";
+}) {
+  const colors = {
+    destructive: { activeBg: "bg-destructive/10 border-destructive/30", text: "text-destructive", badge: "bg-destructive/20 text-destructive" },
+    warning: { activeBg: "bg-warning/10 border-warning/30", text: "text-warning", badge: "bg-warning/20 text-warning" },
+    primary: { activeBg: "bg-primary/10 border-primary/30", text: "text-primary", badge: "bg-primary/20 text-primary" },
+  };
+  const c = colors[variant];
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border",
+        active ? c.activeBg : "border-transparent hover:bg-secondary/50"
+      )}
+    >
+      <Icon className={cn("w-3.5 h-3.5", active ? c.text : "text-muted-foreground")} />
+      <span className={active ? c.text : "text-muted-foreground"}>{label}</span>
+      {count > 0 && (
+        <span className={cn("text-[10px] px-1.5 py-0 rounded-full font-bold", c.badge)}>
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
 
 function StatCard({ icon: Icon, title, value, variant }: {
   icon: any;
@@ -801,7 +1089,7 @@ function StatCard({ icon: Icon, title, value, variant }: {
     success: "text-success",
   };
   return (
-    <div className="glass-card p-5 hover-scale cursor-default">
+    <div className="glass-card p-5 hover-scale cursor-default transition-all duration-200 hover:shadow-md">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
