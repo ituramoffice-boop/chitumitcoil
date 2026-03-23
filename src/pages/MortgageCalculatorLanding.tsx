@@ -578,7 +578,7 @@ const MortgageCalculatorLanding = () => {
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </section>
       )}
