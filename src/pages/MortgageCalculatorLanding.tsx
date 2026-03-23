@@ -163,6 +163,10 @@ const MortgageCalculatorLanding = () => {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
     `}</style>
     <div className="min-h-screen bg-[hsl(222,47%,4%)] text-white overflow-hidden" dir="rtl">
       {/* Star particles background */}
@@ -414,14 +418,21 @@ const MortgageCalculatorLanding = () => {
               <p className="text-sm text-white/70 leading-relaxed">{activeTip.tip}</p>
             </div>
             <Link to="/self-check">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-shrink-0 border-[hsl(38,92%,50%)]/30 text-[hsl(38,92%,50%)] hover:bg-[hsl(38,92%,50%)]/10 hover:text-[hsl(38,92%,60%)] rounded-xl text-xs gap-1.5"
+              <button
+                className="group relative flex-shrink-0 overflow-hidden rounded-xl px-5 py-2.5 text-xs font-bold transition-all duration-300 hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(38,92%,50%) 0%, hsl(30,95%,45%) 50%, hsl(38,92%,55%) 100%)',
+                  boxShadow: '0 0 20px hsla(38,92%,50%,0.4), inset 0 1px 0 hsla(0,0%,100%,0.2)',
+                }}
               >
-                לעוד טיפים
-                <ArrowLeft className="w-3 h-3" />
-              </Button>
+                <span className="absolute inset-0 bg-gradient-to-l from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="absolute inset-0 animate-[shimmer_2s_infinite] bg-gradient-to-l from-transparent via-white/15 to-transparent" style={{ backgroundSize: '200% 100%' }} />
+                <span className="relative flex items-center gap-2 text-white drop-shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  לעוד טיפים
+                  <ArrowLeft className="w-3 h-3 transition-transform group-hover:-translate-x-1" />
+                </span>
+              </button>
             </Link>
           </div>
         </div>
