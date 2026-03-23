@@ -13,8 +13,9 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   Search, FileText, CheckCircle2, Clock, Send, Copy, Download,
-  Loader2, MessageCircle, ExternalLink, Pen, RefreshCw,
+  Loader2, MessageCircle, ExternalLink, Pen, RefreshCw, Sparkles,
 } from "lucide-react";
+import { SmartPdfSigner } from "@/components/SmartPdfSigner";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
@@ -24,6 +25,8 @@ interface Lead {
   phone: string | null;
   email: string | null;
   mortgage_amount: number | null;
+  property_value: number | null;
+  monthly_income: number | null;
   status: string;
   signed_at: string | null;
   signature_url: string | null;
@@ -35,6 +38,7 @@ export function SignatureManager() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [smartSignLead, setSmartSignLead] = useState<Lead | null>(null);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["signature-management"],
@@ -208,6 +212,16 @@ export function SignatureManager() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="h-7 text-xs gap-1 text-primary hover:text-primary"
+                              onClick={() => setSmartSignLead(lead)}
+                              title="חתימה חכמה על PDF"
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              PDF חכם
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-7 text-xs gap-1"
                               onClick={() => copyLink(lead)}
                               title="העתק קישור חתימה"
@@ -264,6 +278,15 @@ export function SignatureManager() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Smart PDF Signer Modal */}
+      {smartSignLead && (
+        <SmartPdfSigner
+          open={!!smartSignLead}
+          onOpenChange={(open) => { if (!open) setSmartSignLead(null); }}
+          lead={smartSignLead}
+        />
+      )}
     </div>
   );
 }
