@@ -90,8 +90,9 @@ const MortgageCalculatorLanding = () => {
         mortgage_amount: loanAmount,
         property_value: Math.round(loanAmount * 1.35),
         lead_source: "organic",
+        marketing_consent: marketingConsent,
         notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}`,
-      });
+      } as any);
       if (error) throw error;
       setStep("success");
       // After 3 seconds, start the journey
