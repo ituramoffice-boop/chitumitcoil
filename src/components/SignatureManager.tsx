@@ -137,6 +137,32 @@ export function SignatureManager() {
     window.open(`https://wa.me/${intlPhone}?text=${message}`, "_blank");
   };
 
+  const sendReminder = (lead: Lead) => {
+    if (!lead.phone) return;
+    const cleanPhone = lead.phone.replace(/\D/g, "");
+    const intlPhone = cleanPhone.startsWith("0") ? `972${cleanPhone.slice(1)}` : cleanPhone;
+    const url = getSignUrl(lead);
+    const days = daysLeft(lead);
+    const urgency = days <= 2 ? "⚠️ נותרו רק " + days + " ימים לחתימה!" : "";
+    const message = encodeURIComponent(
+      `שלום ${lead.full_name} 👋\n\nתזכורת: טרם חתמת על הסכם ייעוץ המשכנתא שלך.\n${urgency}\n\nקישור לחתימה:\n${url}\n\nניתן לחתום ישירות מהטלפון 📱\n\nתודה, SmartMortgage`
+    );
+    window.open(`https://wa.me/${intlPhone}?text=${message}`, "_blank");
+  };
+
+  const regenerateToken = async (lead: Lead) => {
+    const { error } = await supabase
+      .from("leads")
+      .update({ sign_token: crypto.randomUUID(), created_at: new Date().toISOString() } as any)
+      .eq("id", lead.id);
+    if (error) {
+      toast({ title: "שגיאה בחידוש הקישור", variant: "destructive" });
+    } else {
+      toast({ title: "קישור חודש בהצלחה! 🔄" });
+      queryClient.invalidateQueries({ queryKey: ["signature-management"] });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
