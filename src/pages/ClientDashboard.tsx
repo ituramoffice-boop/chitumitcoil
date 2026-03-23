@@ -5,12 +5,10 @@ import { Button } from "@/components/ui/button";
 import {
   Brain,
   LogOut,
-  FileText,
   User,
-  TrendingUp,
-  Clock,
   Loader2,
 } from "lucide-react";
+import SmartIngestion from "@/components/SmartIngestion";
 
 const ClientDashboard = () => {
   const { user, signOut } = useAuth();
@@ -74,47 +72,8 @@ const ClientDashboard = () => {
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass-card p-6 text-center space-y-3">
-            <div className="p-3 rounded-full bg-primary/10 w-fit mx-auto">
-              <FileText className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="font-semibold text-foreground">המסמכים שלי</h3>
-            <p className="text-sm text-muted-foreground">
-              העלה ונהל את מסמכי המשכנתא שלך
-            </p>
-            <Button variant="outline" className="w-full" disabled>
-              בקרוב
-            </Button>
-          </div>
-
-          <div className="glass-card p-6 text-center space-y-3">
-            <div className="p-3 rounded-full bg-success/10 w-fit mx-auto">
-              <TrendingUp className="w-6 h-6 text-success" />
-            </div>
-            <h3 className="font-semibold text-foreground">סטטוס תיק</h3>
-            <p className="text-sm text-muted-foreground">
-              עקוב אחרי ההתקדמות של תיק המשכנתא
-            </p>
-            <Button variant="outline" className="w-full" disabled>
-              בקרוב
-            </Button>
-          </div>
-
-          <div className="glass-card p-6 text-center space-y-3">
-            <div className="p-3 rounded-full bg-warning/10 w-fit mx-auto">
-              <Clock className="w-6 h-6 text-warning" />
-            </div>
-            <h3 className="font-semibold text-foreground">פגישות</h3>
-            <p className="text-sm text-muted-foreground">
-              קבע פגישה עם היועץ שלך
-            </p>
-            <Button variant="outline" className="w-full" disabled>
-              בקרוב
-            </Button>
-          </div>
-        </div>
+        {/* Smart Ingestion */}
+        <SmartIngestion />
       </main>
     </div>
   );

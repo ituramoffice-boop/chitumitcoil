@@ -21,6 +21,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   Brain,
   LogOut,
   Plus,
@@ -30,13 +36,15 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  XCircle,
   Edit,
   Trash2,
   Loader2,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import RiskAnalysisView from "@/components/RiskAnalysisView";
+import DataMasker from "@/components/DataMasker";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -68,6 +76,7 @@ const ConsultantDashboard = () => {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -228,7 +237,7 @@ const ConsultantDashboard = () => {
           <StatCard icon={CheckCircle2} title="אושרו" value={stats.approved} variant="success" />
         </div>
 
-        {/* Leads Table */}
+        {/* Leads Table + Risk Analysis */}
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-foreground">ניהול לידים</h2>
@@ -250,37 +259,21 @@ const ConsultantDashboard = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>שם מלא *</Label>
-                      <Input
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                        required
-                      />
+                      <Input value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
                     </div>
                     <div className="space-y-2">
                       <Label>טלפון</Label>
-                      <Input
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        dir="ltr"
-                      />
+                      <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} dir="ltr" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>אימייל</Label>
-                      <Input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        dir="ltr"
-                      />
+                      <Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} dir="ltr" />
                     </div>
                     <div className="space-y-2">
                       <Label>סטטוס</Label>
-                      <Select
-                        value={formData.status}
-                        onValueChange={(v) => setFormData({ ...formData, status: v as LeadStatus })}
-                      >
+                      <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as LeadStatus })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {Object.entries(STATUS_CONFIG).map(([k, v]) => (
@@ -293,39 +286,20 @@ const ConsultantDashboard = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>סכום משכנתא</Label>
-                      <Input
-                        type="number"
-                        value={formData.mortgage_amount}
-                        onChange={(e) => setFormData({ ...formData, mortgage_amount: e.target.value })}
-                        dir="ltr"
-                      />
+                      <Input type="number" value={formData.mortgage_amount} onChange={(e) => setFormData({ ...formData, mortgage_amount: e.target.value })} dir="ltr" />
                     </div>
                     <div className="space-y-2">
                       <Label>שווי נכס</Label>
-                      <Input
-                        type="number"
-                        value={formData.property_value}
-                        onChange={(e) => setFormData({ ...formData, property_value: e.target.value })}
-                        dir="ltr"
-                      />
+                      <Input type="number" value={formData.property_value} onChange={(e) => setFormData({ ...formData, property_value: e.target.value })} dir="ltr" />
                     </div>
                     <div className="space-y-2">
                       <Label>הכנסה חודשית</Label>
-                      <Input
-                        type="number"
-                        value={formData.monthly_income}
-                        onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })}
-                        dir="ltr"
-                      />
+                      <Input type="number" value={formData.monthly_income} onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })} dir="ltr" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>הערות</Label>
-                    <Textarea
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      rows={3}
-                    />
+                    <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} />
                   </div>
                   <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
                     {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
@@ -349,47 +323,116 @@ const ConsultantDashboard = () => {
             <div className="space-y-3">
               {leads.map((lead) => {
                 const sc = STATUS_CONFIG[lead.status];
+                const isSelected = selectedLead?.id === lead.id;
                 return (
-                  <div key={lead.id} className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-semibold text-foreground">{lead.full_name}</span>
-                        <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", sc.color, sc.bg)}>
-                          {sc.label}
-                        </span>
+                  <div key={lead.id}>
+                    <div
+                      className={cn(
+                        "flex items-center gap-4 p-4 rounded-lg border transition-colors cursor-pointer",
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:bg-secondary/50"
+                      )}
+                      onClick={() => setSelectedLead(isSelected ? null : lead)}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="font-semibold text-foreground">{lead.full_name}</span>
+                          <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", sc.color, sc.bg)}>
+                            {sc.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          {lead.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              <DataMasker value={lead.phone} type="phone" />
+                            </span>
+                          )}
+                          {lead.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              <DataMasker value={lead.email} type="email" />
+                            </span>
+                          )}
+                          {lead.mortgage_amount && (
+                            <span className="flex items-center gap-1">
+                              <TrendingUp className="w-3 h-3" />₪{Number(lead.mortgage_amount).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        {lead.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" />{lead.phone}
-                          </span>
-                        )}
-                        {lead.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />{lead.email}
-                          </span>
-                        )}
-                        {lead.mortgage_amount && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />₪{Number(lead.mortgage_amount).toLocaleString()}
-                          </span>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLead(lead);
+                          }}
+                        >
+                          <ShieldAlert className="w-4 h-4 text-primary" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(lead); }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm("למחוק את הליד?")) deleteMutation.mutate(lead.id);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(lead)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (confirm("למחוק את הליד?")) deleteMutation.mutate(lead.id);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
+
+                    {/* Risk Analysis Panel */}
+                    {isSelected && (
+                      <div className="mt-3 mr-4 border-r-2 border-primary/20 pr-4 animate-slide-in">
+                        <Tabs defaultValue="risk" dir="rtl">
+                          <TabsList>
+                            <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
+                            <TabsTrigger value="details">פרטים</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="risk" className="mt-4">
+                            <RiskAnalysisView lead={lead} />
+                          </TabsContent>
+                          <TabsContent value="details" className="mt-4">
+                            <div className="glass-card p-5 space-y-3">
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">שווי נכס</p>
+                                  <p className="font-bold text-foreground">
+                                    {lead.property_value ? `₪${Number(lead.property_value).toLocaleString()}` : "לא צוין"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">סכום משכנתא</p>
+                                  <p className="font-bold text-foreground">
+                                    {lead.mortgage_amount ? `₪${Number(lead.mortgage_amount).toLocaleString()}` : "לא צוין"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">הכנסה חודשית</p>
+                                  <p className="font-bold text-foreground">
+                                    {lead.monthly_income ? `₪${Number(lead.monthly_income).toLocaleString()}` : "לא צוין"}
+                                  </p>
+                                </div>
+                              </div>
+                              {lead.notes && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">הערות</p>
+                                  <p className="text-sm text-foreground">{lead.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                          </TabsContent>
+                        </Tabs>
+                      </div>
+                    )}
                   </div>
                 );
               })}
