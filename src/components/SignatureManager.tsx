@@ -38,6 +38,7 @@ export function SignatureManager() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [smartSignLead, setSmartSignLead] = useState<Lead | null>(null);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["signature-management"],
