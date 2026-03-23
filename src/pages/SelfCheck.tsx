@@ -67,7 +67,7 @@ const SelfCheck = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8 max-w-2xl space-y-8">
+      <main className="container mx-auto px-6 py-8 max-w-4xl space-y-8">
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2">
           {[
