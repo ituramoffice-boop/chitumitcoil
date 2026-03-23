@@ -38,7 +38,22 @@ const REQUIRED_DOCS = ["תלושי שכר", 'דפי עו"ש', 'דו"ח BDI', 'צ
 
 const ClientDashboard = () => {
   const { user, signOut } = useAuth();
+  const queryClient = useQueryClient();
 
+  // Realtime: auto-refresh when lead status or documents change
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('client-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads', filter: `client_user_id=eq.${user.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["my-lead", user.id] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter: `uploaded_by=eq.${user.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["my-documents", user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, queryClient]);
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
