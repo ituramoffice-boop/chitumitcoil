@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SelfCheck from "./pages/SelfCheck";
 import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
+import RemoteSign from "./pages/RemoteSign";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
