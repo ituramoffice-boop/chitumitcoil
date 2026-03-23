@@ -205,7 +205,7 @@ export default function SelfCheckResults() {
               ].map((m, i) => (
                 <div key={i} className="p-3 rounded-lg bg-secondary/50 space-y-1">
                   <p className="text-xs text-muted-foreground">{m.label}</p>
-                  <p className={cn("text-lg font-bold", m.status === "good" ? "text-success" : m.status === "bad" ? "text-destructive" : "text-warning")}>{m.value}</p>
+                  <p className={cn("text-lg font-bold", m.status === "good" ? "text-success" : "text-warning")}>{m.value}</p>
                 </div>
               ))}
             </div>
