@@ -706,7 +706,7 @@ const MortgageCalculatorLanding = () => {
                       </div>
                     )}
 
-                    {journeyStep === 2 && (
+                    {journeyStep === 3 && (
                       <div className="animate-[fadeSlideUp_0.5s_ease-out]">
                         <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(160,84%,39%)]/20 to-[hsl(160,84%,39%)]/5 flex items-center justify-center mb-6">
                           <CheckCircle2 className="w-10 h-10 text-[hsl(160,84%,50%)]" />
