@@ -35,6 +35,7 @@ import {
   Pen, Download, FileText,
 } from "lucide-react";
 import { SignatureModal } from "@/components/SignatureModal";
+import { PowerDialer } from "@/components/PowerDialer";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
