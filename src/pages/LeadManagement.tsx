@@ -516,6 +516,15 @@ const LeadManagement = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={filterDateRange} onValueChange={v => setFilterDateRange(v as any)}>
+            <SelectTrigger className="w-[130px]"><SelectValue placeholder="תקופה" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">כל התקופות</SelectItem>
+              <SelectItem value="today">היום</SelectItem>
+              <SelectItem value="week">שבוע אחרון</SelectItem>
+              <SelectItem value="month">חודש אחרון</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
