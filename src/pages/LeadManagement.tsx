@@ -881,6 +881,15 @@ const LeadManagement = () => {
                           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); openEdit(lead); }}>
                             <Edit className="h-3 w-3" />
                           </Button>
+                          {!(lead as any).signed_at ? (
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setSignLead(lead); }} title="חתימה">
+                              <Pen className="h-3 w-3 text-primary" />
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); window.open((lead as any).signature_url, "_blank"); }} title="הורד הסכם">
+                              <FileText className="h-3 w-3 text-primary" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     );
