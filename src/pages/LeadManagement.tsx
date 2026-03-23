@@ -642,6 +642,26 @@ const LeadManagement = () => {
           </Select>
         </div>
         <div className="flex items-center gap-2">
+          {/* Temperature Sort */}
+          <Button
+            variant={sortField === "lead_score" ? "default" : "outline"}
+            size="sm"
+            className={cn(
+              "gap-1.5",
+              sortField === "lead_score" && "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white border-0"
+            )}
+            onClick={() => {
+              if (sortField === "lead_score") {
+                setSortDir(d => d === "desc" ? "asc" : "desc");
+              } else {
+                setSortField("lead_score");
+                setSortDir("desc");
+              }
+            }}
+          >
+            🌡️ מיון לפי טמפרטורה
+            {sortField === "lead_score" && (sortDir === "desc" ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+          </Button>
           {/* View Toggle */}
           <div className="flex items-center gap-2 bg-muted/80 backdrop-blur rounded-full p-1 border border-border/50">
             <button
