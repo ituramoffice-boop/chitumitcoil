@@ -692,6 +692,22 @@ const LeadManagement = () => {
             <Trash2 className="h-3 w-3 ml-1" />
             מחק
           </Button>
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 gap-1"
+            onClick={() => {
+              const selectedArray = leadsWithScore.filter(l => selectedLeads.has(l.id) && l.phone);
+              if (selectedArray.length === 0) {
+                toast({ title: "אין לידים עם טלפון בנבחרים", variant: "destructive" });
+                return;
+              }
+              setDialerQueue(selectedArray);
+              setSelectedLeads(new Set());
+            }}
+          >
+            <Phone className="h-3 w-3" />
+            Power Dialer ({[...selectedLeads].filter(id => leadsWithScore.find(l => l.id === id)?.phone).length})
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setSelectedLeads(new Set())}>ביטול</Button>
         </div>
       )}
