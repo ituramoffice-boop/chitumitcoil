@@ -147,6 +147,7 @@ const LeadManagement = () => {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<LeadStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [signLead, setSignLead] = useState<Lead | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "", phone: "", email: "", notes: "",
