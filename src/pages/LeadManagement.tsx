@@ -109,19 +109,19 @@ function calculateLeadScore(lead: Lead): number {
 function getScoreColor(score: number) {
   if (score >= 85) return "text-red-500";
   if (score >= 50) return "text-orange-500";
-  return "text-blue-500";
+  return "text-blue-400";
 }
 
 function getScoreBg(score: number) {
   if (score >= 85) return "bg-red-500/10";
   if (score >= 50) return "bg-orange-500/10";
-  return "bg-blue-500/10";
+  return "bg-blue-500/8";
 }
 
 function getTemperatureLabel(score: number) {
   if (score >= 85) return { emoji: "🔥", label: "Hot", color: "text-red-500" };
   if (score >= 50) return { emoji: "⚡", label: "Warm", color: "text-orange-500" };
-  return { emoji: "❄️", label: "Cold", color: "text-blue-500" };
+  return { emoji: "❄️", label: "Cold", color: "text-blue-400" };
 }
 
 
@@ -143,14 +143,35 @@ function HeatBars({ score }: { score: number }) {
           <div
             key={i}
             className={cn(
-              "w-[6px] rounded-sm transition-all duration-300",
+              "w-[5px] rounded-sm transition-all duration-500",
               active
-                ? i < 3 ? "bg-blue-400 h-2" : i < 5 ? "bg-yellow-400 h-2.5" : i < 7 ? "bg-orange-400 h-3" : "bg-red-500 h-3.5"
-                : "bg-muted h-1.5"
+                ? i < 3 ? "bg-blue-400 h-1.5" : i < 5 ? "bg-yellow-400 h-2" : i < 7 ? "bg-orange-400 h-2.5" : "bg-red-500 h-3"
+                : "bg-muted h-1"
             )}
           />
         );
       })}
+    </div>
+  );
+}
+
+function HeatIndicator({ score }: { score: number }) {
+  const temp = getTemperatureLabel(score);
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all",
+        score >= 85 ? "border-red-500/60 bg-red-500/10 animate-heat-pulse" :
+        score >= 50 ? "border-orange-500/50 bg-orange-500/8" :
+        "border-blue-400/40 bg-blue-500/5 backdrop-blur-sm",
+        getScoreColor(score)
+      )}>
+        {score}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-xs leading-none">{temp.emoji}</span>
+        <span className={cn("text-[8px] font-bold uppercase tracking-wider", temp.color)}>{temp.label}</span>
+      </div>
     </div>
   );
 }
@@ -851,7 +872,8 @@ const LeadManagement = () => {
         </div>
       ) : viewMode === "table" ? (
         /* TABLE VIEW */
-        <Card>
+        <div className="animate-fade-in">
+        <Card className="glass-card">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
@@ -898,26 +920,7 @@ const LeadManagement = () => {
                           <Checkbox checked={selectedLeads.has(lead.id)} onCheckedChange={() => toggleSelect(lead.id)} />
                         </TableCell>
                         <TableCell>
-                          {(() => {
-                            const temp = getTemperatureLabel(lead.lead_score);
-                            return (
-                              <div className="flex items-center gap-1.5">
-                                <div className={cn(
-                                  "w-9 h-9 rounded-full flex items-center justify-center text-xs font-black border-2",
-                                  lead.lead_score >= 85 ? "border-red-500/50 bg-red-500/10" :
-                                  lead.lead_score >= 50 ? "border-orange-500/50 bg-orange-500/10" :
-                                  "border-blue-500/50 bg-blue-500/10",
-                                  getScoreColor(lead.lead_score)
-                                )}>
-                                  {lead.lead_score}
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-sm">{temp.emoji}</span>
-                                  <span className={cn("text-[9px] font-semibold", temp.color)}>{temp.label}</span>
-                                </div>
-                              </div>
-                            );
-                          })()}
+                          <HeatIndicator score={lead.lead_score} />
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -1020,9 +1023,10 @@ const LeadManagement = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       ) : (
         /* KANBAN VIEW */
-        <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 400 }}>
+        <div className="flex gap-3 overflow-x-auto pb-4 animate-fade-in" style={{ minHeight: 400 }}>
           {KANBAN_COLUMNS.map(status => {
             const columnLeads = filteredLeads.filter(l => l.status === status);
             const cfg = STATUS_CONFIG[status];
@@ -1030,14 +1034,14 @@ const LeadManagement = () => {
               <div
                 key={status}
                 className={cn(
-                  "flex-shrink-0 w-[260px] rounded-xl border bg-card flex flex-col transition-colors",
-                  dragOverColumn === status && "border-primary bg-primary/5"
+                  "flex-shrink-0 w-[240px] rounded-xl border bg-card/80 backdrop-blur-sm flex flex-col transition-all duration-200",
+                  dragOverColumn === status && "border-primary bg-primary/5 scale-[1.02]"
                 )}
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
                 onDrop={() => handleDrop(status)}
               >
-                <div className={cn("p-3 rounded-t-xl flex items-center justify-between", cfg.bg)}>
+                <div className={cn("p-2.5 rounded-t-xl flex items-center justify-between", cfg.bg)}>
                   <div className="flex items-center gap-2">
                     <cfg.icon className={cn("h-4 w-4", cfg.color)} />
                     <span className={cn("text-sm font-semibold", cfg.color)}>{cfg.label}</span>
@@ -1055,27 +1059,18 @@ const LeadManagement = () => {
                         draggable
                         onDragStart={() => handleDragStart(lead)}
                         className={cn(
-                          "p-3 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
-                          "hover:shadow-md transition-all group",
+                          "p-2.5 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
+                          "hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group",
+                          score >= 85 ? "heat-hot" : score >= 50 ? "heat-warm" : score >= 0 ? "heat-cold" : "",
                           fu.needed && "border-destructive/30",
-                          draggedLead?.id === lead.id && "opacity-50 scale-95"
+                          draggedLead?.id === lead.id && "opacity-40 scale-95 rotate-1"
                         )}
                       >
                         <div className="flex items-start justify-between mb-1.5">
                           <LeadHeatPopup lead={lead}>
                             <p className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
                           </LeadHeatPopup>
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs">{getTemperatureLabel(score).emoji}</span>
-                            <div className={cn(
-                              "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border",
-                              score >= 85 ? "border-red-500/50 bg-red-500/10 text-red-500" :
-                              score >= 50 ? "border-orange-500/50 bg-orange-500/10 text-orange-500" :
-                              "border-blue-500/50 bg-blue-500/10 text-blue-500"
-                            )}>
-                              {score}
-                            </div>
-                          </div>
+                          <HeatIndicator score={score} />
                         </div>
                         {/* Phone */}
                         {lead.phone && (
