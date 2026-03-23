@@ -117,6 +117,107 @@ function getScoreBg(score: number) {
   return "bg-muted";
 }
 
+function getHeatLabel(score: number) {
+  if (score >= 85) return { label: "🔥 בשל לקטיף!", color: "text-red-600 dark:text-red-400" };
+  if (score >= 70) return { label: "🔥 ליד חם", color: "text-orange-600 dark:text-orange-400" };
+  if (score >= 50) return { label: "🌡️ מתחמם", color: "text-yellow-600 dark:text-yellow-400" };
+  if (score >= 30) return { label: "❄️ פושר", color: "text-blue-500" };
+  return { label: "🧊 קר כקרח", color: "text-blue-300" };
+}
+
+function HeatBars({ score }: { score: number }) {
+  return (
+    <div className="flex gap-[2px] items-end">
+      {Array.from({ length: 10 }).map((_, i) => {
+        const threshold = (i + 1) * 10;
+        const active = score >= threshold;
+        return (
+          <div
+            key={i}
+            className={cn(
+              "w-[6px] rounded-sm transition-all duration-300",
+              active
+                ? i < 3 ? "bg-blue-400 h-2" : i < 5 ? "bg-yellow-400 h-2.5" : i < 7 ? "bg-orange-400 h-3" : "bg-red-500 h-3.5"
+                : "bg-muted h-1.5"
+            )}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function LeadHeatPopup({ lead, children }: { lead: { full_name: string; lead_score: number; mortgage_amount: number | null; monthly_income: number | null; status: string; last_contact: string | null; next_step: string | null }; children: React.ReactNode }) {
+  const heat = getHeatLabel(lead.lead_score);
+  return (
+    <HoverCard openDelay={200} closeDelay={100}>
+      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
+      <HoverCardContent className="w-64 p-0 overflow-hidden" side="top" dir="rtl">
+        {/* Header with gradient */}
+        <div className={cn(
+          "p-3 text-white",
+          lead.lead_score >= 70 ? "bg-gradient-to-l from-red-500 to-orange-500" :
+          lead.lead_score >= 40 ? "bg-gradient-to-l from-yellow-500 to-amber-500" :
+          "bg-gradient-to-l from-blue-500 to-cyan-500"
+        )}>
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-sm">{lead.full_name}</span>
+            <span className="text-2xl font-black">{lead.lead_score}</span>
+          </div>
+          <p className="text-xs opacity-90 mt-0.5">{heat.label}</p>
+        </div>
+
+        {/* Heat bars */}
+        <div className="px-3 py-2 border-b border-border/50">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-muted-foreground">מד חום</span>
+            <HeatBars score={lead.lead_score} />
+          </div>
+          <div className="w-full bg-muted rounded-full h-1.5 mt-1">
+            <div
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                lead.lead_score >= 70 ? "bg-gradient-to-l from-red-500 to-orange-400" :
+                lead.lead_score >= 40 ? "bg-gradient-to-l from-yellow-500 to-amber-400" :
+                "bg-gradient-to-l from-blue-500 to-cyan-400"
+              )}
+              style={{ width: `${lead.lead_score}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="p-3 space-y-1.5 text-xs">
+          {lead.mortgage_amount && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">סכום משכנתא</span>
+              <span className="font-semibold">₪{lead.mortgage_amount.toLocaleString()}</span>
+            </div>
+          )}
+          {lead.monthly_income && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">הכנסה חודשית</span>
+              <span className="font-semibold">₪{lead.monthly_income.toLocaleString()}</span>
+            </div>
+          )}
+          {lead.next_step && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">צעד הבא</span>
+              <span className="font-medium text-primary truncate max-w-[120px]">{lead.next_step}</span>
+            </div>
+          )}
+          {lead.last_contact && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">קשר אחרון</span>
+              <span>{formatDistanceToNow(new Date(lead.last_contact), { locale: he, addSuffix: true })}</span>
+            </div>
+          )}
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
 // Follow-up logic
 function needsFollowUp(lead: Lead): { needed: boolean; reason: string; urgency: "high" | "medium" | "low" } {
   const now = Date.now();
