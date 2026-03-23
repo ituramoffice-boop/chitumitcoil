@@ -467,7 +467,7 @@ const MortgageCalculatorLanding = () => {
                 <div className="relative bg-[hsl(222,47%,8%)] border border-white/10 rounded-3xl p-8 overflow-hidden">
                   {/* Progress dots */}
                   <div className="flex items-center justify-center gap-2 mb-8">
-                    {[0, 1, 2].map(i => (
+                    {[0, 1, 2, 3].map(i => (
                       <div key={i} className={cn(
                         "w-2.5 h-2.5 rounded-full transition-all duration-500",
                         journeyStep === i 
