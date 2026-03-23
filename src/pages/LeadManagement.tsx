@@ -32,7 +32,9 @@ import {
   ChevronUp, Star, Zap, TrendingUp, AlertTriangle, CheckCircle2,
   XCircle, ArrowRight, Calendar, Globe, Facebook, Share2,
   FileUp, Users, BarChart3, Bell, Settings, GripVertical,
+  Pen, Download, FileText,
 } from "lucide-react";
+import { SignatureModal } from "@/components/SignatureModal";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
