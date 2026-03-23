@@ -52,11 +52,29 @@ export function SignatureManager() {
     },
   });
 
-  // Realtime sync
+  // Realtime sync with signature alert
   useEffect(() => {
     const channel = supabase
       .channel("sig-mgmt-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "leads" }, (payload) => {
+        const newRecord = payload.new as any;
+        const oldRecord = payload.old as any;
+        // If signed_at just appeared — real-time alert!
+        if (newRecord.signed_at && !oldRecord.signed_at) {
+          toast({
+            title: "🎉 חתימה חדשה התקבלה!",
+            description: `${newRecord.full_name} חתם/ה על ההסכם ברגע זה`,
+          });
+          // Play notification sound
+          try {
+            const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczHjyQwN/Vu2Q+Ij2Hv+HfxHdKMC+CuuLjyHxSQi96ttzAdkY4ccTL");
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+          } catch {}
+        }
+        queryClient.invalidateQueries({ queryKey: ["signature-management"] });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, () => {
         queryClient.invalidateQueries({ queryKey: ["signature-management"] });
       })
       .subscribe();
