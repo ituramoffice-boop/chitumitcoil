@@ -841,6 +841,39 @@ const MortgageCalculatorLanding = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="relative z-10 py-16 border-t border-white/5" itemScope itemType="https://schema.org/FAQPage">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-10">
+            שאלות נפוצות על <span className="text-[hsl(217,91%,60%)]">משכנתא</span>
+          </h2>
+          <div className="space-y-4">
+            {faqItems.map((item, i) => (
+              <details
+                key={i}
+                className="group rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-colors overflow-hidden"
+                itemScope
+                itemProp="mainEntity"
+                itemType="https://schema.org/Question"
+              >
+                <summary className="flex items-center justify-between cursor-pointer p-5 text-sm font-bold text-white/90 list-none">
+                  <span itemProp="name">{item.q}</span>
+                  <ChevronDown className="w-4 h-4 text-white/30 transition-transform group-open:rotate-180" />
+                </summary>
+                <div
+                  className="px-5 pb-5 text-sm text-white/50 leading-relaxed"
+                  itemScope
+                  itemProp="acceptedAnswer"
+                  itemType="https://schema.org/Answer"
+                >
+                  <p itemProp="text">{item.a}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Trust badges */}
       <section className="relative z-10 py-12 border-t border-white/5">
         <div className="max-w-4xl mx-auto px-6">
