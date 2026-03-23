@@ -44,10 +44,16 @@ const Index = () => {
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             מערכת AI מתקדמת לזיהוי סיכונים, אימות נתונים והצלבת מסמכים — כל מה שיועץ משכנתאות צריך במקום אחד.
           </p>
-          <Button size="lg" onClick={() => navigate(user ? "/dashboard" : "/auth")}>
-            התחל עכשיו
-            <ArrowLeft className="w-4 h-4 mr-2" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" onClick={() => navigate(user ? "/dashboard" : "/auth")}>
+              התחל עכשיו
+              <ArrowLeft className="w-4 h-4 mr-2" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/self-check")} className="group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all">
+              <Sparkles className="w-4 h-4 ml-2 text-primary group-hover:animate-pulse" />
+              בדיקת היתכנות עצמאית
+            </Button>
+          </div>
         </div>
       </section>
 
