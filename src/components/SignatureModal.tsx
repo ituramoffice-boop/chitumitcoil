@@ -11,8 +11,9 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
-  Pen, Eraser, Undo2, Download, Loader2, CheckCircle2, FileText,
+  Pen, Eraser, Undo2, Download, Loader2, CheckCircle2, FileText, MessageCircle,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface Lead {
   id: string;
