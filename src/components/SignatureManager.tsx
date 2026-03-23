@@ -268,17 +268,22 @@ export function SignatureManager() {
                           <CheckCircle2 className="h-3 w-3 ml-1" />
                           חתום
                         </Badge>
+                      ) : isExpired(lead) ? (
+                        <Badge className="bg-destructive/10 text-destructive border-destructive/20" variant="outline">
+                          <AlertTriangle className="h-3 w-3 ml-1" />
+                          פג תוקף
+                        </Badge>
                       ) : (
                         <Badge className="bg-warning/10 text-warning border-warning/20" variant="outline">
                           <Clock className="h-3 w-3 ml-1" />
-                          ממתין
+                          ממתין ({daysLeft(lead)} ימים)
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {lead.signed_at
                         ? formatDistanceToNow(new Date(lead.signed_at), { locale: he, addSuffix: true })
-                        : "—"}
+                        : isExpired(lead) ? "פג תוקף" : `${daysLeft(lead)} ימים נותרו`}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
