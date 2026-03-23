@@ -170,13 +170,13 @@ const MortgageCalculatorLanding = () => {
               <Sparkles className="w-3 h-3 text-[hsl(38,92%,50%)]" />
               מונע בינה מלאכותית • דיוק של 99.7%
             </div>
-            <h2 className="text-4xl md:text-6xl font-black leading-[1.1] mb-6">
+            <h1 className="text-4xl md:text-6xl font-black leading-[1.1] mb-6">
               <span className="text-white">גלה כמה תשלם</span>
               <br />
               <span className="bg-gradient-to-l from-[hsl(217,91%,60%)] via-[hsl(217,91%,50%)] to-[hsl(160,84%,50%)] bg-clip-text text-transparent">
                 על המשכנתא שלך
               </span>
-            </h2>
+            </h1>
             <p className="text-lg text-white/50 max-w-xl mx-auto leading-relaxed">
               המחשבון החכם ביותר בישראל. חישוב מדויק, ניתוח AI, 
               והצעה אישית תוך 60 שניות.
