@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import ConsultantDashboard from "./ConsultantDashboard";
 import ClientDashboard from "./ClientDashboard";
+import AdminDashboard from "./AdminDashboard";
 
 const Dashboard = () => {
   const { user, role, loading } = useAuth();
