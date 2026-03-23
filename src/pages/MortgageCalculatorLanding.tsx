@@ -89,6 +89,11 @@ const MortgageCalculatorLanding = () => {
       });
       if (error) throw error;
       setStep("success");
+      // After 3 seconds, start the journey
+      setTimeout(() => {
+        setStep("journey");
+        setJourneyStep(0);
+      }, 3000);
     } catch (e: any) {
       toast({ title: "שגיאה בשליחה", description: e.message, variant: "destructive" });
     } finally {
