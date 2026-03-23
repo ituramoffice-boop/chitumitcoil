@@ -30,7 +30,7 @@ const baseNavItems = [
   { title: "העלאת מסמכים", url: "/dashboard/upload", icon: Upload },
   { title: "ניתוח היתכנות", url: "/dashboard/scenarios", icon: Calculator },
   { title: "דוחות סיכונים", url: "/dashboard/reports", icon: FileBarChart },
-  { title: "לקוחות", url: "/dashboard/clients", icon: Users },
+  { title: "ניהול לידים", url: "/dashboard/clients", icon: Users },
 ];
 
 const agencyNavItems = [
