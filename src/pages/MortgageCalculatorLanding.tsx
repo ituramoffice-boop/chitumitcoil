@@ -396,6 +396,25 @@ const MortgageCalculatorLanding = () => {
         </div>
       </section>
 
+      {/* AI Market Tip Badge */}
+      <section className="relative z-10 py-4">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/20">
+            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(38,92%,50%)]/15 flex items-center justify-center text-lg">
+              {activeTip.icon}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Brain className="w-3.5 h-3.5 text-[hsl(38,92%,50%)]" />
+                <span className="text-xs font-bold text-[hsl(38,92%,50%)] uppercase tracking-wider">טיפ AI חי</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[hsl(160,84%,50%)] animate-pulse" />
+              </div>
+              <p className="text-sm text-white/70 leading-relaxed">{activeTip.tip}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Lead Form */}
       {step !== "calc" && (
         <section ref={formRef} className="relative z-10 py-12">
