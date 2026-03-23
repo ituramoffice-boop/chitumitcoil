@@ -160,30 +160,36 @@ function AgentRow({ agent, isCurrentUser }: { agent: AgentStats; isCurrentUser: 
       agent.rank <= 3 && "font-medium"
     )}>
       <TableCell className="text-center">
-        {agent.rank <= 3 && RankIcon ? (
-          <div className={cn("inline-flex items-center justify-center w-8 h-8 rounded-full border", rankConfig.bg)}>
-            <RankIcon className={cn("h-4 w-4", rankConfig.color)} />
-          </div>
-        ) : (
-          <span className="text-muted-foreground font-mono text-sm">{agent.rank}</span>
-        )}
+        <span className="text-xs tabular-nums text-muted-foreground">{formatDuration(agent.avgCallDuration)}</span>
       </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-            {agent.name.charAt(0)}
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-medium">{agent.name}</span>
-            {isCurrentUser && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">אתה</Badge>
-            )}
-          </div>
+      <TableCell className="text-center">
+        <div className={cn(
+          "inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold",
+          agent.avgLeadScore >= 70 ? "bg-red-500/10 text-red-500 border border-red-500/30" :
+          agent.avgLeadScore >= 40 ? "bg-orange-500/10 text-orange-500 border border-orange-500/30" :
+          "bg-blue-500/10 text-blue-500 border border-blue-500/30"
+        )}>
+          {agent.avgLeadScore}
         </div>
       </TableCell>
       <TableCell className="text-center">
-        <span className="font-bold text-lg">{agent.closedDeals}</span>
-        <span className="text-muted-foreground text-xs">/{agent.totalLeads}</span>
+        <Badge variant="outline" className={cn(
+          "text-[10px]",
+          agent.positiveCallRate >= 60 ? "border-green-500/30 text-green-600 dark:text-green-400" :
+          agent.positiveCallRate >= 40 ? "border-yellow-500/30 text-yellow-600 dark:text-yellow-400" :
+          "border-red-500/30 text-red-600 dark:text-red-400"
+        )}>
+          {agent.positiveCallRate}%
+        </Badge>
+      </TableCell>
+      <TableCell className="text-center">
+        <div className="flex items-center justify-center gap-1">
+          <Phone className="h-3 w-3 text-muted-foreground" />
+          <span className="tabular-nums">{agent.totalCalls}</span>
+        </div>
+      </TableCell>
+      <TableCell className="text-center font-semibold tabular-nums">
+        ₪{agent.totalRevenue.toLocaleString()}
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center gap-2 justify-center">
@@ -198,37 +204,31 @@ function AgentRow({ agent, isCurrentUser }: { agent: AgentStats; isCurrentUser: 
           </span>
         </div>
       </TableCell>
-      <TableCell className="text-center font-semibold tabular-nums">
-        ₪{agent.totalRevenue.toLocaleString()}
-      </TableCell>
       <TableCell className="text-center">
-        <div className="flex items-center justify-center gap-1">
-          <Phone className="h-3 w-3 text-muted-foreground" />
-          <span className="tabular-nums">{agent.totalCalls}</span>
+        <span className="font-bold text-lg">{agent.closedDeals}</span>
+        <span className="text-muted-foreground text-xs">/{agent.totalLeads}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium">{agent.name}</span>
+            {isCurrentUser && (
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">אתה</Badge>
+            )}
+          </div>
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+            {agent.name.charAt(0)}
+          </div>
         </div>
       </TableCell>
       <TableCell className="text-center">
-        <span className="text-xs tabular-nums text-muted-foreground">{formatDuration(agent.avgCallDuration)}</span>
-      </TableCell>
-      <TableCell className="text-center">
-        <Badge variant="outline" className={cn(
-          "text-[10px]",
-          agent.positiveCallRate >= 60 ? "border-green-500/30 text-green-600 dark:text-green-400" :
-          agent.positiveCallRate >= 40 ? "border-yellow-500/30 text-yellow-600 dark:text-yellow-400" :
-          "border-red-500/30 text-red-600 dark:text-red-400"
-        )}>
-          {agent.positiveCallRate}%
-        </Badge>
-      </TableCell>
-      <TableCell className="text-center">
-        <div className={cn(
-          "inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold",
-          agent.avgLeadScore >= 70 ? "bg-red-500/10 text-red-500 border border-red-500/30" :
-          agent.avgLeadScore >= 40 ? "bg-orange-500/10 text-orange-500 border border-orange-500/30" :
-          "bg-blue-500/10 text-blue-500 border border-blue-500/30"
-        )}>
-          {agent.avgLeadScore}
-        </div>
+        {agent.rank <= 3 && RankIcon ? (
+          <div className={cn("inline-flex items-center justify-center w-8 h-8 rounded-full border", rankConfig.bg)}>
+            <RankIcon className={cn("h-4 w-4", rankConfig.color)} />
+          </div>
+        ) : (
+          <span className="text-muted-foreground font-mono text-sm">{agent.rank}</span>
+        )}
       </TableCell>
     </TableRow>
   );
@@ -725,15 +725,15 @@ export function SalesLeaderboard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-center w-14">#</TableHead>
-                        <TableHead className="text-right">נציג</TableHead>
-                        <TableHead className="text-center">סגירות</TableHead>
-                        <TableHead className="text-center">המרה</TableHead>
-                        <TableHead className="text-center">היקף</TableHead>
-                        <TableHead className="text-center">שיחות</TableHead>
                         <TableHead className="text-center">ממוצע שיחה</TableHead>
-                        <TableHead className="text-center">סנטימנט</TableHead>
                         <TableHead className="text-center">🌡️ חום</TableHead>
+                        <TableHead className="text-center">סנטימנט</TableHead>
+                        <TableHead className="text-center">שיחות</TableHead>
+                        <TableHead className="text-center">היקף</TableHead>
+                        <TableHead className="text-center">המרה</TableHead>
+                        <TableHead className="text-center">סגירות</TableHead>
+                        <TableHead className="text-right">נציג</TableHead>
+                        <TableHead className="text-center w-14">#</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
