@@ -241,6 +241,17 @@ export function SignatureModal({ open, onOpenChange, lead }: SignatureModalProps
       }
 
       queryClient.invalidateQueries({ queryKey: ["lead-management"] });
+      
+      // 6. Send via WhatsApp if enabled
+      if (sendWhatsApp && lead.phone) {
+        const cleanPhone = lead.phone.replace(/\D/g, "");
+        const intlPhone = cleanPhone.startsWith("0") ? `972${cleanPhone.slice(1)}` : cleanPhone;
+        const message = encodeURIComponent(
+          `שלום ${lead.full_name} 👋\n\nההסכם שלך נחתם בהצלחה ✅\nניתן להוריד את ההסכם החתום בקישור הבא:\n${urlData.publicUrl}\n\nתודה שבחרת ב-SmartMortgage 🏠`
+        );
+        window.open(`https://wa.me/${intlPhone}?text=${message}`, "_blank");
+      }
+
       toast({ title: "ההסכם נחתם ונשמר בהצלחה! ✅" });
       onOpenChange(false);
     } catch (err: any) {
