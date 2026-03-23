@@ -135,6 +135,7 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
     // Run AI analysis
     setCallState("processing_ai");
     setAiLoading(true);
+    let analysisResult: AIAnalysis | null = null;
     try {
       const { data, error } = await supabase.functions.invoke("analyze-call", {
         body: {
@@ -150,6 +151,7 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
         },
       });
       if (!error && data) {
+        analysisResult = data;
         setAiAnalysis(data);
       }
     } catch {
@@ -167,10 +169,10 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
           user_id: user.id,
           duration_seconds: duration,
           notes: callNotes || null,
-          ai_summary: aiAnalysis ? { summary: (aiAnalysis as any)?.summary } : null,
-          sentiment: (aiAnalysis as any)?.sentiment || null,
-          action_items: (aiAnalysis as any)?.actionItems || null,
-          next_step: (aiAnalysis as any)?.nextStep || null,
+          ai_summary: analysisResult ? { summary: analysisResult.summary } : null,
+          sentiment: analysisResult?.sentiment || null,
+          action_items: analysisResult?.actionItems || null,
+          next_step: analysisResult?.nextStep || null,
           status: "completed",
         } as any);
       }
