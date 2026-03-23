@@ -57,6 +57,7 @@ const MortgageCalculatorLanding = () => {
   const [step, setStep] = useState<"calc" | "form" | "success" | "journey">("calc");
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", email: "" });
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [journeyStep, setJourneyStep] = useState(0);
   const [simAnswers, setSimAnswers] = useState<Record<string, string>>({});
   const [simScore, setSimScore] = useState<number | null>(null);
@@ -89,8 +90,9 @@ const MortgageCalculatorLanding = () => {
         mortgage_amount: loanAmount,
         property_value: Math.round(loanAmount * 1.35),
         lead_source: "organic",
+        marketing_consent: marketingConsent,
         notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}`,
-      });
+      } as any);
       if (error) throw error;
       setStep("success");
       // After 3 seconds, start the journey
@@ -510,6 +512,26 @@ const MortgageCalculatorLanding = () => {
                         <span className="font-bold text-[hsl(217,91%,60%)]">₪{result.monthly.toLocaleString()}</span>
                       </div>
                     </div>
+
+                    {/* Marketing consent */}
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <div className="relative mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={marketingConsent}
+                          onChange={e => setMarketingConsent(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-5 h-5 rounded-md border-2 border-white/20 bg-white/5 peer-checked:bg-[hsl(160,84%,39%)] peer-checked:border-[hsl(160,84%,39%)] transition-all flex items-center justify-center">
+                          {marketingConsent && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs text-white/40 leading-relaxed group-hover:text-white/60 transition-colors">
+                        אני מאשר/ת קבלת עדכונים, טיפים ומבצעים בנושא משכנתאות בדוא"ל ו/או ב-SMS. ניתן לבטל בכל עת.
+                      </span>
+                    </label>
 
                     <Button
                       onClick={handleSubmit}
