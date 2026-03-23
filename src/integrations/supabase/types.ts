@@ -105,6 +105,182 @@ export type Database = {
           },
         ]
       }
+      case_checklist: {
+        Row: {
+          case_id: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          is_completed: boolean | null
+          is_critical: boolean | null
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          case_id: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          is_critical?: boolean | null
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          case_id?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          is_critical?: boolean | null
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_checklist_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "client_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_reminders: {
+        Row: {
+          case_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_done: boolean | null
+          remind_at: string
+          reminder_type: string | null
+          title: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_done?: boolean | null
+          remind_at: string
+          reminder_type?: string | null
+          title: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_done?: boolean | null
+          remind_at?: string
+          reminder_type?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_reminders_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "client_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_timeline: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          title: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          title: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_timeline_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "client_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_cases: {
+        Row: {
+          consultant_id: string
+          created_at: string
+          current_stage: string
+          id: string
+          lead_id: string
+          notes_internal: string | null
+          stages_completed: string[] | null
+          status: string
+          target_close_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          consultant_id: string
+          created_at?: string
+          current_stage?: string
+          id?: string
+          lead_id: string
+          notes_internal?: string | null
+          stages_completed?: string[] | null
+          status?: string
+          target_close_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consultant_id?: string
+          created_at?: string
+          current_stage?: string
+          id?: string
+          lead_id?: string
+          notes_internal?: string | null
+          stages_completed?: string[] | null
+          status?: string
+          target_close_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_cases_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           classification: string | null
