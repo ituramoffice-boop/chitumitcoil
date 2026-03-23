@@ -903,6 +903,15 @@ const LeadManagement = () => {
           })}
         </div>
       )}
+
+      {/* Signature Modal */}
+      {signLead && (
+        <SignatureModal
+          open={!!signLead}
+          onOpenChange={(open) => { if (!open) setSignLead(null); }}
+          lead={signLead}
+        />
+      )}
     </div>
   );
 };
