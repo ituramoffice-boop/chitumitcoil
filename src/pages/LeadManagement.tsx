@@ -844,7 +844,7 @@ const LeadManagement = () => {
                       />
                     </TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort("lead_score")}>
-                      <div className="flex items-center gap-1">ציון <SortIcon field="lead_score" /></div>
+                      <div className="flex items-center gap-1">🌡️ טמפרטורה <SortIcon field="lead_score" /></div>
                     </TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort("full_name")}>
                       <div className="flex items-center gap-1">שם <SortIcon field="full_name" /></div>
