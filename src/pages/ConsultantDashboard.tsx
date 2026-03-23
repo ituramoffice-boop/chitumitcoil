@@ -64,6 +64,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import RiskAnalysisView from "@/components/RiskAnalysisView";
 import DataMasker from "@/components/DataMasker";
+import { NotificationBell } from "@/components/NotificationBell";
+import { WorkspaceSettings } from "@/components/WorkspaceSettings";
+import { CaseTimeline } from "@/components/CaseTimeline";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatDistanceToNow, format } from "date-fns";
 import { he } from "date-fns/locale";
@@ -142,6 +146,7 @@ interface CriticalAlert {
 
 const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
   const { user, role, signOut } = useAuth();
+  const { isAgency } = useWorkspace();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -492,6 +497,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                 📊 מצב ניהול
               </Button>
             )}
+            <NotificationBell />
             {/* Last Sync */}
             <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={refreshData} title="רענן נתונים">
@@ -988,10 +994,16 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                         <Tabs defaultValue="risk" dir="rtl">
                           <TabsList>
                             <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
+                            <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
                             <TabsTrigger value="details">פרטים</TabsTrigger>
                           </TabsList>
                           <TabsContent value="risk" className="mt-4">
                             <RiskAnalysisView lead={lead} />
+                          </TabsContent>
+                          <TabsContent value="timeline" className="mt-4">
+                            <div className="glass-card p-5">
+                              <CaseTimeline leadId={lead.id} />
+                            </div>
                           </TabsContent>
                           <TabsContent value="details" className="mt-4">
                             <div className="glass-card p-5 space-y-3">
@@ -1031,6 +1043,11 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               })}
             </div>
           )}
+        </div>
+
+        {/* Workspace Settings */}
+        <div className="glass-card p-5">
+          <WorkspaceSettings />
         </div>
 
         {/* Mobile last sync */}

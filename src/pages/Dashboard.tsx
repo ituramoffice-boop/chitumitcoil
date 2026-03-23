@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, LogOut } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -57,6 +58,7 @@ const Dashboard = () => {
             <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 sticky top-0 z-50">
               <SidebarTrigger />
               <div className="flex items-center gap-2">
+                <NotificationBell />
                 <Button variant="outline" size="sm" onClick={() => setAdminMode("crm")}>
                   🔄 מצב מכירות
                 </Button>

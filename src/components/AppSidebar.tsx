@@ -5,10 +5,13 @@ import {
   FileBarChart,
   Users,
   Brain,
+  UsersRound,
+  BarChart3,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocation } from "react-router-dom";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const navItems = [
+const baseNavItems = [
   { title: "דשבורד", url: "/dashboard", icon: LayoutDashboard },
   { title: "העלאת מסמכים", url: "/dashboard/upload", icon: Upload },
   { title: "ניתוח היתכנות", url: "/dashboard/scenarios", icon: Calculator },
@@ -30,10 +33,17 @@ const navItems = [
   { title: "לקוחות", url: "/dashboard/clients", icon: Users },
 ];
 
+const agencyNavItems = [
+  { title: "ניהול צוות", url: "/dashboard/team", icon: UsersRound },
+  { title: "דוחות סוכנות", url: "/dashboard/agency-reports", icon: BarChart3 },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { isAgency } = useWorkspace();
+  const navItems = isAgency ? [...baseNavItems, ...agencyNavItems] : baseNavItems;
 
   return (
     <Sidebar collapsible="icon" side="right">
