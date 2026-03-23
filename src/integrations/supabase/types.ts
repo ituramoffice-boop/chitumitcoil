@@ -55,6 +55,56 @@ export type Database = {
           },
         ]
       }
+      call_logs: {
+        Row: {
+          action_items: Json | null
+          ai_summary: Json | null
+          created_at: string
+          duration_seconds: number
+          id: string
+          lead_id: string
+          next_step: string | null
+          notes: string | null
+          sentiment: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: Json | null
+          ai_summary?: Json | null
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          lead_id: string
+          next_step?: string | null
+          notes?: string | null
+          sentiment?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action_items?: Json | null
+          ai_summary?: Json | null
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          lead_id?: string
+          next_step?: string | null
+          notes?: string | null
+          sentiment?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           classification: string | null
