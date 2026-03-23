@@ -109,19 +109,19 @@ function calculateLeadScore(lead: Lead): number {
 function getScoreColor(score: number) {
   if (score >= 85) return "text-red-500";
   if (score >= 50) return "text-orange-500";
-  return "text-blue-500";
+  return "text-blue-400";
 }
 
 function getScoreBg(score: number) {
   if (score >= 85) return "bg-red-500/10";
   if (score >= 50) return "bg-orange-500/10";
-  return "bg-blue-500/10";
+  return "bg-blue-500/8";
 }
 
 function getTemperatureLabel(score: number) {
   if (score >= 85) return { emoji: "🔥", label: "Hot", color: "text-red-500" };
   if (score >= 50) return { emoji: "⚡", label: "Warm", color: "text-orange-500" };
-  return { emoji: "❄️", label: "Cold", color: "text-blue-500" };
+  return { emoji: "❄️", label: "Cold", color: "text-blue-400" };
 }
 
 
@@ -143,14 +143,35 @@ function HeatBars({ score }: { score: number }) {
           <div
             key={i}
             className={cn(
-              "w-[6px] rounded-sm transition-all duration-300",
+              "w-[5px] rounded-sm transition-all duration-500",
               active
-                ? i < 3 ? "bg-blue-400 h-2" : i < 5 ? "bg-yellow-400 h-2.5" : i < 7 ? "bg-orange-400 h-3" : "bg-red-500 h-3.5"
-                : "bg-muted h-1.5"
+                ? i < 3 ? "bg-blue-400 h-1.5" : i < 5 ? "bg-yellow-400 h-2" : i < 7 ? "bg-orange-400 h-2.5" : "bg-red-500 h-3"
+                : "bg-muted h-1"
             )}
           />
         );
       })}
+    </div>
+  );
+}
+
+function HeatIndicator({ score }: { score: number }) {
+  const temp = getTemperatureLabel(score);
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all",
+        score >= 85 ? "border-red-500/60 bg-red-500/10 animate-heat-pulse" :
+        score >= 50 ? "border-orange-500/50 bg-orange-500/8" :
+        "border-blue-400/40 bg-blue-500/5 backdrop-blur-sm",
+        getScoreColor(score)
+      )}>
+        {score}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-xs leading-none">{temp.emoji}</span>
+        <span className={cn("text-[8px] font-bold uppercase tracking-wider", temp.color)}>{temp.label}</span>
+      </div>
     </div>
   );
 }
