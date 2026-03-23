@@ -1045,6 +1045,11 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           )}
         </div>
 
+        {/* Workspace Settings */}
+        <div className="glass-card p-5">
+          <WorkspaceSettings />
+        </div>
+
         {/* Mobile last sync */}
         <div className="flex md:hidden items-center justify-center gap-2 text-xs text-muted-foreground pb-4">
           <Button variant="ghost" size="sm" className="h-7 gap-1.5" onClick={refreshData}>
