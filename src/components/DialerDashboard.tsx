@@ -26,6 +26,10 @@ import { PowerDialer } from "@/components/PowerDialer";
 import { CallHistory } from "@/components/CallHistory";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area, CartesianGrid, Legend,
+} from "recharts";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -92,26 +96,70 @@ export function DialerDashboard() {
   });
 
   // Call stats
-  const { data: callStats } = useQuery({
-    queryKey: ["dialer-stats"],
+  const { data: callLogs = [] } = useQuery({
+    queryKey: ["dialer-call-logs"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("call_logs")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      const logs = data || [];
-      const today = new Date().toDateString();
-      const todayLogs = logs.filter(l => new Date(l.created_at).toDateString() === today);
-      return {
-        totalCalls: logs.length,
-        todayCalls: todayLogs.length,
-        avgDuration: logs.length > 0 ? Math.round(logs.reduce((s, l) => s + (l.duration_seconds || 0), 0) / logs.length) : 0,
-        positiveRate: logs.length > 0 ? Math.round((logs.filter(l => l.sentiment === "positive").length / logs.length) * 100) : 0,
-      };
+      return data || [];
     },
     enabled: !!user,
   });
+
+  const callStats = useMemo(() => {
+    const today = new Date().toDateString();
+    const todayLogs = callLogs.filter(l => new Date(l.created_at).toDateString() === today);
+    return {
+      totalCalls: callLogs.length,
+      todayCalls: todayLogs.length,
+      avgDuration: callLogs.length > 0 ? Math.round(callLogs.reduce((s, l) => s + (l.duration_seconds || 0), 0) / callLogs.length) : 0,
+      positiveRate: callLogs.length > 0 ? Math.round((callLogs.filter(l => l.sentiment === "positive").length / callLogs.length) * 100) : 0,
+    };
+  }, [callLogs]);
+
+  // Daily trends (last 7 days)
+  const dailyTrends = useMemo(() => {
+    const days: { date: string; calls: number; avgDuration: number; positive: number; negative: number; neutral: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toDateString();
+      const dayLabel = d.toLocaleDateString("he-IL", { weekday: "short", day: "numeric", month: "numeric" });
+      const dayLogs = callLogs.filter(l => new Date(l.created_at).toDateString() === dateStr);
+      days.push({
+        date: dayLabel,
+        calls: dayLogs.length,
+        avgDuration: dayLogs.length > 0 ? Math.round(dayLogs.reduce((s, l) => s + (l.duration_seconds || 0), 0) / dayLogs.length / 60) : 0,
+        positive: dayLogs.filter(l => l.sentiment === "positive").length,
+        negative: dayLogs.filter(l => l.sentiment === "negative").length,
+        neutral: dayLogs.filter(l => l.sentiment === "neutral").length,
+      });
+    }
+    return days;
+  }, [callLogs]);
+
+  // Sentiment distribution
+  const sentimentDist = useMemo(() => {
+    const pos = callLogs.filter(l => l.sentiment === "positive").length;
+    const neg = callLogs.filter(l => l.sentiment === "negative").length;
+    const neu = callLogs.filter(l => l.sentiment === "neutral").length;
+    const none = callLogs.length - pos - neg - neu;
+    return [
+      { name: "חיובי", value: pos, fill: "hsl(142, 76%, 36%)" },
+      { name: "ניטרלי", value: neu + none, fill: "hsl(45, 93%, 47%)" },
+      { name: "שלילי", value: neg, fill: "hsl(0, 84%, 60%)" },
+    ].filter(d => d.value > 0);
+  }, [callLogs]);
+
+  // Simulated active agents
+  const activeAgents = useMemo(() => [
+    { name: "יוסי כהן", status: "בשיחה", lead: "דני לוי", duration: "02:34", sentiment: "positive" },
+    { name: "מיכל אברהם", status: "wrap_up", lead: "שרה גולד", duration: "05:12", sentiment: "neutral" },
+    { name: "אבי ישראלי", status: "idle", lead: null, duration: null, sentiment: null },
+  ], []);
 
   const sources = useMemo(() => {
     const s = new Set(leads.map(l => l.lead_source).filter(Boolean));
@@ -335,16 +383,172 @@ export function DialerDashboard() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 max-w-[300px]">
+        <TabsList className="grid w-full grid-cols-3 max-w-[450px]">
           <TabsTrigger value="queue" className="gap-1.5">
             <Users className="h-3.5 w-3.5" />
             תור חיוג
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" />
+            דשבורד
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-1.5">
             <Clock className="h-3.5 w-3.5" />
             היסטוריה
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics" className="mt-4 space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Daily Calls Trend */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  מגמת שיחות — 7 ימים אחרונים
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={dailyTrends}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Area type="monotone" dataKey="calls" name="שיחות" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Sentiment Distribution */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-primary" />
+                  הפצת סנטימנט
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sentimentDist.length > 0 ? (
+                  <div className="flex items-center gap-6">
+                    <ResponsiveContainer width="50%" height={180}>
+                      <PieChart>
+                        <Pie data={sentimentDist} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3}>
+                          {sentimentDist.map((entry, i) => (
+                            <Cell key={i} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="space-y-2">
+                      {sentimentDist.map((d, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ background: d.fill }} />
+                          <span className="text-sm">{d.name}</span>
+                          <span className="text-sm font-bold">{d.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[180px] text-muted-foreground text-sm">
+                    אין נתונים עדיין
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Sentiment Stacked Bar */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                  סנטימנט יומי
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={dailyTrends}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="positive" name="חיובי" stackId="a" fill="hsl(142, 76%, 36%)" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="neutral" name="ניטרלי" stackId="a" fill="hsl(45, 93%, 47%)" />
+                    <Bar dataKey="negative" name="שלילי" stackId="a" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Active Agents */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Headphones className="h-4 w-4 text-primary" />
+                  נציגים פעילים כרגע
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {activeAgents.map((agent, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+                      <div className={cn(
+                        "w-3 h-3 rounded-full shrink-0",
+                        agent.status === "בשיחה" ? "bg-green-500 animate-pulse" :
+                        agent.status === "wrap_up" ? "bg-yellow-500 animate-pulse" :
+                        "bg-muted-foreground"
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{agent.name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {agent.status === "בשיחה" ? (
+                            <span className="text-green-600 dark:text-green-400">
+                              בשיחה עם {agent.lead} — {agent.duration}
+                            </span>
+                          ) : agent.status === "wrap_up" ? (
+                            <span className="text-yellow-600 dark:text-yellow-400">
+                              סיכום שיחה עם {agent.lead}
+                            </span>
+                          ) : (
+                            "פנוי"
+                          )}
+                        </p>
+                      </div>
+                      {agent.status === "בשיחה" && (
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title="האזנה"
+                            onClick={() => toast({ title: `🎧 מאזין לשיחה של ${agent.name}` })}
+                          >
+                            <Headphones className="h-3.5 w-3.5 text-blue-500" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title="לחישה"
+                            onClick={() => toast({ title: `🗣️ לחישה ל-${agent.name}` })}
+                          >
+                            <Mic className="h-3.5 w-3.5 text-amber-500" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="queue" className="mt-4">
           <Card>
