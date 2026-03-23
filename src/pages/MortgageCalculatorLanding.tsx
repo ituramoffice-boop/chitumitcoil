@@ -895,6 +895,35 @@ const MortgageCalculatorLanding = () => {
         </div>
       </section>
 
+      {/* Disclosure / גילוי נאות */}
+      <section className="relative z-10 border-t border-white/5 py-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+            <div className="flex items-center gap-2 mb-4">
+              <FileCheck className="w-5 h-5 text-white/40" />
+              <h3 className="text-sm font-bold text-white/60">גילוי נאות</h3>
+            </div>
+            <div className="space-y-3 text-xs text-white/35 leading-relaxed">
+              <p>
+                <strong className="text-white/50">הבהרה חשובה:</strong> המחשבון המוצג באתר זה מיועד לצורכי הדגמה והערכה בלבד, ואינו מהווה הצעה למתן אשראי, ייעוץ פיננסי, ייעוץ משכנתאות או כל ייעוץ מקצועי אחר. התוצאות המוצגות הן אומדן בלבד ועשויות להשתנות בהתאם לתנאי השוק, מדיניות הבנקים ונתוני הלווה בפועל.
+              </p>
+              <p>
+                <strong className="text-white/50">ריבית ותנאי הלוואה:</strong> שיעורי הריבית המוצגים הם להמחשה בלבד ואינם מייצגים הצעה בפועל. הריבית בפועל תיקבע על ידי הגוף המלווה בהתאם לבדיקת כשירות אשראי, מסלול ההלוואה, תקופת ההלוואה, גובה ההון העצמי ופרמטרים נוספים.
+              </p>
+              <p>
+                <strong className="text-white/50">לקיחת משכנתא כרוכה בסיכונים:</strong> אי-עמידה בתשלומי ההלוואה עלולה לגרור הליכי גבייה, חיוב בריבית פיגורים ואף מימוש הנכס המשועבד. מומלץ להתייעץ עם יועץ משכנתאות מוסמך לפני קבלת החלטות.
+              </p>
+              <p>
+                <strong className="text-white/50">טיפים ותובנות AI:</strong> ההמלצות המוצגות מבוססות על מודלים סטטיסטיים ואינן מהוות ייעוץ מקצועי. יש לבחון כל החלטה פיננסית עם גורם מוסמך.
+              </p>
+              <p>
+                אתר זה אינו בנק, חברת ביטוח או גוף מוסדי. השירות כולל תיווך והפניה ליועצי משכנתאות מורשים. האתר פועל בהתאם לחוק אשראי הוגן, התשנ"ג-1993 ולהנחיות בנק ישראל.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -902,10 +931,11 @@ const MortgageCalculatorLanding = () => {
             <Building2 className="w-4 h-4" />
             <span>SmartMortgage AI © {new Date().getFullYear()}</span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-white/20">
+          <div className="flex items-center gap-6 text-xs text-white/20">
             <span>תנאי שימוש</span>
             <span>מדיניות פרטיות</span>
             <span>נגישות</span>
+            <span>גילוי נאות</span>
           </div>
         </div>
       </footer>
