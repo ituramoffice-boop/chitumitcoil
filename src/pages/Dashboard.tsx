@@ -19,7 +19,7 @@ const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
   scenarios: FinancialScenarios,
   reports: ReportsPage,
-  clients: () => <AdminDashboard />,
+  clients: () => <LeadManagement />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
 };
