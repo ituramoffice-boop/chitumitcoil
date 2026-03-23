@@ -2,18 +2,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Brain,
   LogOut,
   User,
   Loader2,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  ShieldCheck,
+  Clock,
+  Image,
+  File,
 } from "lucide-react";
 import SmartIngestion from "@/components/SmartIngestion";
+import { cn } from "@/lib/utils";
+
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  new: { label: "חדש", color: "bg-blue-100 text-blue-800" },
+  contacted: { label: "נוצר קשר", color: "bg-yellow-100 text-yellow-800" },
+  in_progress: { label: "בטיפול", color: "bg-primary/10 text-primary" },
+  submitted: { label: "הוגש לבנק", color: "bg-indigo-100 text-indigo-800" },
+  approved: { label: "אושר", color: "bg-success/10 text-success" },
+  rejected: { label: "נדחה", color: "bg-destructive/10 text-destructive" },
+  closed: { label: "סגור", color: "bg-muted text-muted-foreground" },
+};
+
+const REQUIRED_DOCS = ["תלושי שכר", 'דפי עו"ש', 'דו"ח BDI', 'צילום ת"ז'];
 
 const ClientDashboard = () => {
   const { user, signOut } = useAuth();
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -27,13 +48,49 @@ const ClientDashboard = () => {
     enabled: !!user,
   });
 
-  if (isLoading) {
+  // Get lead record linked to this client
+  const { data: myLead } = useQuery({
+    queryKey: ["my-lead", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .eq("client_user_id", user!.id)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Get documents uploaded by this client
+  const { data: myDocuments = [] } = useQuery({
+    queryKey: ["my-documents", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("uploaded_by", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const uploadedClassifications = myDocuments.map((d: any) => d.classification);
+  const completedDocs = REQUIRED_DOCS.filter((doc) => uploadedClassifications.includes(doc));
+  const completionPercent = Math.round((completedDocs.length / REQUIRED_DOCS.length) * 100);
+
+  if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
+
+  const status = myLead ? STATUS_MAP[myLead.status] || STATUS_MAP.new : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -46,7 +103,7 @@ const ClientDashboard = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">SmartMortgage AI</h1>
-              <p className="text-xs text-muted-foreground">אזור אישי</p>
+              <p className="text-xs text-muted-foreground">האזור האישי שלך</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={signOut}>
@@ -57,22 +114,103 @@ const ClientDashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-8 space-y-8">
-        {/* Welcome */}
+        {/* Welcome + Status */}
         <div className="glass-card p-8">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="p-3 rounded-full bg-primary/10">
               <User className="w-8 h-8 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className="text-2xl font-bold text-foreground">
                 שלום, {profile?.full_name || "לקוח"}!
               </h2>
               <p className="text-muted-foreground">{profile?.email}</p>
             </div>
+            {status && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">סטטוס התיק:</span>
+                <Badge className={cn("text-sm", status.color)}>{status.label}</Badge>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Smart Ingestion */}
+        {/* Progress Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="glass-card p-5 text-center space-y-2">
+            <div className="text-3xl font-bold text-primary">{myDocuments.length}</div>
+            <div className="text-sm text-muted-foreground">מסמכים הועלו</div>
+          </div>
+          <div className="glass-card p-5 text-center space-y-2">
+            <div className="text-3xl font-bold text-primary">{completionPercent}%</div>
+            <div className="text-sm text-muted-foreground">השלמת תיק</div>
+          </div>
+          <div className="glass-card p-5 text-center space-y-2">
+            <div className="text-3xl font-bold text-primary">
+              {completedDocs.length}/{REQUIRED_DOCS.length}
+            </div>
+            <div className="text-sm text-muted-foreground">מסמכים נדרשים</div>
+          </div>
+        </div>
+
+        {/* Document Checklist */}
+        <div className="glass-card p-5 space-y-3">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-primary" />
+            סטטוס מסמכים נדרשים
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {REQUIRED_DOCS.map((doc) => {
+              const found = uploadedClassifications.includes(doc);
+              return (
+                <div key={doc} className={cn("flex items-center gap-2 p-3 rounded-lg text-sm", found ? "bg-success/10 text-success" : "bg-destructive/5 text-destructive")}>
+                  {found ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+                  <span className="font-medium">{doc}</span>
+                  <span className="text-xs mr-auto opacity-70">{found ? "✓ הועלה" : "חסר"}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* My Documents */}
+        {myDocuments.length > 0 && (
+          <div className="glass-card p-5 space-y-3">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              המסמכים שלי ({myDocuments.length})
+            </h3>
+            <div className="space-y-2">
+              {myDocuments.map((doc: any) => (
+                <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                  {doc.file_type?.includes("pdf") ? (
+                    <FileText className="w-5 h-5 text-destructive shrink-0" />
+                  ) : doc.file_type?.includes("image") ? (
+                    <Image className="w-5 h-5 text-primary shrink-0" />
+                  ) : (
+                    <File className="w-5 h-5 text-muted-foreground shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{doc.file_name}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{doc.classification || "לא מסווג"}</span>
+                      <span>•</span>
+                      <span>{(doc.file_size / 1024).toFixed(0)} KB</span>
+                      <span>•</span>
+                      <Clock className="w-3 h-3" />
+                      <span>{new Date(doc.created_at).toLocaleDateString("he-IL")}</span>
+                    </div>
+                  </div>
+                  {doc.extracted_data?.analyzed_at && (
+                    <Badge variant="outline" className="text-success border-success/30 text-xs">נותח</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upload Section */}
         <SmartIngestion />
       </main>
     </div>
