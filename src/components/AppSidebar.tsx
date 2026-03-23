@@ -9,6 +9,7 @@ import {
   BarChart3,
   Pen,
   Phone,
+  Trophy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -35,6 +36,7 @@ const baseNavItems = [
   { title: "ניהול לידים", url: "/dashboard/clients", icon: Users },
   { title: "חתימות מרחוק", url: "/dashboard/signatures", icon: Pen },
   { title: "חייגן", url: "/dashboard/dialer", icon: Phone },
+  { title: "תוצאות מכירות", url: "/dashboard/sales-results", icon: Trophy },
 ];
 
 const agencyNavItems = [
