@@ -229,7 +229,7 @@ export default function SelfCheckResults({ purpose }: SelfCheckResultsProps) {
 
         {/* Scenarios */}
         <TabsContent value="scenarios" className="mt-6 space-y-6">
-          <Tabs defaultValue="new" dir="rtl">
+          <Tabs defaultValue={initialScenarioTab} dir="rtl">
             <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="new" className="gap-1">
                 <Home className="w-4 h-4" />
