@@ -91,10 +91,29 @@ export function SignatureManager() {
     );
   }, [leads, search]);
 
+  const EXPIRY_DAYS = 7;
+
+  const isExpired = (lead: Lead) => {
+    if (lead.signed_at) return false;
+    const created = new Date(lead.created_at);
+    const now = new Date();
+    const diffDays = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays > EXPIRY_DAYS;
+  };
+
+  const daysLeft = (lead: Lead) => {
+    const created = new Date(lead.created_at);
+    const expiry = new Date(created.getTime() + EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const diff = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, diff);
+  };
+
   const stats = useMemo(() => ({
     total: leads.length,
     signed: leads.filter(l => l.signed_at).length,
-    pending: leads.filter(l => !l.signed_at).length,
+    pending: leads.filter(l => !l.signed_at && !isExpired(l)).length,
+    expired: leads.filter(l => isExpired(l)).length,
   }), [leads]);
 
   const getSignUrl = (lead: Lead) => {
