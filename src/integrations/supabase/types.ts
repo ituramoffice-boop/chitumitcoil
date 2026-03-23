@@ -171,6 +171,7 @@ export type Database = {
           full_name: string
           id: string
           last_contact: string | null
+          lead_score: number | null
           lead_source: string | null
           monthly_income: number | null
           mortgage_amount: number | null
@@ -193,6 +194,7 @@ export type Database = {
           full_name: string
           id?: string
           last_contact?: string | null
+          lead_score?: number | null
           lead_source?: string | null
           monthly_income?: number | null
           mortgage_amount?: number | null
@@ -215,6 +217,7 @@ export type Database = {
           full_name?: string
           id?: string
           last_contact?: string | null
+          lead_score?: number | null
           lead_source?: string | null
           monthly_income?: number | null
           mortgage_amount?: number | null

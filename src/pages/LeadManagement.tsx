@@ -61,6 +61,7 @@ interface Lead {
   last_contact: string | null;
   next_step: string | null;
   assigned_to: string | null;
+  lead_score: number | null;
 }
 
 const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string; icon: any }> = {
@@ -106,16 +107,23 @@ function calculateLeadScore(lead: Lead): number {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 70) return "text-success";
-  if (score >= 40) return "text-warning";
-  return "text-muted-foreground";
+  if (score >= 85) return "text-red-500";
+  if (score >= 50) return "text-orange-500";
+  return "text-blue-500";
 }
 
 function getScoreBg(score: number) {
-  if (score >= 70) return "bg-success/10";
-  if (score >= 40) return "bg-warning/10";
-  return "bg-muted";
+  if (score >= 85) return "bg-red-500/10";
+  if (score >= 50) return "bg-orange-500/10";
+  return "bg-blue-500/10";
 }
+
+function getTemperatureLabel(score: number) {
+  if (score >= 85) return { emoji: "🔥", label: "Hot", color: "text-red-500" };
+  if (score >= 50) return { emoji: "⚡", label: "Warm", color: "text-orange-500" };
+  return { emoji: "❄️", label: "Cold", color: "text-blue-500" };
+}
+
 
 function getHeatLabel(score: number) {
   if (score >= 85) return { label: "🔥 בשל לקטיף!", color: "text-red-600 dark:text-red-400" };
@@ -284,9 +292,9 @@ const LeadManagement = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  // Scoring
+  // Scoring — prefer AI-generated DB score, fallback to calculated
   const leadsWithScore = useMemo(() =>
-    leads.map(l => ({ ...l, lead_score: calculateLeadScore(l) })),
+    leads.map(l => ({ ...l, lead_score: (l.lead_score && l.lead_score > 0) ? l.lead_score : calculateLeadScore(l) })),
     [leads]
   );
 
@@ -634,6 +642,26 @@ const LeadManagement = () => {
           </Select>
         </div>
         <div className="flex items-center gap-2">
+          {/* Temperature Sort */}
+          <Button
+            variant={sortField === "lead_score" ? "default" : "outline"}
+            size="sm"
+            className={cn(
+              "gap-1.5",
+              sortField === "lead_score" && "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white border-0"
+            )}
+            onClick={() => {
+              if (sortField === "lead_score") {
+                setSortDir(d => d === "desc" ? "asc" : "desc");
+              } else {
+                setSortField("lead_score");
+                setSortDir("desc");
+              }
+            }}
+          >
+            🌡️ מיון לפי טמפרטורה
+            {sortField === "lead_score" && (sortDir === "desc" ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+          </Button>
           {/* View Toggle */}
           <div className="flex items-center gap-2 bg-muted/80 backdrop-blur rounded-full p-1 border border-border/50">
             <button
@@ -836,7 +864,7 @@ const LeadManagement = () => {
                       />
                     </TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort("lead_score")}>
-                      <div className="flex items-center gap-1">ציון <SortIcon field="lead_score" /></div>
+                      <div className="flex items-center gap-1">🌡️ טמפרטורה <SortIcon field="lead_score" /></div>
                     </TableHead>
                     <TableHead className="cursor-pointer" onClick={() => toggleSort("full_name")}>
                       <div className="flex items-center gap-1">שם <SortIcon field="full_name" /></div>
@@ -870,11 +898,26 @@ const LeadManagement = () => {
                           <Checkbox checked={selectedLeads.has(lead.id)} onCheckedChange={() => toggleSelect(lead.id)} />
                         </TableCell>
                         <TableCell>
-                          <div className={cn("flex items-center gap-1 font-bold text-sm", getScoreColor(lead.lead_score))}>
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold", getScoreBg(lead.lead_score))}>
-                              {lead.lead_score}
-                            </div>
-                          </div>
+                          {(() => {
+                            const temp = getTemperatureLabel(lead.lead_score);
+                            return (
+                              <div className="flex items-center gap-1.5">
+                                <div className={cn(
+                                  "w-9 h-9 rounded-full flex items-center justify-center text-xs font-black border-2",
+                                  lead.lead_score >= 85 ? "border-red-500/50 bg-red-500/10" :
+                                  lead.lead_score >= 50 ? "border-orange-500/50 bg-orange-500/10" :
+                                  "border-blue-500/50 bg-blue-500/10",
+                                  getScoreColor(lead.lead_score)
+                                )}>
+                                  {lead.lead_score}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-sm">{temp.emoji}</span>
+                                  <span className={cn("text-[9px] font-semibold", temp.color)}>{temp.label}</span>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -1022,8 +1065,16 @@ const LeadManagement = () => {
                           <LeadHeatPopup lead={lead}>
                             <p className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
                           </LeadHeatPopup>
-                          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", getScoreBg(score), getScoreColor(score))}>
-                            {score}
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">{getTemperatureLabel(score).emoji}</span>
+                            <div className={cn(
+                              "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border",
+                              score >= 85 ? "border-red-500/50 bg-red-500/10 text-red-500" :
+                              score >= 50 ? "border-orange-500/50 bg-orange-500/10 text-orange-500" :
+                              "border-blue-500/50 bg-blue-500/10 text-blue-500"
+                            )}>
+                              {score}
+                            </div>
                           </div>
                         </div>
                         {/* Phone */}
