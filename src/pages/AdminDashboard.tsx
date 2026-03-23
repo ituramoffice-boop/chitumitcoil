@@ -78,9 +78,14 @@ type ViewMode = "dashboard" | "clients" | "client-detail";
 
 const AdminDashboard = () => {
   const { signOut } = useAuth();
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
   const [selectedClient, setSelectedClient] = useState<Lead | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const refreshLeads = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+  };
 
   const { data: allLeads = [], isLoading: leadsLoading } = useQuery({
     queryKey: ["admin-leads"],
