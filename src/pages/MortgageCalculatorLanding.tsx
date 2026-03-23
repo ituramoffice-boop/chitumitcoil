@@ -697,7 +697,7 @@ const MortgageCalculatorLanding = () => {
                           ))}
                         </div>
                         <Button
-                          onClick={() => setJourneyStep(2)}
+                          onClick={() => setJourneyStep(3)}
                           className="bg-gradient-to-l from-[hsl(38,92%,50%)] to-[hsl(38,92%,40%)] hover:from-[hsl(38,92%,55%)] hover:to-[hsl(38,92%,45%)] text-white border-0 h-12 px-8 rounded-xl"
                         >
                           טיפ חשוב לפני הפגישה
