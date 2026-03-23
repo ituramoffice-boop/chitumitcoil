@@ -205,6 +205,12 @@ const LeadManagement = () => {
     }
     if (filterStatus !== "all") result = result.filter(l => l.status === filterStatus);
     if (filterSource !== "all") result = result.filter(l => l.lead_source === filterSource);
+    if (filterDateRange !== "all") {
+      const now = Date.now();
+      const ranges = { today: 1, week: 7, month: 30 };
+      const days = ranges[filterDateRange];
+      result = result.filter(l => (now - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24) <= days);
+    }
 
     result.sort((a, b) => {
       let cmp = 0;
