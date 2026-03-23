@@ -486,6 +486,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Admin switch button */}
+            {role === "admin" && onSwitchToAdmin && (
+              <Button variant="outline" size="sm" onClick={onSwitchToAdmin} className="text-xs">
+                📊 מצב ניהול
+              </Button>
+            )}
             {/* Last Sync */}
             <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={refreshData} title="רענן נתונים">
