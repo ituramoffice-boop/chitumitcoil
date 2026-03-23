@@ -768,7 +768,7 @@ const MortgageCalculatorLanding = () => {
               { value: "2,847+", label: "לקוחות מרוצים", icon: Star },
               { value: "₪4.2B", label: "משכנתאות שאושרו", icon: TrendingUp },
               { value: "99.7%", label: "דיוק AI", icon: Sparkles },
-              { value: "< 60 דק׳", label: "זמן תגובה", icon: Clock },
+              { value: "< 60 שנ׳", label: "זמן תגובה", icon: Clock },
             ].map((stat, i) => (
               <div key={i} className="space-y-2">
                 <stat.icon className="w-5 h-5 mx-auto text-[hsl(217,91%,60%)] opacity-50" />
