@@ -849,6 +849,9 @@ const LeadManagement = () => {
                                   <MessageCircle className="h-3.5 w-3.5 ml-2 text-green-500" />WhatsApp תזכורת
                                 </DropdownMenuItem>
                               )}
+                              <DropdownMenuItem onClick={() => setCallHistoryLead(lead)}>
+                                <Phone className="h-3.5 w-3.5 ml-2 text-primary" />היסטוריית שיחות
+                              </DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate([lead.id])}>
                                 <Trash2 className="h-3.5 w-3.5 ml-2" />מחיקה
                               </DropdownMenuItem>
