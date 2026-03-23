@@ -528,25 +528,31 @@ const LeadManagement = () => {
         </div>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          <div className="flex bg-muted rounded-lg p-0.5">
-            <Button
-              variant={viewMode === "table" ? "default" : "ghost"}
-              size="sm"
+          <div className="flex items-center gap-2 bg-muted/80 backdrop-blur rounded-full p-1 border border-border/50">
+            <button
               onClick={() => setViewMode("table")}
-              className="h-8 px-3"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                viewMode === "table"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <TableProperties className="h-4 w-4 ml-1" />
+              <TableProperties className="h-3.5 w-3.5" />
               טבלה
-            </Button>
-            <Button
-              variant={viewMode === "kanban" ? "default" : "ghost"}
-              size="sm"
+            </button>
+            <button
               onClick={() => setViewMode("kanban")}
-              className="h-8 px-3"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                viewMode === "kanban"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <LayoutGrid className="h-4 w-4 ml-1" />
+              <LayoutGrid className="h-3.5 w-3.5" />
               קנבן
-            </Button>
+            </button>
           </div>
 
           <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
