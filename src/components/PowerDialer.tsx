@@ -145,6 +145,7 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
           leadName: currentLead.full_name,
           callDuration: duration,
           notes: callNotes,
+          leadId: currentLead.id,
           leadContext: {
             mortgage_amount: currentLead.mortgage_amount,
             monthly_income: currentLead.monthly_income,
