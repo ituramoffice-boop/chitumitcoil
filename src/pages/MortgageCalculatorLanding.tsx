@@ -110,8 +110,50 @@ const MortgageCalculatorLanding = () => {
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
+  const aiTips = [
+    { condition: rate > 5, tip: "הריבית גבוהה מהממוצע בשוק. שקלו מסלול משתנה כל 5 שנים להוזלת העלות.", icon: "📉" },
+    { condition: years > 25, tip: "תקופה ארוכה מגדילה את סך הריבית. נסו לקצר ל-20 שנה ולחסוך אלפי שקלים.", icon: "⏱️" },
+    { condition: loanAmount > 2000000, tip: "בהלוואה גדולה, פיצול ל-2 מסלולים יכול לחסוך עד 15% מהריבית.", icon: "💡" },
+    { condition: financingRatio > 60, tip: "אחוז מימון גבוה עלול להעלות את הריבית. שקלו הון עצמי נוסף.", icon: "🏦" },
+    { condition: rate <= 5 && years <= 25, tip: "הפרמטרים שלך טובים! זה הזמן לנעול ריבית קבועה לטווח ארוך.", icon: "✅" },
+  ];
+  const activeTip = aiTips.find(t => t.condition) || aiTips[aiTips.length - 1];
+
+  const faqItems = [
+    { q: "כמה הון עצמי צריך למשכנתא?", a: "בדרך כלל נדרש לפחות 25% הון עצמי מערך הנכס לדירה ראשונה, ו-30% לדירה שנייה. למשפרי דיור – לפחות 30%." },
+    { q: "מה ההבדל בין ריבית קבועה למשתנה?", a: "ריבית קבועה נשארת זהה לאורך כל תקופת ההלוואה ומספקת ודאות. ריבית משתנה מתעדכנת בהתאם למדד או לפריים ויכולה לרדת או לעלות." },
+    { q: "האם כדאי לקחת משכנתא ל-30 שנה?", a: "תקופה ארוכה מקטינה את ההחזר החודשי אך מגדילה משמעותית את סך הריבית. מומלץ לבחון תקופה של 20-25 שנה כנקודת איזון." },
+    { q: "מה זה פריים ואיך הוא משפיע על המשכנתא?", a: "ריבית הפריים היא ריבית בסיסית שנקבעת על ידי בנק ישראל. מסלולי פריים במשכנתא צמודים לריבית זו, כך ששינויים בפריים ישפיעו ישירות על ההחזר החודשי." },
+    { q: "כמה זמן לוקח לקבל אישור משכנתא?", a: "תהליך אישור עקרוני לוקח 1-3 ימי עסקים. אישור מלא עם כל המסמכים – בין שבוע לשלושה שבועות, תלוי במורכבות התיק." },
+  ];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FinancialProduct",
+    "name": "מחשבון משכנתא חכם 2026 – SmartMortgage AI",
+    "description": "מחשבון משכנתא עם בינה מלאכותית לחישוב החזר חודשי, ריבית והשוואת מסלולים",
+    "url": "https://chitumitcoil.lovable.app/calculator",
+    "provider": {
+      "@type": "Organization",
+      "name": "SmartMortgage AI"
+    },
+    "category": "Mortgage Calculator"
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map(item => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": { "@type": "Answer", "text": item.a }
+    }))
+  };
+
   return (
     <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     <style>{`
       @keyframes loading {
         from { width: 0%; }
