@@ -4,10 +4,10 @@ import {
   Calculator,
   FileBarChart,
   Users,
-  Settings,
   Brain,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocation } from "react-router-dom";
 import {
   Sidebar,
