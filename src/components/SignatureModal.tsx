@@ -11,8 +11,9 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
-  Pen, Eraser, Undo2, Download, Loader2, CheckCircle2, FileText,
+  Pen, Eraser, Undo2, Download, Loader2, CheckCircle2, FileText, MessageCircle,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface Lead {
   id: string;
@@ -45,6 +46,7 @@ export function SignatureModal({ open, onOpenChange, lead }: SignatureModalProps
   const sigRef = useRef<SignatureCanvas | null>(null);
   const [saving, setSaving] = useState(false);
   const [strokes, setStrokes] = useState<string[]>([]);
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
 
   const handleEnd = useCallback(() => {
     if (sigRef.current) {
@@ -240,6 +242,17 @@ export function SignatureModal({ open, onOpenChange, lead }: SignatureModalProps
       }
 
       queryClient.invalidateQueries({ queryKey: ["lead-management"] });
+      
+      // 6. Send via WhatsApp if enabled
+      if (sendWhatsApp && lead.phone) {
+        const cleanPhone = lead.phone.replace(/\D/g, "");
+        const intlPhone = cleanPhone.startsWith("0") ? `972${cleanPhone.slice(1)}` : cleanPhone;
+        const message = encodeURIComponent(
+          `שלום ${lead.full_name} 👋\n\nההסכם שלך נחתם בהצלחה ✅\nניתן להוריד את ההסכם החתום בקישור הבא:\n${urlData.publicUrl}\n\nתודה שבחרת ב-SmartMortgage 🏠`
+        );
+        window.open(`https://wa.me/${intlPhone}?text=${message}`, "_blank");
+      }
+
       toast({ title: "ההסכם נחתם ונשמר בהצלחה! ✅" });
       onOpenChange(false);
     } catch (err: any) {
@@ -344,6 +357,17 @@ export function SignatureModal({ open, onOpenChange, lead }: SignatureModalProps
               <Download className="h-4 w-4" />
             </Button>
           </div>
+
+          {/* WhatsApp toggle */}
+          {lead.phone && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">שלח PDF חתום בוואטסאפ</span>
+              </div>
+              <Switch checked={sendWhatsApp} onCheckedChange={setSendWhatsApp} />
+            </div>
+          )}
 
           <p className="text-[10px] text-muted-foreground text-center">
             בלחיצה על "חתום ושמור" אתה מאשר את תנאי ההסכם. המסמך ישמר באופן מאובטח.
