@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -14,15 +15,20 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Trophy, TrendingUp, Target, Users, DollarSign, Phone,
   Crown, Medal, Award, Flame, BarChart3, ArrowUpRight,
   ArrowDownRight, Minus, Zap, Calendar, Clock, Filter,
   ArrowUpDown, ChevronDown, ChevronUp, AlertTriangle,
   CheckCircle2, Lightbulb, Timer, Percent, PhoneCall,
+  Settings2, PartyPopper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, subDays, subMonths, startOfDay, startOfWeek, startOfMonth, startOfQuarter, isAfter } from "date-fns";
 import { he } from "date-fns/locale";
+import confetti from "canvas-confetti";
 
 // ─── Types ───────────────────────────────────────────────────
 interface LeadRow {
@@ -61,10 +67,33 @@ interface AgentStats {
   rank: number;
 }
 
+interface Goals {
+  closures: number;
+  revenue: number;
+  calls: number;
+  conversionRate: number;
+}
+
 type TimeRange = "all" | "today" | "week" | "month" | "quarter" | "year";
 type SortBy = "closedDeals" | "conversionRate" | "totalRevenue" | "totalCalls" | "avgLeadScore" | "positiveCallRate";
 
 // ─── Constants ───────────────────────────────────────────────
+const DEFAULT_GOALS: Goals = { closures: 10, revenue: 5000000, calls: 50, conversionRate: 30 };
+
+const GOALS_STORAGE_KEY = "sales-goals";
+
+function loadGoals(): Goals {
+  try {
+    const saved = localStorage.getItem(GOALS_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return DEFAULT_GOALS;
+}
+
+function saveGoals(goals: Goals) {
+  localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
+}
+
 const rankIcons = [
   { icon: Crown, color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/30" },
   { icon: Medal, color: "text-slate-400", bg: "bg-slate-400/10 border-slate-400/30" },
@@ -118,6 +147,30 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function fireConfetti() {
+  const duration = 3000;
+  const end = Date.now() + duration;
+  const colors = ["#2563eb", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6"];
+
+  (function frame() {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors,
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors,
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+
 // ─── Sub-Components ──────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, subValue, iconColor, trend }: {
   icon: any; label: string; value: string; subValue?: string; iconColor: string;
@@ -146,6 +199,86 @@ function StatCard({ icon: Icon, label, value, subValue, iconColor, trend }: {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function GoalProgressCard({ label, current, goal, icon: Icon, unit, color }: {
+  label: string; current: number; goal: number; icon: any; unit: string; color: string;
+}) {
+  const pct = goal > 0 ? Math.min(Math.round((current / goal) * 100), 100) : 0;
+  const achieved = current >= goal;
+  return (
+    <div className={cn(
+      "p-3 rounded-lg border transition-all",
+      achieved ? "border-green-500/40 bg-green-500/5" : "border-border/50"
+    )}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Icon className={cn("h-4 w-4", color)} />
+          <span className="text-xs font-medium">{label}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {achieved && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+          <span className={cn(
+            "text-xs font-bold tabular-nums",
+            achieved ? "text-green-600 dark:text-green-400" : "text-foreground"
+          )}>
+            {pct}%
+          </span>
+        </div>
+      </div>
+      <Progress value={pct} className={cn("h-2 mb-1.5", achieved && "[&>div]:bg-green-500")} />
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+        <span>{current.toLocaleString()}{unit} מתוך {goal.toLocaleString()}{unit}</span>
+        {!achieved && <span>חסרים {(goal - current).toLocaleString()}{unit}</span>}
+        {achieved && <span className="text-green-600 dark:text-green-400 font-semibold">🎉 הושג!</span>}
+      </div>
+    </div>
+  );
+}
+
+function GoalsSettingsDialog({ goals, onSave }: { goals: Goals; onSave: (g: Goals) => void }) {
+  const [draft, setDraft] = useState(goals);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Settings2 className="h-3.5 w-3.5" />
+          הגדר יעדים
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            הגדרת יעדים חודשיים
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">יעד סגירות</label>
+            <Input type="number" value={draft.closures} onChange={e => setDraft(d => ({ ...d, closures: +e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">יעד היקף (₪)</label>
+            <Input type="number" value={draft.revenue} onChange={e => setDraft(d => ({ ...d, revenue: +e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">יעד שיחות</label>
+            <Input type="number" value={draft.calls} onChange={e => setDraft(d => ({ ...d, calls: +e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">יעד אחוז המרה (%)</label>
+            <Input type="number" value={draft.conversionRate} onChange={e => setDraft(d => ({ ...d, conversionRate: +e.target.value }))} />
+          </div>
+          <Button className="w-full" onClick={() => { onSave(draft); setOpen(false); }}>
+            שמור יעדים
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -272,6 +405,13 @@ export function SalesLeaderboard() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortBy>("closedDeals");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [goals, setGoals] = useState<Goals>(loadGoals);
+  const prevClosedRef = useRef<number | null>(null);
+
+  const handleSaveGoals = useCallback((g: Goals) => {
+    setGoals(g);
+    saveGoals(g);
+  }, []);
 
   // ─── Data Fetching ───────────────────────────────────────
   const { data: allLeads = [] } = useQuery({
@@ -410,11 +550,29 @@ export function SalesLeaderboard() {
   const rejectedCount = leads.filter(l => l.status === "rejected").length;
   const rejectionRate = totalLeads > 0 ? Math.round((rejectedCount / totalLeads) * 100) : 0;
 
+  // ─── Confetti on new closures ────────────────────────────
+  useEffect(() => {
+    if (prevClosedRef.current !== null && totalClosed > prevClosedRef.current) {
+      fireConfetti();
+    }
+    prevClosedRef.current = totalClosed;
+  }, [totalClosed]);
+
   // Funnel counts
   const statusCounts: Record<string, number> = {};
   for (const lead of leads) {
     statusCounts[lead.status] = (statusCounts[lead.status] || 0) + 1;
   }
+
+  // ─── Goals Progress ──────────────────────────────────────
+  const goalsAchieved = useMemo(() => {
+    let count = 0;
+    if (totalClosed >= goals.closures) count++;
+    if (totalRevenue >= goals.revenue) count++;
+    if (totalCallsCount >= goals.calls) count++;
+    if (globalConversion >= goals.conversionRate) count++;
+    return count;
+  }, [totalClosed, totalRevenue, totalCallsCount, globalConversion, goals]);
 
   // ─── AI Insights ─────────────────────────────────────────
   const insights = useMemo(() => {
@@ -428,6 +586,23 @@ export function SalesLeaderboard() {
         title: `${best.name} מוביל/ה עם ${best.closedDeals} סגירות`,
         description: `שיעור המרה ${best.conversionRate}% | היקף ₪${best.totalRevenue.toLocaleString()}`,
         color: "bg-yellow-500/5 border-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+      });
+    }
+
+    // Goal progress insight
+    if (goalsAchieved === 4) {
+      result.push({
+        icon: PartyPopper,
+        title: "כל היעדים הושגו! 🎉",
+        description: "עמדת בכל 4 היעדים שהגדרת. הגיע הזמן להעלות את הרף!",
+        color: "bg-green-500/5 border-green-500/20 text-green-700 dark:text-green-400",
+      });
+    } else if (goalsAchieved >= 2) {
+      result.push({
+        icon: Target,
+        title: `${goalsAchieved}/4 יעדים הושגו`,
+        description: `עמדת ב-${goalsAchieved} מתוך 4 יעדים. ממשיכים!`,
+        color: "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400",
       });
     }
 
@@ -456,7 +631,7 @@ export function SalesLeaderboard() {
       result.push({
         icon: Timer,
         title: `שיחות קצרות: ממוצע ${formatDuration(avgCallDur)}`,
-        description: `שיחות ארוכות יותר (3-5 דקות) מובילות בד"כ לשיעור סגירה גבוה יותר. ייתכן שהנציגים מנתקים מוקדם מדי.`,
+        description: `שיחות ארוכות יותר (3-5 דקות) מובילות בד"כ לשיעור סגירה גבוה יותר.`,
         color: "bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400",
       });
     }
@@ -513,7 +688,7 @@ export function SalesLeaderboard() {
     }
 
     return result;
-  }, [agents, rejectionRate, rejectedCount, globalConversion, totalLeads, avgCallDur, avgDealSize, leads]);
+  }, [agents, rejectionRate, rejectedCount, globalConversion, totalLeads, avgCallDur, avgDealSize, leads, goalsAchieved]);
 
   // ─── Render ──────────────────────────────────────────────
   const hasFilters = timeRange !== "all" || filterAgent !== "all" || filterSource !== "all" || filterStatus !== "all";
@@ -532,6 +707,7 @@ export function SalesLeaderboard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <GoalsSettingsDialog goals={goals} onSave={handleSaveGoals} />
           {hasFilters && (
             <Button
               variant="ghost"
@@ -548,6 +724,36 @@ export function SalesLeaderboard() {
           </Badge>
         </div>
       </div>
+
+      {/* Goals Tracking */}
+      <Card className="relative overflow-hidden">
+        <div className={cn(
+          "absolute top-0 left-0 right-0 h-1.5",
+          goalsAchieved === 4
+            ? "bg-gradient-to-r from-green-500 via-emerald-400 to-green-500 animate-pulse"
+            : "bg-gradient-to-r from-primary/60 to-primary/20"
+        )} />
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-base">
+              <Target className="h-5 w-5 text-primary" />
+              עמידה ביעדים
+              <Badge variant={goalsAchieved === 4 ? "default" : "secondary"} className="text-[10px] gap-1">
+                {goalsAchieved === 4 && <CheckCircle2 className="h-3 w-3" />}
+                {goalsAchieved}/4
+              </Badge>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <GoalProgressCard label="סגירות" current={totalClosed} goal={goals.closures} icon={Target} unit="" color="text-green-600 dark:text-green-400" />
+            <GoalProgressCard label="היקף" current={totalRevenue} goal={goals.revenue} icon={DollarSign} unit="₪" color="text-purple-600 dark:text-purple-400" />
+            <GoalProgressCard label="שיחות" current={totalCallsCount} goal={goals.calls} icon={PhoneCall} unit="" color="text-orange-600 dark:text-orange-400" />
+            <GoalProgressCard label="המרה" current={globalConversion} goal={goals.conversionRate} icon={TrendingUp} unit="%" color="text-blue-600 dark:text-blue-400" />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters Bar */}
       <Card className="border-border/50">
