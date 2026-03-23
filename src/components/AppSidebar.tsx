@@ -43,7 +43,16 @@ export function AppSidebar() {
             <Brain className="w-5 h-5 text-primary" />
           </div>
           {!collapsed && (
-            <div>
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="text-sm font-bold text-foreground">SmartMortgage AI</h1>
+                <p className="text-[10px] text-muted-foreground">מנוע חיתום חכם</p>
+              </div>
+              <div className="mr-auto">
+                <ThemeToggle />
+              </div>
+            </div>
+          )}
               <h1 className="text-sm font-bold text-foreground">SmartMortgage AI</h1>
               <p className="text-[10px] text-muted-foreground">מנוע חיתום חכם</p>
             </div>
