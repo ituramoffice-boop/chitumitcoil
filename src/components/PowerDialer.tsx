@@ -449,10 +449,18 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
                   </div>
                 )}
 
+                {/* Closing Line */}
+                {aiAnalysis.closingLine && (
+                  <div className="text-xs bg-green-500/10 rounded-lg px-3 py-2 border border-green-500/30">
+                    <span className="font-bold text-green-700 dark:text-green-300">🎯 משפט הסגירה:</span>
+                    <p className="text-green-800 dark:text-green-200 font-medium mt-0.5 leading-relaxed">"{aiAnalysis.closingLine}"</p>
+                  </div>
+                )}
+
                 {/* Sales Technique */}
                 {aiAnalysis.salesTechnique && (
                   <div className="text-xs bg-purple-500/10 rounded px-2 py-1.5 border border-purple-500/20">
-                    <span className="font-medium text-purple-700 dark:text-purple-300">💡 טכניקה מומלצת:</span>{" "}
+                    <span className="font-medium text-purple-700 dark:text-purple-300">💡 טקטיקה:</span>{" "}
                     <span className="text-purple-600 dark:text-purple-400">{aiAnalysis.salesTechnique}</span>
                   </div>
                 )}
