@@ -44,6 +44,7 @@ interface AIAnalysis {
   buyingSignals?: string[];
   objections?: string[];
   salesTechnique?: string;
+  closingLine?: string;
   heatScore?: number;
 }
 
