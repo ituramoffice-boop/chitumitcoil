@@ -9,6 +9,7 @@ import {
   BarChart3,
   Pen,
   Phone,
+  Trophy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
