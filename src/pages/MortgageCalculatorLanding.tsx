@@ -430,8 +430,8 @@ const MortgageCalculatorLanding = () => {
                   </div>
                 </div>
               </div>
-            ) : (
-              /* Success */
+            ) : step === "success" ? (
+              /* Success confirmation */
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(160,84%,39%)]/20 to-transparent rounded-3xl blur-xl" />
                 <div className="relative bg-[hsl(222,47%,8%)] border border-[hsl(160,84%,39%)]/30 rounded-3xl p-10 text-center">
@@ -439,19 +439,143 @@ const MortgageCalculatorLanding = () => {
                     <CheckCircle2 className="w-10 h-10 text-[hsl(160,84%,50%)]" />
                   </div>
                   <h3 className="text-3xl font-black mb-3">הפרטים נקלטו בהצלחה! 🎉</h3>
-                  <p className="text-white/50 mb-2">יועץ בכיר יחזור אליך תוך שעה עם הצעה מותאמת אישית.</p>
-                  <p className="text-xs text-white/30 mb-8">מספר פנייה: #{Date.now().toString(36).toUpperCase()}</p>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 mb-6">
-                    <p className="text-sm text-white/50 mb-1">החזר חודשי משוער שלך:</p>
-                    <p className="text-3xl font-black text-[hsl(217,91%,60%)]">₪{result.monthly.toLocaleString()}</p>
+                  <p className="text-white/50 mb-2">מכין את ההצעה שלך...</p>
+                  <div className="w-48 h-1 mx-auto rounded-full bg-white/10 overflow-hidden mt-6">
+                    <div className="h-full bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(217,91%,50%)] rounded-full animate-[loading_3s_ease-in-out]" 
+                      style={{ animation: "loading 3s ease-in-out forwards" }} />
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => { setStep("calc"); setFormData({ full_name: "", phone: "", email: "" }); }}
-                    className="border-white/10 text-white/60 hover:text-white hover:bg-white/5"
-                  >
-                    חישוב נוסף
-                  </Button>
+                </div>
+              </div>
+            ) : step === "journey" ? (
+              /* Mini Customer Journey */
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(217,91%,50%)]/15 to-[hsl(160,84%,39%)]/10 rounded-3xl blur-xl" />
+                <div className="relative bg-[hsl(222,47%,8%)] border border-white/10 rounded-3xl p-8 overflow-hidden">
+                  {/* Progress dots */}
+                  <div className="flex items-center justify-center gap-2 mb-8">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className={cn(
+                        "w-2.5 h-2.5 rounded-full transition-all duration-500",
+                        journeyStep === i 
+                          ? "bg-[hsl(217,91%,60%)] scale-125 shadow-[0_0_10px_hsl(217,91%,50%,0.5)]" 
+                          : journeyStep > i 
+                            ? "bg-[hsl(160,84%,50%)]" 
+                            : "bg-white/15"
+                      )} />
+                    ))}
+                  </div>
+
+                  {/* Step content with transitions */}
+                  <div className="min-h-[320px] flex flex-col items-center justify-center text-center">
+                    {journeyStep === 0 && (
+                      <div className="animate-[fadeSlideUp_0.5s_ease-out]">
+                        <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(217,91%,50%)]/20 to-[hsl(217,91%,50%)]/5 flex items-center justify-center mb-6">
+                          <BarChart3 className="w-10 h-10 text-[hsl(217,91%,60%)]" />
+                        </div>
+                        <h3 className="text-2xl font-black mb-3">ניתוח AI מותאם אישית</h3>
+                        <p className="text-white/50 text-sm mb-4 max-w-sm">
+                          המערכת שלנו מנתחת את הנתונים שלך מול אלפי עסקאות דומות כדי למצוא את התנאים הטובים ביותר עבורך.
+                        </p>
+                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 mb-6">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/40">סכום הלוואה</span>
+                            <span className="font-bold">₪{loanAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/40">החזר חודשי</span>
+                            <span className="font-bold text-[hsl(217,91%,60%)]">₪{result.monthly.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-white/40">חיסכון פוטנציאלי</span>
+                            <span className="font-bold text-[hsl(160,84%,50%)]">עד ₪{Math.round(result.interest * 0.12).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => setJourneyStep(1)}
+                          className="bg-gradient-to-l from-[hsl(217,91%,50%)] to-[hsl(217,91%,40%)] hover:from-[hsl(217,91%,55%)] hover:to-[hsl(217,91%,45%)] text-white border-0 h-12 px-8 rounded-xl"
+                        >
+                          מה קורה עכשיו?
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {journeyStep === 1 && (
+                      <div className="animate-[fadeSlideUp_0.5s_ease-out]">
+                        <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(38,92%,50%)]/20 to-[hsl(38,92%,50%)]/5 flex items-center justify-center mb-6">
+                          <Clock className="w-10 h-10 text-[hsl(38,92%,60%)]" />
+                        </div>
+                        <h3 className="text-2xl font-black mb-3">מה קורה מכאן?</h3>
+                        <div className="space-y-3 text-right mb-6 max-w-sm mx-auto">
+                          {[
+                            { time: "תוך שעה", text: "יועץ בכיר ייצור איתך קשר" },
+                            { time: "תוך 24 שעות", text: "תקבל ניתוח מלא + השוואת הצעות" },
+                            { time: "תוך 3 ימים", text: "אישור עקרוני מהבנק" },
+                          ].map((item, i) => (
+                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                              <div className="mt-0.5 w-5 h-5 rounded-full bg-[hsl(38,92%,50%)]/20 flex items-center justify-center flex-shrink-0">
+                                <span className="text-[10px] font-bold text-[hsl(38,92%,60%)]">{i + 1}</span>
+                              </div>
+                              <div>
+                                <p className="text-xs text-[hsl(38,92%,60%)] font-medium">{item.time}</p>
+                                <p className="text-sm text-white/70">{item.text}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          onClick={() => setJourneyStep(2)}
+                          className="bg-gradient-to-l from-[hsl(38,92%,50%)] to-[hsl(38,92%,40%)] hover:from-[hsl(38,92%,55%)] hover:to-[hsl(38,92%,45%)] text-white border-0 h-12 px-8 rounded-xl"
+                        >
+                          טיפ חשוב לפני הפגישה
+                          <ArrowLeft className="w-4 h-4 mr-2" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {journeyStep === 2 && (
+                      <div className="animate-[fadeSlideUp_0.5s_ease-out]">
+                        <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(160,84%,39%)]/20 to-[hsl(160,84%,39%)]/5 flex items-center justify-center mb-6">
+                          <CheckCircle2 className="w-10 h-10 text-[hsl(160,84%,50%)]" />
+                        </div>
+                        <h3 className="text-2xl font-black mb-3">הכינו מראש 📋</h3>
+                        <p className="text-white/50 text-sm mb-4">כדי לזרז את התהליך, הכינו את המסמכים הבאים:</p>
+                        <div className="space-y-2 text-right mb-6 max-w-sm mx-auto">
+                          {[
+                            "3 תלושי שכר אחרונים",
+                            "תדפיס עו\"ש (3 חודשים)",
+                            "אישור זכויות / נסח טאבו",
+                            "תעודת זהות + ספח",
+                          ].map((doc, i) => (
+                            <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 border border-white/5">
+                              <CheckCircle2 className="w-4 h-4 text-[hsl(160,84%,50%)] flex-shrink-0" />
+                              <span className="text-sm text-white/70">{doc}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          <Button
+                            onClick={() => {
+                              const phone = "972501234567";
+                              const text = encodeURIComponent(`שלום, השארתי פרטים במחשבון המשכנתא ואשמח לקבל הצעה. שמי ${formData.full_name}`);
+                              window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
+                            }}
+                            className="bg-gradient-to-l from-[hsl(142,70%,45%)] to-[hsl(142,70%,38%)] hover:from-[hsl(142,70%,50%)] hover:to-[hsl(142,70%,42%)] text-white border-0 h-12 px-8 rounded-xl"
+                          >
+                            <Phone className="w-4 h-4 ml-2" />
+                            דברו איתנו בוואטסאפ
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => { setStep("calc"); setFormData({ full_name: "", phone: "", email: "" }); setJourneyStep(0); }}
+                            className="border-white/10 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+                          >
+                            חישוב נוסף
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
