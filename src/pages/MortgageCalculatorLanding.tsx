@@ -123,8 +123,11 @@ const MortgageCalculatorLanding = () => {
       }
     `}</style>
     <div className="min-h-screen bg-[hsl(222,47%,4%)] text-white overflow-hidden" dir="rtl">
+      {/* Star particles background */}
+      <StarField />
+
       {/* Ambient glow effects */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none z-[2]">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[hsl(217,91%,50%)] opacity-[0.07] blur-[120px]" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[hsl(160,84%,39%)] opacity-[0.05] blur-[100px]" />
         <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] rounded-full bg-[hsl(38,92%,50%)] opacity-[0.03] blur-[80px]" />
