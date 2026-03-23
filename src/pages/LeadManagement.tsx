@@ -140,6 +140,9 @@ const LeadManagement = () => {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [filterStatus, setFilterStatus] = useState<LeadStatus | "all">("all");
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [filterDateRange, setFilterDateRange] = useState<"all" | "today" | "week" | "month">("all");
+  const [filterStatus, setFilterStatus] = useState<LeadStatus | "all">("all");
+  const [filterSource, setFilterSource] = useState<string>("all");
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
