@@ -208,9 +208,11 @@ const MortgageCalculatorLanding = () => {
       <section className="relative z-10 pt-16 pb-8 md:pt-24 md:pb-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/60 mb-6">
-              <Sparkles className="w-3 h-3 text-[hsl(38,92%,50%)]" />
-              מונע בינה מלאכותית • דיוק של 99.7%
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-l from-[hsl(270,80%,60%)]/15 to-[hsl(217,91%,50%)]/15 border border-[hsl(270,80%,60%)]/30 text-xs text-[hsl(270,80%,80%)] mb-6 shadow-[0_0_20px_hsl(270,80%,60%,0.15)]">
+              <Sparkles className="w-3.5 h-3.5 text-[hsl(270,80%,65%)] animate-pulse" />
+              <span className="bg-gradient-to-l from-[hsl(270,80%,75%)] to-[hsl(217,91%,70%)] bg-clip-text text-transparent font-semibold">מונע בינה מלאכותית</span>
+              <span className="text-white/30">•</span>
+              <span className="text-[hsl(160,84%,60%)] font-bold">דיוק של 99.7%</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black leading-[1.1] mb-6">
               <span className="text-white">גלה כמה תשלם</span>
