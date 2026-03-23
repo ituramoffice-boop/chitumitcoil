@@ -26,6 +26,10 @@ import { PowerDialer } from "@/components/PowerDialer";
 import { CallHistory } from "@/components/CallHistory";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area, CartesianGrid, Legend,
+} from "recharts";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
