@@ -45,6 +45,7 @@ export function SignatureModal({ open, onOpenChange, lead }: SignatureModalProps
   const sigRef = useRef<SignatureCanvas | null>(null);
   const [saving, setSaving] = useState(false);
   const [strokes, setStrokes] = useState<string[]>([]);
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
 
   const handleEnd = useCallback(() => {
     if (sigRef.current) {
