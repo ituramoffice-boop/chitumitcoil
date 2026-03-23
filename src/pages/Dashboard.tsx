@@ -10,6 +10,7 @@ import DashboardOverview from "@/components/DashboardOverview";
 import SmartBuckets from "@/components/SmartBuckets";
 import FinancialScenarios from "@/components/FinancialScenarios";
 import ReportsPage from "@/components/ReportsPage";
+import ClientDashboard from "./ClientDashboard";
 import ConsultantDashboard from "./ConsultantDashboard";
 import TeamManagement from "./TeamManagement";
 import AgencyReports from "./AgencyReports";
