@@ -879,7 +879,9 @@ const LeadManagement = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <div>
-                              <p className="font-medium text-sm">{lead.full_name}</p>
+                              <LeadHeatPopup lead={lead}>
+                                <p className="font-medium text-sm cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
+                              </LeadHeatPopup>
                               {fu.needed && (
                                 <p className="text-[10px] text-destructive flex items-center gap-1">
                                   <AlertTriangle className="h-3 w-3" />{fu.reason}
