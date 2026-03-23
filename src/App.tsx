@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SelfCheck from "./pages/SelfCheck";
+import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
