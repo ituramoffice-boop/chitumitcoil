@@ -32,7 +32,9 @@ import {
   ChevronUp, Star, Zap, TrendingUp, AlertTriangle, CheckCircle2,
   XCircle, ArrowRight, Calendar, Globe, Facebook, Share2,
   FileUp, Users, BarChart3, Bell, Settings, GripVertical,
+  Pen, Download, FileText,
 } from "lucide-react";
+import { SignatureModal } from "@/components/SignatureModal";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
@@ -145,6 +147,7 @@ const LeadManagement = () => {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<LeadStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [signLead, setSignLead] = useState<Lead | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "", phone: "", email: "", notes: "",
@@ -778,6 +781,15 @@ const LeadManagement = () => {
                               <DropdownMenuItem onClick={() => openEdit(lead)}>
                                 <Edit className="h-3.5 w-3.5 ml-2" />עריכה
                               </DropdownMenuItem>
+                              {!(lead as any).signed_at ? (
+                                <DropdownMenuItem onClick={() => setSignLead(lead)}>
+                                  <Pen className="h-3.5 w-3.5 ml-2 text-primary" />חתימה דיגיטלית
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => window.open((lead as any).signature_url, "_blank")}>
+                                  <Download className="h-3.5 w-3.5 ml-2 text-primary" />הורד הסכם חתום
+                                </DropdownMenuItem>
+                              )}
                               {lead.phone && (
                                 <DropdownMenuItem onClick={() => openWhatsApp(lead, `היי ${lead.full_name}, ראיתי שהעלית חלק מהמסמכים ל-SmartMortgage. חסר לנו מסמכים כדי להתקדם. אפשר לשלוח כאן? 📄`)}>
                                   <MessageCircle className="h-3.5 w-3.5 ml-2 text-green-500" />WhatsApp תזכורת
@@ -869,6 +881,15 @@ const LeadManagement = () => {
                           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); openEdit(lead); }}>
                             <Edit className="h-3 w-3" />
                           </Button>
+                          {!(lead as any).signed_at ? (
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setSignLead(lead); }} title="חתימה">
+                              <Pen className="h-3 w-3 text-primary" />
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); window.open((lead as any).signature_url, "_blank"); }} title="הורד הסכם">
+                              <FileText className="h-3 w-3 text-primary" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     );
@@ -881,6 +902,15 @@ const LeadManagement = () => {
             );
           })}
         </div>
+      )}
+
+      {/* Signature Modal */}
+      {signLead && (
+        <SignatureModal
+          open={!!signLead}
+          onOpenChange={(open) => { if (!open) setSignLead(null); }}
+          lead={signLead}
+        />
       )}
     </div>
   );
