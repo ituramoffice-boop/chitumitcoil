@@ -150,6 +150,7 @@ const LeadManagement = () => {
   const [dragOverColumn, setDragOverColumn] = useState<LeadStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [signLead, setSignLead] = useState<Lead | null>(null);
+  const [dialerQueue, setDialerQueue] = useState<Lead[]>([]);
 
   const [formData, setFormData] = useState({
     full_name: "", phone: "", email: "", notes: "",
