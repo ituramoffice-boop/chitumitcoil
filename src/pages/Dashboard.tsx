@@ -16,6 +16,7 @@ import TeamManagement from "./TeamManagement";
 import AgencyReports from "./AgencyReports";
 import LeadManagement from "./LeadManagement";
 import { SignatureManager } from "@/components/SignatureManager";
+import { PowerDialer } from "@/components/PowerDialerPage";
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
@@ -23,6 +24,7 @@ const sectionComponents: Record<string, React.FC> = {
   reports: ReportsPage,
   clients: () => <LeadManagement />,
   signatures: () => <SignatureManager />,
+  dialer: () => <PowerDialerPage />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
 };
