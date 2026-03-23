@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, Phone } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -16,7 +16,8 @@ import TeamManagement from "./TeamManagement";
 import AgencyReports from "./AgencyReports";
 import LeadManagement from "./LeadManagement";
 import { SignatureManager } from "@/components/SignatureManager";
-import PowerDialer from "@/components/PowerDialer";
+import { PowerDialer } from "@/components/PowerDialer";
+import { supabase } from "@/integrations/supabase/client";
 
 const PowerDialerPage = () => {
   const [leads, setLeads] = useState<any[]>([]);
