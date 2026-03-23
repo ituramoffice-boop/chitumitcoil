@@ -18,29 +18,40 @@ Deno.serve(async (req) => {
 
     const { leadName, callDuration, notes, leadContext } = await req.json();
 
-    const systemPrompt = `You are an AI assistant analyzing mortgage consultation calls for an Israeli CRM system.
-Given the call notes and lead context, generate:
-1. A 3-bullet summary of the call (in Hebrew)
-2. Sentiment analysis: "positive", "neutral", or "negative"
-3. Action items extracted from the conversation (in Hebrew)
-4. A suggested next step for the CRM (in Hebrew)
+    const systemPrompt = `אתה מנתח שיחות מכירה מומחה עבור מערכת CRM של יועצי משכנתאות בישראל.
+אתה צריך לנתח את השיחה מנקודת מבט של איש מכירות מקצועי ולהפיק תובנות מכירתיות.
 
-Respond ONLY with valid JSON in this exact format:
+בהינתן הערות השיחה והקונטקסט של הליד, הפק:
+
+1. **סיכום מכירתי** (3 נקודות) — מה קרה בשיחה מבחינה מכירתית
+2. **סנטימנט** — "positive" / "neutral" / "negative"
+3. **אותות קנייה** — סימנים שהלקוח מוכן להתקדם (אם יש)
+4. **התנגדויות שזוהו** — מה עצר את הלקוח (מחיר, תזמון, אמון, וכו')
+5. **טכניקת מכירה מומלצת** — איך להתקדם עם הלקוח הספציפי הזה
+6. **פעולות נדרשות** — משימות קונקרטיות
+7. **צעד הבא** — הפעולה הבאה המומלצת עם תאריך
+8. **ציון חום** — מ-1 עד 10 כמה חם הליד (10 = מוכן לסגירה)
+
+Respond ONLY with valid JSON:
 {
-  "summary": ["bullet 1", "bullet 2", "bullet 3"],
+  "summary": ["נקודה 1", "נקודה 2", "נקודה 3"],
   "sentiment": "positive" | "neutral" | "negative",
-  "actionItems": ["action 1", "action 2"],
-  "nextStep": "suggested next step"
+  "buyingSignals": ["אות 1", "אות 2"],
+  "objections": ["התנגדות 1"],
+  "salesTechnique": "המלצת טכניקה",
+  "actionItems": ["פעולה 1", "פעולה 2"],
+  "nextStep": "צעד הבא מומלץ",
+  "heatScore": 7
 }`;
 
-    const userPrompt = `Call with: ${leadName}
-Duration: ${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, "0")}
-Call Notes: ${notes || "No notes taken"}
-Lead Context:
-- Mortgage Amount: ${leadContext?.mortgage_amount ? `₪${leadContext.mortgage_amount.toLocaleString()}` : "N/A"}
-- Monthly Income: ${leadContext?.monthly_income ? `₪${leadContext.monthly_income.toLocaleString()}` : "N/A"}
-- Current Status: ${leadContext?.status || "N/A"}
-- Last Contact: ${leadContext?.last_contact || "First call"}`;
+    const userPrompt = `שיחה עם: ${leadName}
+משך: ${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, "0")}
+הערות שיחה: ${notes || "לא נרשמו הערות"}
+קונטקסט הליד:
+- סכום משכנתא: ${leadContext?.mortgage_amount ? `₪${leadContext.mortgage_amount.toLocaleString()}` : "לא צוין"}
+- הכנסה חודשית: ${leadContext?.monthly_income ? `₪${leadContext.monthly_income.toLocaleString()}` : "לא צוין"}
+- סטטוס נוכחי: ${leadContext?.status || "לא צוין"}
+- קשר אחרון: ${leadContext?.last_contact || "שיחה ראשונה"}`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -55,7 +66,7 @@ Lead Context:
           { role: "user", content: userPrompt },
         ],
         temperature: 0.5,
-        max_tokens: 500,
+        max_tokens: 800,
         response_format: { type: "json_object" },
       }),
     });
@@ -77,12 +88,15 @@ Lead Context:
     });
   } catch (error: any) {
     console.error("analyze-call error:", error.message);
-    // Return fallback analysis if AI fails
     return new Response(JSON.stringify({
       summary: ["השיחה התקיימה בהצלחה", "נדונו פרטי המשכנתא", "נקבע המשך טיפול"],
       sentiment: "neutral",
+      buyingSignals: [],
+      objections: [],
+      salesTechnique: "בנה אמון והצע פגישה פרונטלית",
       actionItems: ["מעקב טלפוני"],
       nextStep: "מעקב טלפוני תוך יומיים",
+      heatScore: 5,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

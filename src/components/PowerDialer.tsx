@@ -41,6 +41,10 @@ interface AIAnalysis {
   sentiment: "positive" | "neutral" | "negative";
   actionItems: string[];
   nextStep: string;
+  buyingSignals?: string[];
+  objections?: string[];
+  salesTechnique?: string;
+  heatScore?: number;
 }
 
 interface PowerDialerProps {
@@ -384,13 +388,32 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
             {/* AI Analysis Results */}
             {aiAnalysis && (
               <div className="space-y-2 p-3 rounded-lg bg-muted/50 border border-border/50">
-                <div className="flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-purple-500" />
-                  <span className="text-xs font-bold">ניתוח AI</span>
-                  <Badge className={cn("text-[10px]", sentimentConfig[aiAnalysis.sentiment].bg, sentimentConfig[aiAnalysis.sentiment].color)} variant="outline">
-                    {sentimentConfig[aiAnalysis.sentiment].label}
-                  </Badge>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Brain className="h-4 w-4 text-purple-500" />
+                    <span className="text-xs font-bold">ניתוח AI מכירתי</span>
+                    <Badge className={cn("text-[10px]", sentimentConfig[aiAnalysis.sentiment].bg, sentimentConfig[aiAnalysis.sentiment].color)} variant="outline">
+                      {sentimentConfig[aiAnalysis.sentiment].label}
+                    </Badge>
+                  </div>
+                  {aiAnalysis.heatScore !== undefined && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground">חום:</span>
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                          <div key={i} className={cn(
+                            "w-1.5 h-3 rounded-sm",
+                            i < (aiAnalysis.heatScore || 0)
+                              ? i < 3 ? "bg-blue-400" : i < 7 ? "bg-yellow-400" : "bg-red-500"
+                              : "bg-muted"
+                          )} />
+                        ))}
+                      </div>
+                      <span className="text-[10px] font-bold">{aiAnalysis.heatScore}/10</span>
+                    </div>
+                  )}
                 </div>
+
                 {/* Summary */}
                 <div className="space-y-1">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">סיכום</p>
@@ -400,6 +423,39 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
                     </p>
                   ))}
                 </div>
+
+                {/* Buying Signals */}
+                {aiAnalysis.buyingSignals && aiAnalysis.buyingSignals.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider">🟢 אותות קנייה</p>
+                    {aiAnalysis.buyingSignals.map((s, i) => (
+                      <p key={i} className="text-xs text-green-700 dark:text-green-400 flex items-start gap-1">
+                        <span className="mt-0.5">✓</span>{s}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Objections */}
+                {aiAnalysis.objections && aiAnalysis.objections.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wider">🔴 התנגדויות</p>
+                    {aiAnalysis.objections.map((o, i) => (
+                      <p key={i} className="text-xs text-red-700 dark:text-red-400 flex items-start gap-1">
+                        <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />{o}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Sales Technique */}
+                {aiAnalysis.salesTechnique && (
+                  <div className="text-xs bg-purple-500/10 rounded px-2 py-1.5 border border-purple-500/20">
+                    <span className="font-medium text-purple-700 dark:text-purple-300">💡 טכניקה מומלצת:</span>{" "}
+                    <span className="text-purple-600 dark:text-purple-400">{aiAnalysis.salesTechnique}</span>
+                  </div>
+                )}
+
                 {/* Action Items */}
                 {aiAnalysis.actionItems.length > 0 && (
                   <div className="space-y-1">
@@ -411,6 +467,7 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
                     ))}
                   </div>
                 )}
+
                 {aiAnalysis.nextStep && (
                   <div className="flex items-center gap-1 text-xs bg-primary/5 rounded px-2 py-1">
                     <ChevronRight className="h-3 w-3 text-primary" />
