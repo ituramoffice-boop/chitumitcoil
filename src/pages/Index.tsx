@@ -19,10 +19,13 @@ const Index = () => {
             </div>
             <h1 className="text-xl font-bold text-foreground">SmartMortgage AI</h1>
           </div>
-          <Button onClick={() => navigate(user ? "/dashboard" : "/auth")}>
-            {user ? "לדשבורד" : "התחברות"}
-            <ArrowLeft className="w-4 h-4 mr-2" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button onClick={() => navigate(user ? "/dashboard" : "/auth")}>
+              {user ? "לדשבורד" : "התחברות"}
+              <ArrowLeft className="w-4 h-4 mr-2" />
+            </Button>
+          </div>
         </div>
       </header>
 
