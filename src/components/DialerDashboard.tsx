@@ -92,26 +92,70 @@ export function DialerDashboard() {
   });
 
   // Call stats
-  const { data: callStats } = useQuery({
-    queryKey: ["dialer-stats"],
+  const { data: callLogs = [] } = useQuery({
+    queryKey: ["dialer-call-logs"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("call_logs")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      const logs = data || [];
-      const today = new Date().toDateString();
-      const todayLogs = logs.filter(l => new Date(l.created_at).toDateString() === today);
-      return {
-        totalCalls: logs.length,
-        todayCalls: todayLogs.length,
-        avgDuration: logs.length > 0 ? Math.round(logs.reduce((s, l) => s + (l.duration_seconds || 0), 0) / logs.length) : 0,
-        positiveRate: logs.length > 0 ? Math.round((logs.filter(l => l.sentiment === "positive").length / logs.length) * 100) : 0,
-      };
+      return data || [];
     },
     enabled: !!user,
   });
+
+  const callStats = useMemo(() => {
+    const today = new Date().toDateString();
+    const todayLogs = callLogs.filter(l => new Date(l.created_at).toDateString() === today);
+    return {
+      totalCalls: callLogs.length,
+      todayCalls: todayLogs.length,
+      avgDuration: callLogs.length > 0 ? Math.round(callLogs.reduce((s, l) => s + (l.duration_seconds || 0), 0) / callLogs.length) : 0,
+      positiveRate: callLogs.length > 0 ? Math.round((callLogs.filter(l => l.sentiment === "positive").length / callLogs.length) * 100) : 0,
+    };
+  }, [callLogs]);
+
+  // Daily trends (last 7 days)
+  const dailyTrends = useMemo(() => {
+    const days: { date: string; calls: number; avgDuration: number; positive: number; negative: number; neutral: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toDateString();
+      const dayLabel = d.toLocaleDateString("he-IL", { weekday: "short", day: "numeric", month: "numeric" });
+      const dayLogs = callLogs.filter(l => new Date(l.created_at).toDateString() === dateStr);
+      days.push({
+        date: dayLabel,
+        calls: dayLogs.length,
+        avgDuration: dayLogs.length > 0 ? Math.round(dayLogs.reduce((s, l) => s + (l.duration_seconds || 0), 0) / dayLogs.length / 60) : 0,
+        positive: dayLogs.filter(l => l.sentiment === "positive").length,
+        negative: dayLogs.filter(l => l.sentiment === "negative").length,
+        neutral: dayLogs.filter(l => l.sentiment === "neutral").length,
+      });
+    }
+    return days;
+  }, [callLogs]);
+
+  // Sentiment distribution
+  const sentimentDist = useMemo(() => {
+    const pos = callLogs.filter(l => l.sentiment === "positive").length;
+    const neg = callLogs.filter(l => l.sentiment === "negative").length;
+    const neu = callLogs.filter(l => l.sentiment === "neutral").length;
+    const none = callLogs.length - pos - neg - neu;
+    return [
+      { name: "חיובי", value: pos, fill: "hsl(142, 76%, 36%)" },
+      { name: "ניטרלי", value: neu + none, fill: "hsl(45, 93%, 47%)" },
+      { name: "שלילי", value: neg, fill: "hsl(0, 84%, 60%)" },
+    ].filter(d => d.value > 0);
+  }, [callLogs]);
+
+  // Simulated active agents
+  const activeAgents = useMemo(() => [
+    { name: "יוסי כהן", status: "בשיחה", lead: "דני לוי", duration: "02:34", sentiment: "positive" },
+    { name: "מיכל אברהם", status: "wrap_up", lead: "שרה גולד", duration: "05:12", sentiment: "neutral" },
+    { name: "אבי ישראלי", status: "idle", lead: null, duration: null, sentiment: null },
+  ], []);
 
   const sources = useMemo(() => {
     const s = new Set(leads.map(l => l.lead_source).filter(Boolean));
