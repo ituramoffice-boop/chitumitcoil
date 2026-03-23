@@ -34,6 +34,7 @@ const baseNavItems = [
   { title: "דוחות סיכונים", url: "/dashboard/reports", icon: FileBarChart },
   { title: "ניהול לידים", url: "/dashboard/clients", icon: Users },
   { title: "חתימות מרחוק", url: "/dashboard/signatures", icon: Pen },
+  { title: "חייגן", url: "/dashboard/dialer", icon: Phone },
 ];
 
 const agencyNavItems = [
