@@ -152,6 +152,26 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
     }
     setAiLoading(false);
     setCallState("wrap_up");
+
+    // Save call log to database
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("call_logs").insert({
+          lead_id: currentLead.id,
+          user_id: user.id,
+          duration_seconds: duration,
+          notes: callNotes || null,
+          ai_summary: aiAnalysis ? { summary: (aiAnalysis as any)?.summary } : null,
+          sentiment: (aiAnalysis as any)?.sentiment || null,
+          action_items: (aiAnalysis as any)?.actionItems || null,
+          next_step: (aiAnalysis as any)?.nextStep || null,
+          status: "completed",
+        } as any);
+      }
+    } catch {
+      // Non-critical: log saving is best-effort
+    }
   }, [callDuration, callNotes, currentLead]);
 
   const skipLead = useCallback(() => {

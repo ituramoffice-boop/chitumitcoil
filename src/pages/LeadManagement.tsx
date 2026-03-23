@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { SignatureModal } from "@/components/SignatureModal";
 import { PowerDialer } from "@/components/PowerDialer";
+import { CallHistory } from "@/components/CallHistory";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
@@ -151,6 +152,7 @@ const LeadManagement = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [signLead, setSignLead] = useState<Lead | null>(null);
   const [dialerQueue, setDialerQueue] = useState<Lead[]>([]);
+  const [callHistoryLead, setCallHistoryLead] = useState<Lead | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "", phone: "", email: "", notes: "",
@@ -847,6 +849,9 @@ const LeadManagement = () => {
                                   <MessageCircle className="h-3.5 w-3.5 ml-2 text-green-500" />WhatsApp תזכורת
                                 </DropdownMenuItem>
                               )}
+                              <DropdownMenuItem onClick={() => setCallHistoryLead(lead)}>
+                                <Phone className="h-3.5 w-3.5 ml-2 text-primary" />היסטוריית שיחות
+                              </DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate([lead.id])}>
                                 <Trash2 className="h-3.5 w-3.5 ml-2" />מחיקה
                               </DropdownMenuItem>
@@ -1001,6 +1006,15 @@ const LeadManagement = () => {
           }}
         />
       )}
+
+      {/* Call History Dialog */}
+      <CallHistory
+        showAsDialog
+        open={!!callHistoryLead}
+        onClose={() => setCallHistoryLead(null)}
+        leadId={callHistoryLead?.id}
+        leadName={callHistoryLead?.full_name}
+      />
     </div>
   );
 };
