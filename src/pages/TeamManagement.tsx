@@ -742,6 +742,14 @@ const TeamManagement = () => {
             )}
           </div>
         </TabsContent>
+        {/* Team Chat Tab */}
+        <TabsContent value="chat" className="mt-4">
+          {currentTeam ? (
+            <TeamChat teamId={currentTeam.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">צור צוות כדי להתחיל צ׳אט</p>
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* Edit Member Dialog */}
