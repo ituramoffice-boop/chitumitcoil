@@ -43,7 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchRole(session.user.id);
+          try {
+            await fetchRole(session.user.id);
+          } catch (e) {
+            console.error("Failed to fetch role:", e);
+          }
         } else {
           setRole(null);
         }
@@ -58,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchRole(session.user.id);
       }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     return () => subscription.unsubscribe();
   }, []);
