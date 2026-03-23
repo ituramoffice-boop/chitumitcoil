@@ -278,6 +278,15 @@ export function SignatureManager() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Smart PDF Signer Modal */}
+      {smartSignLead && (
+        <SmartPdfSigner
+          open={!!smartSignLead}
+          onOpenChange={(open) => { if (!open) setSmartSignLead(null); }}
+          lead={smartSignLead}
+        />
+      )}
     </div>
   );
 }
