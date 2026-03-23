@@ -21,7 +21,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const PowerDialerPage = () => {
   const [leads, setLeads] = useState<any[]>([]);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchLeads = async () => {
