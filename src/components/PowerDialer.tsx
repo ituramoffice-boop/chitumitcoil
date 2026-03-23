@@ -41,6 +41,10 @@ interface AIAnalysis {
   sentiment: "positive" | "neutral" | "negative";
   actionItems: string[];
   nextStep: string;
+  buyingSignals?: string[];
+  objections?: string[];
+  salesTechnique?: string;
+  heatScore?: number;
 }
 
 interface PowerDialerProps {
