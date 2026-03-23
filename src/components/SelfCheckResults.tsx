@@ -51,9 +51,18 @@ function calcMonthlyPayment(principal: number, annualRate: number, years: number
   return (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
 }
 
-export default function SelfCheckResults() {
+interface SelfCheckResultsProps {
+  purpose: "new" | "topup" | "refinance" | "explore";
+}
+
+export default function SelfCheckResults({ purpose }: SelfCheckResultsProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+
+  // Map purpose to initial tabs
+  const initialMainTab = purpose === "explore" ? "overview" : "scenarios";
+  const initialScenarioTab = purpose === "refinance" ? "refinance" : purpose === "topup" ? "topup" : "new";
+
+  const [activeTab, setActiveTab] = useState(initialMainTab);
 
   // Financial calculations
   const interestRate = 4.2;
@@ -220,7 +229,7 @@ export default function SelfCheckResults() {
 
         {/* Scenarios */}
         <TabsContent value="scenarios" className="mt-6 space-y-6">
-          <Tabs defaultValue="new" dir="rtl">
+          <Tabs defaultValue={initialScenarioTab} dir="rtl">
             <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="new" className="gap-1">
                 <Home className="w-4 h-4" />

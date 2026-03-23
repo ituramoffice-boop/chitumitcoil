@@ -377,7 +377,7 @@ const SelfCheck = () => {
         )}
 
         {/* Step: Result */}
-        {step === "result" && <SelfCheckResults />}
+        {step === "result" && <SelfCheckResults purpose={purpose || "new"} />}
       </main>
     </div>
   );
