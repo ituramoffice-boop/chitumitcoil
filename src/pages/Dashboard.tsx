@@ -20,6 +20,10 @@ const Dashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  if (role === "admin") {
+    return <AdminDashboard />;
+  }
+
   if (role === "consultant") {
     return <ConsultantDashboard />;
   }
