@@ -110,8 +110,50 @@ const MortgageCalculatorLanding = () => {
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
+  const aiTips = [
+    { condition: rate > 5, tip: "הריבית גבוהה מהממוצע בשוק. שקלו מסלול משתנה כל 5 שנים להוזלת העלות.", icon: "📉" },
+    { condition: years > 25, tip: "תקופה ארוכה מגדילה את סך הריבית. נסו לקצר ל-20 שנה ולחסוך אלפי שקלים.", icon: "⏱️" },
+    { condition: loanAmount > 2000000, tip: "בהלוואה גדולה, פיצול ל-2 מסלולים יכול לחסוך עד 15% מהריבית.", icon: "💡" },
+    { condition: financingRatio > 60, tip: "אחוז מימון גבוה עלול להעלות את הריבית. שקלו הון עצמי נוסף.", icon: "🏦" },
+    { condition: rate <= 5 && years <= 25, tip: "הפרמטרים שלך טובים! זה הזמן לנעול ריבית קבועה לטווח ארוך.", icon: "✅" },
+  ];
+  const activeTip = aiTips.find(t => t.condition) || aiTips[aiTips.length - 1];
+
+  const faqItems = [
+    { q: "כמה הון עצמי צריך למשכנתא?", a: "בדרך כלל נדרש לפחות 25% הון עצמי מערך הנכס לדירה ראשונה, ו-30% לדירה שנייה. למשפרי דיור – לפחות 30%." },
+    { q: "מה ההבדל בין ריבית קבועה למשתנה?", a: "ריבית קבועה נשארת זהה לאורך כל תקופת ההלוואה ומספקת ודאות. ריבית משתנה מתעדכנת בהתאם למדד או לפריים ויכולה לרדת או לעלות." },
+    { q: "האם כדאי לקחת משכנתא ל-30 שנה?", a: "תקופה ארוכה מקטינה את ההחזר החודשי אך מגדילה משמעותית את סך הריבית. מומלץ לבחון תקופה של 20-25 שנה כנקודת איזון." },
+    { q: "מה זה פריים ואיך הוא משפיע על המשכנתא?", a: "ריבית הפריים היא ריבית בסיסית שנקבעת על ידי בנק ישראל. מסלולי פריים במשכנתא צמודים לריבית זו, כך ששינויים בפריים ישפיעו ישירות על ההחזר החודשי." },
+    { q: "כמה זמן לוקח לקבל אישור משכנתא?", a: "תהליך אישור עקרוני לוקח 1-3 ימי עסקים. אישור מלא עם כל המסמכים – בין שבוע לשלושה שבועות, תלוי במורכבות התיק." },
+  ];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FinancialProduct",
+    "name": "מחשבון משכנתא חכם 2026 – SmartMortgage AI",
+    "description": "מחשבון משכנתא עם בינה מלאכותית לחישוב החזר חודשי, ריבית והשוואת מסלולים",
+    "url": "https://chitumitcoil.lovable.app/calculator",
+    "provider": {
+      "@type": "Organization",
+      "name": "SmartMortgage AI"
+    },
+    "category": "Mortgage Calculator"
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map(item => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": { "@type": "Answer", "text": item.a }
+    }))
+  };
+
   return (
     <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     <style>{`
       @keyframes loading {
         from { width: 0%; }
@@ -170,13 +212,13 @@ const MortgageCalculatorLanding = () => {
               <Sparkles className="w-3 h-3 text-[hsl(38,92%,50%)]" />
               מונע בינה מלאכותית • דיוק של 99.7%
             </div>
-            <h2 className="text-4xl md:text-6xl font-black leading-[1.1] mb-6">
+            <h1 className="text-4xl md:text-6xl font-black leading-[1.1] mb-6">
               <span className="text-white">גלה כמה תשלם</span>
               <br />
               <span className="bg-gradient-to-l from-[hsl(217,91%,60%)] via-[hsl(217,91%,50%)] to-[hsl(160,84%,50%)] bg-clip-text text-transparent">
                 על המשכנתא שלך
               </span>
-            </h2>
+            </h1>
             <p className="text-lg text-white/50 max-w-xl mx-auto leading-relaxed">
               המחשבון החכם ביותר בישראל. חישוב מדויק, ניתוח AI, 
               והצעה אישית תוך 60 שניות.
@@ -349,6 +391,25 @@ const MortgageCalculatorLanding = () => {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Market Tip Badge */}
+      <section className="relative z-10 py-4">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/20">
+            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(38,92%,50%)]/15 flex items-center justify-center text-lg">
+              {activeTip.icon}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Brain className="w-3.5 h-3.5 text-[hsl(38,92%,50%)]" />
+                <span className="text-xs font-bold text-[hsl(38,92%,50%)] uppercase tracking-wider">טיפ AI חי</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[hsl(160,84%,50%)] animate-pulse" />
+              </div>
+              <p className="text-sm text-white/70 leading-relaxed">{activeTip.tip}</p>
             </div>
           </div>
         </div>
@@ -775,6 +836,39 @@ const MortgageCalculatorLanding = () => {
                 <p className="text-2xl md:text-3xl font-black text-white">{stat.value}</p>
                 <p className="text-xs text-white/40">{stat.label}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="relative z-10 py-16 border-t border-white/5" itemScope itemType="https://schema.org/FAQPage">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-10">
+            שאלות נפוצות על <span className="text-[hsl(217,91%,60%)]">משכנתא</span>
+          </h2>
+          <div className="space-y-4">
+            {faqItems.map((item, i) => (
+              <details
+                key={i}
+                className="group rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-colors overflow-hidden"
+                itemScope
+                itemProp="mainEntity"
+                itemType="https://schema.org/Question"
+              >
+                <summary className="flex items-center justify-between cursor-pointer p-5 text-sm font-bold text-white/90 list-none">
+                  <span itemProp="name">{item.q}</span>
+                  <ChevronDown className="w-4 h-4 text-white/30 transition-transform group-open:rotate-180" />
+                </summary>
+                <div
+                  className="px-5 pb-5 text-sm text-white/50 leading-relaxed"
+                  itemScope
+                  itemProp="acceptedAnswer"
+                  itemType="https://schema.org/Answer"
+                >
+                  <p itemProp="text">{item.a}</p>
+                </div>
+              </details>
             ))}
           </div>
         </div>
