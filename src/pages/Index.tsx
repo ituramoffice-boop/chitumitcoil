@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Brain, ShieldCheck, FileText, TrendingUp, ArrowLeft } from "lucide-react";
+import { Brain, ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const { user } = useAuth();
