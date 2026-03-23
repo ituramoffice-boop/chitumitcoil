@@ -455,11 +455,54 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
                   </div>
                 )}
 
+                {/* Lead Score Breakdown */}
+                {aiAnalysis.leadScore !== undefined && aiAnalysis.leadScoreBreakdown && (
+                  <div className="text-xs space-y-1.5 p-2 rounded-lg bg-muted/30 border border-border/30">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">ציון ליד</span>
+                      <span className={cn(
+                        "text-lg font-black",
+                        aiAnalysis.leadScore >= 85 ? "text-red-500" :
+                        aiAnalysis.leadScore >= 50 ? "text-orange-500" : "text-blue-500"
+                      )}>
+                        {aiAnalysis.leadScore}
+                        <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { label: "כוונת רכישה", value: aiAnalysis.leadScoreBreakdown.intent, max: 40 },
+                        { label: "דחיפות", value: aiAnalysis.leadScoreBreakdown.urgency, max: 30 },
+                        { label: "סמכות", value: aiAnalysis.leadScoreBreakdown.authority, max: 30 },
+                      ].map(({ label, value, max }) => (
+                        <div key={label} className="text-center">
+                          <div className="text-[9px] text-muted-foreground mb-0.5">{label}</div>
+                          <div className="text-xs font-bold">{value}/{max}</div>
+                          <div className="h-1 rounded-full bg-muted mt-0.5 overflow-hidden">
+                            <div className={cn(
+                              "h-full rounded-full",
+                              (value / max) >= 0.7 ? "bg-green-500" : (value / max) >= 0.4 ? "bg-yellow-500" : "bg-red-400"
+                            )} style={{ width: `${(value / max) * 100}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Closing Line */}
                 {aiAnalysis.closingLine && (
                   <div className="text-xs bg-green-500/10 rounded-lg px-3 py-2 border border-green-500/30">
                     <span className="font-bold text-green-700 dark:text-green-300">🎯 משפט הסגירה:</span>
                     <p className="text-green-800 dark:text-green-200 font-medium mt-0.5 leading-relaxed">"{aiAnalysis.closingLine}"</p>
+                  </div>
+                )}
+
+                {/* Closing Strategy */}
+                {aiAnalysis.closingStrategy && (
+                  <div className="text-xs bg-amber-500/10 rounded-lg px-3 py-2 border border-amber-500/30">
+                    <span className="font-bold text-amber-700 dark:text-amber-300">⚡ הדרך הכי מהירה לסגור:</span>
+                    <p className="text-amber-800 dark:text-amber-200 font-medium mt-0.5 leading-relaxed">{aiAnalysis.closingStrategy}</p>
                   </div>
                 )}
 
