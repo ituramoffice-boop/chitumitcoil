@@ -140,8 +140,8 @@ interface CriticalAlert {
   missingDoc?: string;
 }
 
-const ConsultantDashboard = () => {
-  const { user, signOut } = useAuth();
+const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
+  const { user, role, signOut } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
