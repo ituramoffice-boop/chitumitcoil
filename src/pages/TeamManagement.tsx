@@ -469,6 +469,7 @@ const TeamManagement = () => {
           <TabsTrigger value="members">חברי צוות</TabsTrigger>
           <TabsTrigger value="assignment">הקצאת לידים</TabsTrigger>
           <TabsTrigger value="performance">מעקב ביצועים</TabsTrigger>
+          <TabsTrigger value="chat">צ׳אט צוות</TabsTrigger>
         </TabsList>
 
         {/* Members Tab */}
