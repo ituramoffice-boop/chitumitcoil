@@ -140,8 +140,8 @@ interface CriticalAlert {
   missingDoc?: string;
 }
 
-const ConsultantDashboard = () => {
-  const { user, signOut } = useAuth();
+const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
+  const { user, role, signOut } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -486,6 +486,12 @@ const ConsultantDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Admin switch button */}
+            {role === "admin" && onSwitchToAdmin && (
+              <Button variant="outline" size="sm" onClick={onSwitchToAdmin} className="text-xs">
+                📊 מצב ניהול
+              </Button>
+            )}
             {/* Last Sync */}
             <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={refreshData} title="רענן נתונים">
