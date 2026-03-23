@@ -10,6 +10,7 @@ import FinancialScenarios from "@/components/FinancialScenarios";
 import ReportsPage from "@/components/ReportsPage";
 import AdminDashboard from "./AdminDashboard";
 import ClientDashboard from "./ClientDashboard";
+import ConsultantDashboard from "./ConsultantDashboard";
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
