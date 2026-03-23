@@ -357,6 +357,17 @@ export function SignatureModal({ open, onOpenChange, lead }: SignatureModalProps
             </Button>
           </div>
 
+          {/* WhatsApp toggle */}
+          {lead.phone && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">שלח PDF חתום בוואטסאפ</span>
+              </div>
+              <Switch checked={sendWhatsApp} onCheckedChange={setSendWhatsApp} />
+            </div>
+          )}
+
           <p className="text-[10px] text-muted-foreground text-center">
             בלחיצה על "חתום ושמור" אתה מאשר את תנאי ההסכם. המסמך ישמר באופן מאובטח.
           </p>
