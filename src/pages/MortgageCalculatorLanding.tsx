@@ -650,6 +650,7 @@ const MortgageCalculatorLanding = () => {
         </div>
       </footer>
     </div>
+    </>
   );
 };
 
