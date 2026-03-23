@@ -1032,8 +1032,8 @@ const LeadManagement = () => {
               <div
                 key={status}
                 className={cn(
-                  "flex-shrink-0 w-[260px] rounded-xl border bg-card flex flex-col transition-colors",
-                  dragOverColumn === status && "border-primary bg-primary/5"
+                  "flex-shrink-0 w-[240px] rounded-xl border bg-card/80 backdrop-blur-sm flex flex-col transition-all duration-200",
+                  dragOverColumn === status && "border-primary bg-primary/5 scale-[1.02]"
                 )}
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
