@@ -985,6 +985,22 @@ const LeadManagement = () => {
           lead={signLead}
         />
       )}
+
+      {/* Power Dialer */}
+      {dialerQueue.length > 0 && (
+        <PowerDialer
+          queue={dialerQueue}
+          onClose={() => setDialerQueue([])}
+          onCallComplete={async (leadId, notes, aiAnalysis) => {
+            // Update lead with call notes and next step
+            const updates: any = { last_contact: new Date().toISOString() };
+            if (notes) updates.notes = notes;
+            if (aiAnalysis?.nextStep) updates.next_step = aiAnalysis.nextStep;
+            await supabase.from("leads").update(updates).eq("id", leadId);
+            queryClient.invalidateQueries({ queryKey: ["lead-management"] });
+          }}
+        />
+      )}
     </div>
   );
 };
