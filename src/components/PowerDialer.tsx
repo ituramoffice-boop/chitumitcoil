@@ -243,7 +243,7 @@ export function PowerDialer({ queue, onClose, onCallComplete }: PowerDialerProps
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 w-[420px] rounded-2xl border border-border bg-card shadow-2xl overflow-hidden" dir="rtl">
+    <div className="fixed bottom-4 left-4 z-50 w-[420px] rounded-2xl border border-border/50 bg-card/90 backdrop-blur-2xl shadow-2xl overflow-hidden" dir="rtl">
       {/* Success pulse animation */}
       {showPulse && (
         <div className="absolute inset-0 z-10 pointer-events-none">
