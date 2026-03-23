@@ -61,6 +61,7 @@ interface Lead {
   last_contact: string | null;
   next_step: string | null;
   assigned_to: string | null;
+  lead_score: number | null;
 }
 
 const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string; icon: any }> = {
