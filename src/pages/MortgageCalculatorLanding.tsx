@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 import {
   Calculator, Shield, TrendingUp, CheckCircle2, ArrowLeft,
   Sparkles, Building2, Phone, Mail, User, ChevronDown,
-  Lock, Award, Star, Zap, BarChart3, Clock,
+  Lock, Award, Star, Zap, BarChart3, Clock, FileCheck, Upload,
+  Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -56,6 +57,8 @@ const MortgageCalculatorLanding = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", email: "" });
   const [journeyStep, setJourneyStep] = useState(0);
+  const [simAnswers, setSimAnswers] = useState<Record<string, string>>({});
+  const [simScore, setSimScore] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   const result = calculateMortgage(loanAmount, years, rate);
@@ -464,7 +467,7 @@ const MortgageCalculatorLanding = () => {
                 <div className="relative bg-[hsl(222,47%,8%)] border border-white/10 rounded-3xl p-8 overflow-hidden">
                   {/* Progress dots */}
                   <div className="flex items-center justify-center gap-2 mb-8">
-                    {[0, 1, 2].map(i => (
+                    {[0, 1, 2, 3].map(i => (
                       <div key={i} className={cn(
                         "w-2.5 h-2.5 rounded-full transition-all duration-500",
                         journeyStep === i 
@@ -505,9 +508,168 @@ const MortgageCalculatorLanding = () => {
                           onClick={() => setJourneyStep(1)}
                           className="bg-gradient-to-l from-[hsl(217,91%,50%)] to-[hsl(217,91%,40%)] hover:from-[hsl(217,91%,55%)] hover:to-[hsl(217,91%,45%)] text-white border-0 h-12 px-8 rounded-xl"
                         >
-                          מה קורה עכשיו?
+                          בדוק כדאיות — סימולציה מהירה
                           <ArrowLeft className="w-4 h-4 mr-2" />
                         </Button>
+                      </div>
+                    )}
+
+                    {/* Step 1: Interactive Feasibility Simulation */}
+                    {journeyStep === 2 && (
+                      <div className="animate-[fadeSlideUp_0.5s_ease-out] w-full max-w-md">
+                        <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(280,70%,50%)]/20 to-[hsl(280,70%,50%)]/5 flex items-center justify-center mb-6">
+                          <Brain className="w-10 h-10 text-[hsl(280,70%,60%)]" />
+                        </div>
+                        <h3 className="text-2xl font-black mb-2 text-center">סימולציית כדאיות חכמה</h3>
+                        <p className="text-white/50 text-sm mb-6 text-center">ענה על 3 שאלות וקבל ציון התאמה מיידי</p>
+                        
+                        <div className="space-y-4 text-right">
+                          {/* Question 1: Employment */}
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-white/70 flex items-center gap-2">
+                              <Briefcase className="w-4 h-4 text-[hsl(280,70%,60%)]" />
+                              סוג תעסוקה
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { key: "salaried", label: "שכיר", score: 30 },
+                                { key: "self", label: "עצמאי", score: 20 },
+                                { key: "both", label: "שכיר+עצמאי", score: 25 },
+                              ].map(opt => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setSimAnswers(a => ({ ...a, employment: opt.key }))}
+                                  className={cn(
+                                    "p-3 rounded-xl border text-sm font-medium transition-all",
+                                    simAnswers.employment === opt.key
+                                      ? "bg-[hsl(280,70%,50%)]/20 border-[hsl(280,70%,50%)]/50 text-[hsl(280,70%,70%)]"
+                                      : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
+                                  )}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Question 2: Down payment */}
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-white/70 flex items-center gap-2">
+                              <Home className="w-4 h-4 text-[hsl(280,70%,60%)]" />
+                              הון עצמי מתוכנן
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { key: "high", label: "30%+", score: 35 },
+                                { key: "mid", label: "25-30%", score: 25 },
+                                { key: "low", label: "פחות מ-25%", score: 10 },
+                              ].map(opt => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setSimAnswers(a => ({ ...a, downpayment: opt.key }))}
+                                  className={cn(
+                                    "p-3 rounded-xl border text-sm font-medium transition-all",
+                                    simAnswers.downpayment === opt.key
+                                      ? "bg-[hsl(280,70%,50%)]/20 border-[hsl(280,70%,50%)]/50 text-[hsl(280,70%,70%)]"
+                                      : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
+                                  )}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Question 3: Existing obligations */}
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-white/70 flex items-center gap-2">
+                              <CreditCard className="w-4 h-4 text-[hsl(280,70%,60%)]" />
+                              התחייבויות קיימות
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { key: "none", label: "אין", score: 35 },
+                                { key: "some", label: "הלוואה קטנה", score: 20 },
+                                { key: "heavy", label: "מספר הלוואות", score: 5 },
+                              ].map(opt => (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setSimAnswers(a => ({ ...a, obligations: opt.key }))}
+                                  className={cn(
+                                    "p-3 rounded-xl border text-sm font-medium transition-all",
+                                    simAnswers.obligations === opt.key
+                                      ? "bg-[hsl(280,70%,50%)]/20 border-[hsl(280,70%,50%)]/50 text-[hsl(280,70%,70%)]"
+                                      : "bg-white/5 border-white/10 text-white/60 hover:border-white/20"
+                                  )}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Calculate & show score */}
+                        {simAnswers.employment && simAnswers.downpayment && simAnswers.obligations ? (
+                          <div className="mt-6 animate-[fadeSlideUp_0.4s_ease-out]">
+                            {simScore === null ? (
+                              <Button
+                                onClick={() => {
+                                  const scores: Record<string, number> = {
+                                    salaried: 30, self: 20, both: 25,
+                                    high: 35, mid: 25, low: 10,
+                                    none: 35, some: 20, heavy: 5,
+                                  };
+                                  const total = (scores[simAnswers.employment] || 0) + (scores[simAnswers.downpayment] || 0) + (scores[simAnswers.obligations] || 0);
+                                  setSimScore(total);
+                                }}
+                                className="w-full bg-gradient-to-l from-[hsl(280,70%,50%)] to-[hsl(280,70%,40%)] hover:from-[hsl(280,70%,55%)] hover:to-[hsl(280,70%,45%)] text-white border-0 h-12 rounded-xl text-base font-bold"
+                              >
+                                <Target className="w-5 h-5 ml-2" />
+                                חשב ציון כדאיות
+                              </Button>
+                            ) : (
+                              <div className="space-y-4">
+                                <div className="p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm text-white/50">ציון כדאיות</span>
+                                    <span className={cn(
+                                      "text-3xl font-black",
+                                      simScore >= 80 ? "text-[hsl(160,84%,50%)]" :
+                                      simScore >= 55 ? "text-[hsl(38,92%,50%)]" :
+                                      "text-[hsl(0,72%,50%)]"
+                                    )}>
+                                      {simScore}/100
+                                    </span>
+                                  </div>
+                                  <div className="h-3 rounded-full bg-white/10 overflow-hidden">
+                                    <div
+                                      className={cn(
+                                        "h-full rounded-full transition-all duration-1000",
+                                        simScore >= 80 ? "bg-gradient-to-l from-[hsl(160,84%,50%)] to-[hsl(160,84%,39%)]" :
+                                        simScore >= 55 ? "bg-gradient-to-l from-[hsl(38,92%,60%)] to-[hsl(38,92%,45%)]" :
+                                        "bg-gradient-to-l from-[hsl(0,72%,55%)] to-[hsl(0,72%,45%)]"
+                                      )}
+                                      style={{ width: `${simScore}%` }}
+                                    />
+                                  </div>
+                                  <p className="mt-3 text-sm text-white/60">
+                                    {simScore >= 80 ? "🎉 מצוין! סיכוי גבוה לאישור בתנאים מעולים." :
+                                     simScore >= 55 ? "👍 טוב! יש סיכוי טוב, ייתכן שנוכל לשפר תנאים." :
+                                     "⚠️ מומלץ לבדוק אפשרויות — יועץ יכול לעזור למקסם את הסיכוי."}
+                                  </p>
+                                </div>
+                                <Button
+                                  onClick={() => setJourneyStep(2)}
+                                  className="w-full bg-gradient-to-l from-[hsl(217,91%,50%)] to-[hsl(217,91%,40%)] hover:from-[hsl(217,91%,55%)] hover:to-[hsl(217,91%,45%)] text-white border-0 h-12 rounded-xl"
+                                >
+                                  מה קורה עכשיו?
+                                  <ArrowLeft className="w-4 h-4 mr-2" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                     )}
 
@@ -535,7 +697,7 @@ const MortgageCalculatorLanding = () => {
                           ))}
                         </div>
                         <Button
-                          onClick={() => setJourneyStep(2)}
+                          onClick={() => setJourneyStep(3)}
                           className="bg-gradient-to-l from-[hsl(38,92%,50%)] to-[hsl(38,92%,40%)] hover:from-[hsl(38,92%,55%)] hover:to-[hsl(38,92%,45%)] text-white border-0 h-12 px-8 rounded-xl"
                         >
                           טיפ חשוב לפני הפגישה
@@ -544,7 +706,7 @@ const MortgageCalculatorLanding = () => {
                       </div>
                     )}
 
-                    {journeyStep === 2 && (
+                    {journeyStep === 3 && (
                       <div className="animate-[fadeSlideUp_0.5s_ease-out]">
                         <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(160,84%,39%)]/20 to-[hsl(160,84%,39%)]/5 flex items-center justify-center mb-6">
                           <CheckCircle2 className="w-10 h-10 text-[hsl(160,84%,50%)]" />
