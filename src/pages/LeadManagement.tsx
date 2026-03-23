@@ -35,6 +35,7 @@ import {
   Pen, Download, FileText,
 } from "lucide-react";
 import { SignatureModal } from "@/components/SignatureModal";
+import { PowerDialer } from "@/components/PowerDialer";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 
@@ -149,6 +150,7 @@ const LeadManagement = () => {
   const [dragOverColumn, setDragOverColumn] = useState<LeadStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [signLead, setSignLead] = useState<Lead | null>(null);
+  const [dialerQueue, setDialerQueue] = useState<Lead[]>([]);
 
   const [formData, setFormData] = useState({
     full_name: "", phone: "", email: "", notes: "",
@@ -690,6 +692,22 @@ const LeadManagement = () => {
             <Trash2 className="h-3 w-3 ml-1" />
             מחק
           </Button>
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 gap-1"
+            onClick={() => {
+              const selectedArray = leadsWithScore.filter(l => selectedLeads.has(l.id) && l.phone);
+              if (selectedArray.length === 0) {
+                toast({ title: "אין לידים עם טלפון בנבחרים", variant: "destructive" });
+                return;
+              }
+              setDialerQueue(selectedArray);
+              setSelectedLeads(new Set());
+            }}
+          >
+            <Phone className="h-3 w-3" />
+            Power Dialer ({[...selectedLeads].filter(id => leadsWithScore.find(l => l.id === id)?.phone).length})
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setSelectedLeads(new Set())}>ביטול</Button>
         </div>
       )}
@@ -965,6 +983,22 @@ const LeadManagement = () => {
           open={!!signLead}
           onOpenChange={(open) => { if (!open) setSignLead(null); }}
           lead={signLead}
+        />
+      )}
+
+      {/* Power Dialer */}
+      {dialerQueue.length > 0 && (
+        <PowerDialer
+          queue={dialerQueue}
+          onClose={() => setDialerQueue([])}
+          onCallComplete={async (leadId, notes, aiAnalysis) => {
+            // Update lead with call notes and next step
+            const updates: any = { last_contact: new Date().toISOString() };
+            if (notes) updates.notes = notes;
+            if (aiAnalysis?.nextStep) updates.next_step = aiAnalysis.nextStep;
+            await supabase.from("leads").update(updates).eq("id", leadId);
+            queryClient.invalidateQueries({ queryKey: ["lead-management"] });
+          }}
         />
       )}
     </div>
