@@ -269,7 +269,19 @@ const LeadManagement = () => {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: async ({ ids, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["lead-management"] });
+      const previous = queryClient.getQueryData<Lead[]>(["lead-management"]);
+      queryClient.setQueryData<Lead[]>(["lead-management"], old =>
+        old?.map(l => ids.includes(l.id) ? { ...l, status, last_contact: new Date().toISOString() } : l)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(["lead-management"], context.previous);
+      toast({ title: "שגיאה בעדכון סטטוס", variant: "destructive" });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["lead-management"] });
       setSelectedLeads(new Set());
       toast({ title: "סטטוס עודכן" });
