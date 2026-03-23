@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Brain, ArrowRight, Loader2, Upload, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import SmartIngestion from "@/components/SmartIngestion";
+import SelfCheckResults from "@/components/SelfCheckResults";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const SelfCheck = () => {
@@ -66,7 +67,7 @@ const SelfCheck = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8 max-w-2xl space-y-8">
+      <main className="container mx-auto px-6 py-8 max-w-4xl space-y-8">
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2">
           {[
@@ -144,27 +145,7 @@ const SelfCheck = () => {
         )}
 
         {/* Step: Result */}
-        {step === "result" && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="glass-card p-8 text-center space-y-4 border-primary/20">
-              <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto animate-pulse-glow">
-                <Brain className="w-10 h-10 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">הניתוח שלך בהכנה</h2>
-              <p className="text-muted-foreground">
-                מנוע ה-AI שלנו מנתח את המסמכים שהעלת. יועץ משכנתאות יוכל ליצור איתך קשר עם תוצאות מפורטות.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-                <Button onClick={() => navigate("/dashboard")}>
-                  לאזור האישי שלי
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/")}>
-                  חזרה לדף הבית
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        {step === "result" && <SelfCheckResults />}
       </main>
     </div>
   );
