@@ -872,7 +872,8 @@ const LeadManagement = () => {
         </div>
       ) : viewMode === "table" ? (
         /* TABLE VIEW */
-        <Card>
+        <div className="animate-fade-in">
+        <Card className="glass-card">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
