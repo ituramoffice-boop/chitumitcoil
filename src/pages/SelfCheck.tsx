@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +41,13 @@ const SelfCheck = () => {
   const [purpose, setPurpose] = useState<MortgagePurpose | "">("");
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +79,7 @@ const SelfCheck = () => {
       });
       if (error) throw error;
       toast.success("קוד אימות נשלח למייל שלך!");
+      setResendTimer(60);
       setStep("verify");
     } catch (err: any) {
       toast.error(err.message || "שגיאה בשליחת הקוד");
@@ -317,11 +325,16 @@ const SelfCheck = () => {
 
             <div className="text-center space-y-2">
               <button
-                onClick={handleSendOTP as any}
-                className="text-sm text-primary hover:underline"
-                disabled={loading}
+                onClick={(e) => { e.preventDefault(); handleSendOTP(e as any); }}
+                className={cn(
+                  "text-sm transition-colors",
+                  resendTimer > 0 ? "text-muted-foreground cursor-not-allowed" : "text-primary hover:underline"
+                )}
+                disabled={loading || resendTimer > 0}
               >
-                לא קיבלת? שלח שוב
+                {resendTimer > 0
+                  ? `שלח שוב בעוד ${resendTimer} שניות`
+                  : "לא קיבלת? שלח שוב"}
               </button>
               <br />
               <button
