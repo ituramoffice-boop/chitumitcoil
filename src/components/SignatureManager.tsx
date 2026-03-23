@@ -286,8 +286,8 @@ export function SignatureManager() {
                         : isExpired(lead) ? "פג תוקף" : `${daysLeft(lead)} ימים נותרו`}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        {!lead.signed_at && (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {!lead.signed_at && !isExpired(lead) && (
                           <>
                             <Button
                               variant="ghost"
@@ -310,15 +310,53 @@ export function SignatureManager() {
                               העתק קישור
                             </Button>
                             {lead.phone && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs gap-1 text-green-600 hover:text-green-700"
+                                  onClick={() => sendWhatsApp(lead)}
+                                  title="שלח בוואטסאפ"
+                                >
+                                  <MessageCircle className="h-3 w-3" />
+                                  שלח
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs gap-1 text-amber-600 hover:text-amber-700"
+                                  onClick={() => sendReminder(lead)}
+                                  title="שלח תזכורת חתימה"
+                                >
+                                  <Bell className="h-3 w-3" />
+                                  תזכורת
+                                </Button>
+                              </>
+                            )}
+                          </>
+                        )}
+                        {!lead.signed_at && isExpired(lead) && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs gap-1 text-primary hover:text-primary"
+                              onClick={() => regenerateToken(lead)}
+                              title="חדש קישור חתימה"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              חדש קישור
+                            </Button>
+                            {lead.phone && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-xs gap-1 text-green-600 hover:text-green-700"
-                                onClick={() => sendWhatsApp(lead)}
-                                title="שלח בוואטסאפ"
+                                onClick={() => sendReminder(lead)}
+                                title="שלח תזכורת"
                               >
                                 <MessageCircle className="h-3 w-3" />
-                                שלח בוואטסאפ
+                                תזכורת
                               </Button>
                             )}
                           </>
