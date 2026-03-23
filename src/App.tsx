@@ -30,6 +30,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/self-check" element={<SelfCheck />} />
               <Route path="/calculator" element={<MortgageCalculatorLanding />} />
+              <Route path="/sign/:token" element={<RemoteSign />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:section" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
