@@ -1023,9 +1023,10 @@ const LeadManagement = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       ) : (
         /* KANBAN VIEW */
-        <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 400 }}>
+        <div className="flex gap-3 overflow-x-auto pb-4 animate-fade-in" style={{ minHeight: 400 }}>
           {KANBAN_COLUMNS.map(status => {
             const columnLeads = filteredLeads.filter(l => l.status === status);
             const cfg = STATUS_CONFIG[status];
