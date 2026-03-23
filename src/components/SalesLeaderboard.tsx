@@ -725,15 +725,15 @@ export function SalesLeaderboard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-center w-14">#</TableHead>
-                        <TableHead className="text-right">נציג</TableHead>
-                        <TableHead className="text-center">סגירות</TableHead>
-                        <TableHead className="text-center">המרה</TableHead>
-                        <TableHead className="text-center">היקף</TableHead>
-                        <TableHead className="text-center">שיחות</TableHead>
                         <TableHead className="text-center">ממוצע שיחה</TableHead>
-                        <TableHead className="text-center">סנטימנט</TableHead>
                         <TableHead className="text-center">🌡️ חום</TableHead>
+                        <TableHead className="text-center">סנטימנט</TableHead>
+                        <TableHead className="text-center">שיחות</TableHead>
+                        <TableHead className="text-center">היקף</TableHead>
+                        <TableHead className="text-center">המרה</TableHead>
+                        <TableHead className="text-center">סגירות</TableHead>
+                        <TableHead className="text-right">נציג</TableHead>
+                        <TableHead className="text-center w-14">#</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
