@@ -994,10 +994,16 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                         <Tabs defaultValue="risk" dir="rtl">
                           <TabsList>
                             <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
+                            <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
                             <TabsTrigger value="details">פרטים</TabsTrigger>
                           </TabsList>
                           <TabsContent value="risk" className="mt-4">
                             <RiskAnalysisView lead={lead} />
+                          </TabsContent>
+                          <TabsContent value="timeline" className="mt-4">
+                            <div className="glass-card p-5">
+                              <CaseTimeline leadId={lead.id} />
+                            </div>
                           </TabsContent>
                           <TabsContent value="details" className="mt-4">
                             <div className="glass-card p-5 space-y-3">
