@@ -72,8 +72,12 @@ const MortgageCalculatorLanding = () => {
     }
     setSubmitting(true);
     try {
+      // Use current user's ID if logged in, otherwise use default
+      const { data: { session } } = await supabase.auth.getSession();
+      const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      
       const { error } = await supabase.from("leads").insert({
-        consultant_id: DEFAULT_CONSULTANT_ID,
+        consultant_id: consultantId,
         full_name: formData.full_name,
         phone: formData.phone || null,
         email: formData.email || null,
