@@ -8,6 +8,7 @@ import {
   UsersRound,
   BarChart3,
   Pen,
+  Phone,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
