@@ -325,11 +325,16 @@ const SelfCheck = () => {
 
             <div className="text-center space-y-2">
               <button
-                onClick={handleSendOTP as any}
-                className="text-sm text-primary hover:underline"
-                disabled={loading}
+                onClick={(e) => { e.preventDefault(); handleSendOTP(e as any); }}
+                className={cn(
+                  "text-sm transition-colors",
+                  resendTimer > 0 ? "text-muted-foreground cursor-not-allowed" : "text-primary hover:underline"
+                )}
+                disabled={loading || resendTimer > 0}
               >
-                לא קיבלת? שלח שוב
+                {resendTimer > 0
+                  ? `שלח שוב בעוד ${resendTimer} שניות`
+                  : "לא קיבלת? שלח שוב"}
               </button>
               <br />
               <button
