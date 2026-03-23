@@ -1006,6 +1006,15 @@ const LeadManagement = () => {
           }}
         />
       )}
+
+      {/* Call History Dialog */}
+      <CallHistory
+        showAsDialog
+        open={!!callHistoryLead}
+        onClose={() => setCallHistoryLead(null)}
+        leadId={callHistoryLead?.id}
+        leadName={callHistoryLead?.full_name}
+      />
     </div>
   );
 };
