@@ -173,6 +173,7 @@ export type Database = {
           last_contact: string | null
           lead_score: number | null
           lead_source: string | null
+          marketing_consent: boolean | null
           monthly_income: number | null
           mortgage_amount: number | null
           next_step: string | null
@@ -196,6 +197,7 @@ export type Database = {
           last_contact?: string | null
           lead_score?: number | null
           lead_source?: string | null
+          marketing_consent?: boolean | null
           monthly_income?: number | null
           mortgage_amount?: number | null
           next_step?: string | null
@@ -219,6 +221,7 @@ export type Database = {
           last_contact?: string | null
           lead_score?: number | null
           lead_source?: string | null
+          marketing_consent?: boolean | null
           monthly_income?: number | null
           mortgage_amount?: number | null
           next_step?: string | null
