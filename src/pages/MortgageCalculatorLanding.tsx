@@ -513,6 +513,26 @@ const MortgageCalculatorLanding = () => {
                       </div>
                     </div>
 
+                    {/* Marketing consent */}
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <div className="relative mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={marketingConsent}
+                          onChange={e => setMarketingConsent(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-5 h-5 rounded-md border-2 border-white/20 bg-white/5 peer-checked:bg-[hsl(160,84%,39%)] peer-checked:border-[hsl(160,84%,39%)] transition-all flex items-center justify-center">
+                          {marketingConsent && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs text-white/40 leading-relaxed group-hover:text-white/60 transition-colors">
+                        אני מאשר/ת קבלת עדכונים, טיפים ומבצעים בנושא משכנתאות בדוא"ל ו/או ב-SMS. ניתן לבטל בכל עת.
+                      </span>
+                    </label>
+
                     <Button
                       onClick={handleSubmit}
                       disabled={submitting}
