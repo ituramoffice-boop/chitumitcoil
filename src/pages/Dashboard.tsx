@@ -13,12 +13,15 @@ import ReportsPage from "@/components/ReportsPage";
 import AdminDashboard from "./AdminDashboard";
 import ClientDashboard from "./ClientDashboard";
 import ConsultantDashboard from "./ConsultantDashboard";
+import TeamManagement from "./TeamManagement";
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
   scenarios: FinancialScenarios,
   reports: ReportsPage,
   clients: () => <AdminDashboard />,
+  team: () => <TeamManagement />,
+  "agency-reports": ReportsPage,
 };
 
 const Dashboard = () => {
