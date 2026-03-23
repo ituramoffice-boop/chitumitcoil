@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Brain, ArrowRight, Loader2, Upload, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import SmartIngestion from "@/components/SmartIngestion";
+import SelfCheckResults from "@/components/SelfCheckResults";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const SelfCheck = () => {
