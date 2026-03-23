@@ -23,6 +23,7 @@ interface Lead {
   signed_at: string | null;
   signature_url: string | null;
   sign_token: string | null;
+  created_at: string;
 }
 
 export default function RemoteSign() {
