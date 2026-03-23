@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brain, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Mode = "login" | "signup";
 
@@ -16,7 +17,14 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [isConsultant, setIsConsultant] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authLoading, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +44,9 @@ const Auth = () => {
 
         // If consultant signup, update role after signup
         if (isConsultant) {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (user) {
             await supabase
               .from("user_roles")
@@ -52,7 +62,6 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        navigate("/dashboard");
       }
     } catch (error: any) {
       toast.error(error.message || "שגיאה בהתחברות");
