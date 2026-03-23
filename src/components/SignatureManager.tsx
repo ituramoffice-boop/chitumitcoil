@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import {
   Search, FileText, CheckCircle2, Clock, Send, Copy, Download,
   Loader2, MessageCircle, ExternalLink, Pen, RefreshCw, Sparkles,
+  AlertTriangle, Bell, RotateCcw,
 } from "lucide-react";
 import { SmartPdfSigner } from "@/components/SmartPdfSigner";
 import { formatDistanceToNow } from "date-fns";
