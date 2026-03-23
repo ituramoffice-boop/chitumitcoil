@@ -292,9 +292,9 @@ const LeadManagement = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  // Scoring
+  // Scoring — prefer AI-generated DB score, fallback to calculated
   const leadsWithScore = useMemo(() =>
-    leads.map(l => ({ ...l, lead_score: calculateLeadScore(l) })),
+    leads.map(l => ({ ...l, lead_score: (l.lead_score && l.lead_score > 0) ? l.lead_score : calculateLeadScore(l) })),
     [leads]
   );
 
