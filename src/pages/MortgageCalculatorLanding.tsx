@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 import {
   Calculator, Shield, TrendingUp, CheckCircle2, ArrowLeft,
   Sparkles, Building2, Phone, Mail, User, ChevronDown,
-  Lock, Award, Star, Zap, BarChart3, Clock,
+  Lock, Award, Star, Zap, BarChart3, Clock, FileCheck, Upload,
+  Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
