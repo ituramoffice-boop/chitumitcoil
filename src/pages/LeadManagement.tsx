@@ -878,11 +878,26 @@ const LeadManagement = () => {
                           <Checkbox checked={selectedLeads.has(lead.id)} onCheckedChange={() => toggleSelect(lead.id)} />
                         </TableCell>
                         <TableCell>
-                          <div className={cn("flex items-center gap-1 font-bold text-sm", getScoreColor(lead.lead_score))}>
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold", getScoreBg(lead.lead_score))}>
-                              {lead.lead_score}
-                            </div>
-                          </div>
+                          {(() => {
+                            const temp = getTemperatureLabel(lead.lead_score);
+                            return (
+                              <div className="flex items-center gap-1.5">
+                                <div className={cn(
+                                  "w-9 h-9 rounded-full flex items-center justify-center text-xs font-black border-2",
+                                  lead.lead_score >= 85 ? "border-red-500/50 bg-red-500/10" :
+                                  lead.lead_score >= 50 ? "border-orange-500/50 bg-orange-500/10" :
+                                  "border-blue-500/50 bg-blue-500/10",
+                                  getScoreColor(lead.lead_score)
+                                )}>
+                                  {lead.lead_score}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-sm">{temp.emoji}</span>
+                                  <span className={cn("text-[9px] font-semibold", temp.color)}>{temp.label}</span>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
