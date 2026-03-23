@@ -212,6 +212,16 @@ export function SignatureManager() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              className="h-7 text-xs gap-1 text-primary hover:text-primary"
+                              onClick={() => setSmartSignLead(lead)}
+                              title="חתימה חכמה על PDF"
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              PDF חכם
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-7 text-xs gap-1"
                               onClick={() => copyLink(lead)}
                               title="העתק קישור חתימה"
