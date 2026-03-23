@@ -175,7 +175,7 @@ export function SignatureManager() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card className="border-border/50">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-primary/10">
@@ -206,6 +206,17 @@ export function SignatureManager() {
             <div>
               <p className="text-2xl font-bold">{stats.pending}</p>
               <p className="text-xs text-muted-foreground">ממתינים לחתימה</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-destructive/10">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{stats.expired}</p>
+              <p className="text-xs text-muted-foreground">פגי תוקף</p>
             </div>
           </CardContent>
         </Card>
