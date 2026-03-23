@@ -1019,7 +1019,9 @@ const LeadManagement = () => {
                         )}
                       >
                         <div className="flex items-start justify-between mb-1.5">
-                          <p className="font-medium text-sm leading-tight">{lead.full_name}</p>
+                          <LeadHeatPopup lead={lead}>
+                            <p className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
+                          </LeadHeatPopup>
                           <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", getScoreBg(score), getScoreColor(score))}>
                             {score}
                           </div>
