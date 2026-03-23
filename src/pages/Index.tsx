@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Brain, ShieldCheck, FileText, TrendingUp, ArrowLeft } from "lucide-react";
+import { Brain, ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const { user } = useAuth();
@@ -18,10 +19,13 @@ const Index = () => {
             </div>
             <h1 className="text-xl font-bold text-foreground">SmartMortgage AI</h1>
           </div>
-          <Button onClick={() => navigate(user ? "/dashboard" : "/auth")}>
-            {user ? "לדשבורד" : "התחברות"}
-            <ArrowLeft className="w-4 h-4 mr-2" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button onClick={() => navigate(user ? "/dashboard" : "/auth")}>
+              {user ? "לדשבורד" : "התחברות"}
+              <ArrowLeft className="w-4 h-4 mr-2" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -40,10 +44,16 @@ const Index = () => {
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             מערכת AI מתקדמת לזיהוי סיכונים, אימות נתונים והצלבת מסמכים — כל מה שיועץ משכנתאות צריך במקום אחד.
           </p>
-          <Button size="lg" onClick={() => navigate(user ? "/dashboard" : "/auth")}>
-            התחל עכשיו
-            <ArrowLeft className="w-4 h-4 mr-2" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" onClick={() => navigate(user ? "/dashboard" : "/auth")}>
+              התחל עכשיו
+              <ArrowLeft className="w-4 h-4 mr-2" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/self-check")} className="group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all">
+              <Sparkles className="w-4 h-4 ml-2 text-primary group-hover:animate-pulse" />
+              בדיקת היתכנות עצמאית
+            </Button>
+          </div>
         </div>
       </section>
 

@@ -4,10 +4,10 @@ import {
   Calculator,
   FileBarChart,
   Users,
-  Settings,
   Brain,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -43,9 +43,14 @@ export function AppSidebar() {
             <Brain className="w-5 h-5 text-primary" />
           </div>
           {!collapsed && (
-            <div>
-              <h1 className="text-sm font-bold text-foreground">SmartMortgage AI</h1>
-              <p className="text-[10px] text-muted-foreground">מנוע חיתום חכם</p>
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="text-sm font-bold text-foreground">SmartMortgage AI</h1>
+                <p className="text-[10px] text-muted-foreground">מנוע חיתום חכם</p>
+              </div>
+              <div className="mr-auto">
+                <ThemeToggle />
+              </div>
             </div>
           )}
         </div>
