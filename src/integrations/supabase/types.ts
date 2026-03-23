@@ -128,6 +128,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           property_value: number | null
+          sign_token: string | null
           signature_url: string | null
           signed_at: string | null
           status: Database["public"]["Enums"]["lead_status"]
@@ -149,6 +150,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           property_value?: number | null
+          sign_token?: string | null
           signature_url?: string | null
           signed_at?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
@@ -170,6 +172,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           property_value?: number | null
+          sign_token?: string | null
           signature_url?: string | null
           signed_at?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
