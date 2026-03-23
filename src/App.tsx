@@ -31,6 +31,7 @@ const App = () => (
               <Route path="/dashboard/:section" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </WorkspaceProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

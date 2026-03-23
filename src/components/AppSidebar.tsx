@@ -42,6 +42,8 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { isAgency } = useWorkspace();
+  const navItems = isAgency ? [...baseNavItems, ...agencyNavItems] : baseNavItems;
 
   return (
     <Sidebar collapsible="icon" side="right">
