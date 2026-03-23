@@ -16,7 +16,44 @@ import TeamManagement from "./TeamManagement";
 import AgencyReports from "./AgencyReports";
 import LeadManagement from "./LeadManagement";
 import { SignatureManager } from "@/components/SignatureManager";
-import { PowerDialer } from "@/components/PowerDialerPage";
+import PowerDialer from "@/components/PowerDialer";
+
+const PowerDialerPage = () => {
+  const [leads, setLeads] = useState<any[]>([]);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      const { data } = await supabase.from("leads").select("*").not("phone", "is", null);
+      if (data) setLeads(data);
+    };
+    fetchLeads();
+  }, []);
+
+  if (leads.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <Phone className="w-12 h-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-bold mb-2">חייגן אוטומטי</h2>
+        <p className="text-muted-foreground mb-4">בחר לידים מדף ניהול הלידים כדי להתחיל סשן חיוג</p>
+        <a href="/dashboard/clients" className="text-primary underline">עבור לניהול לידים →</a>
+      </div>
+    );
+  }
+
+  return (
+    <PowerDialer
+      queue={leads}
+      onClose={() => setLeads([])}
+      onCallComplete={async (leadId, notes) => {
+        await supabase.from("leads").update({ 
+          last_contact: new Date().toISOString(),
+          notes 
+        }).eq("id", leadId);
+      }}
+    />
+  );
+};
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
