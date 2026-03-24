@@ -9,6 +9,7 @@ import {
   Smartphone, Globe, ChevronLeft, Play, Star, Quote
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 
 /* ── Animated Section ── */
 function AnimSection({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -273,7 +274,7 @@ function DemoCard({ icon: Icon, badge, title, desc, mockup, delay }: {
       </div>
       {/* Info */}
       <div className="p-6 space-y-3">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gold/10 text-gold text-xs font-medium">
           <Icon className="w-3.5 h-3.5" /> {badge}
         </span>
         <h3 className="text-lg font-bold text-foreground">{title}</h3>
@@ -447,8 +448,8 @@ export default function Pitch() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
-              <Sparkles className="w-4 h-4" /> נבנה על ידי יועצי משכנתאות, בשביל יועצי משכנתאות
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium">
+              <ChitumitLogo size={20} /> חיתומית — הבינה שמאחורי האישור
             </span>
           </motion.div>
 
@@ -460,7 +461,7 @@ export default function Pitch() {
           >
             נמאס לך לרדוף
             <br />
-            אחרי <span className="bg-gradient-to-l from-destructive via-destructive/80 to-destructive/60 bg-clip-text text-transparent">לידים שמתים</span>?
+            אחרי <span className="gradient-header">לידים שמתים</span>?
           </motion.h1>
 
           <motion.p
@@ -480,7 +481,7 @@ export default function Pitch() {
             transition={{ duration: 0.6, delay: 0.7 }}
             className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
           >
-            <Button size="lg" className="text-lg px-10 py-6 rounded-xl shadow-lg shadow-primary/25" onClick={() => navigate("/auth")}>
+            <Button size="lg" className="text-lg px-10 py-6 rounded-xl bg-gold text-gold-foreground hover:bg-gold/90 shadow-lg shadow-gold/25 glow-gold" onClick={() => navigate("/auth")}>
               אני רוצה לנסות — בחינם
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-10 py-6 rounded-xl" onClick={() => {
@@ -507,7 +508,7 @@ export default function Pitch() {
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-              מכירים את <span className="text-destructive">הכאבים</span> האלה?
+              מכירים את <span className="gradient-header">הכאבים</span> האלה?
             </h2>
             <p className="text-muted-foreground">אם ענית "כן" על לפחות אחד — המערכת הזו נבנתה בשבילך</p>
           </AnimSection>
@@ -527,11 +528,11 @@ export default function Pitch() {
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-5xl mx-auto">
           <AnimSection className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-success/10 border border-success/20 text-success text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium mb-4">
               <CheckCircle2 className="w-4 h-4" /> הפתרון
             </span>
             <h2 className="text-3xl md:text-5xl font-extrabold mb-4">
-              <span className="text-primary">מערכת אחת</span> שמחליפה את כולן
+              <span className="gradient-header">מערכת אחת</span> שמחליפה את כולן
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               תראה בעצמך איך כל פיצ'ר עובד — לא סתם מילים, הנה ה-Demo:
@@ -587,8 +588,8 @@ export default function Pitch() {
                 { num: 340, suffix: "%", prefix: "+", label: "שיפור בהמרות", icon: TrendingUp },
               ].map((s, i) => (
                 <AnimSection key={i} delay={i * 0.1}>
-                  <s.icon className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <div className="text-2xl md:text-3xl font-black text-foreground">
+                  <s.icon className="w-6 h-6 text-gold mx-auto mb-2" />
+                  <div className="text-2xl md:text-3xl font-black gradient-header">
                     <Counter value={s.num} suffix={s.suffix} prefix={s.prefix || ""} />
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
@@ -604,7 +605,7 @@ export default function Pitch() {
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-extrabold">
-              <span className="text-destructive line-through">הדרך הישנה</span> vs <span className="text-primary">הדרך החכמה</span>
+              <span className="text-destructive line-through">הדרך הישנה</span> vs <span className="gradient-header">הדרך החכמה</span>
             </h2>
           </AnimSection>
 
@@ -648,8 +649,8 @@ export default function Pitch() {
             ].map((item, i) => (
               <AnimSection key={i} delay={i * 0.12}>
                 <div className="glass-card p-6 text-center space-y-3 h-full relative overflow-hidden">
-                  <div className="text-5xl font-black text-primary/10">{item.step}</div>
-                  <item.icon className="w-8 h-8 text-primary mx-auto" />
+                  <div className="text-5xl font-black text-gold/10">{item.step}</div>
+                  <item.icon className="w-8 h-8 text-gold mx-auto" />
                   <h3 className="text-lg font-bold text-foreground">{item.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
@@ -663,11 +664,11 @@ export default function Pitch() {
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-glow/10 border border-cyan-glow/20 text-cyan-glow text-sm font-medium mb-4">
               <Play className="w-4 h-4" /> ראה את זה בפעולה
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold">
-              60 שניות — מ<span className="text-primary">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
+              60 שניות — מ<span className="gradient-header">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
             </h2>
           </AnimSection>
 
@@ -681,7 +682,7 @@ export default function Pitch() {
       <section className="relative z-10 py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <AnimSection className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-extrabold">מה אומרים <span className="text-primary">יועצים שכבר עברו</span></h2>
+            <h2 className="text-2xl md:text-3xl font-extrabold">מה אומרים <span className="gradient-header">יועצים שכבר עברו</span></h2>
           </AnimSection>
           <TestimonialsCarousel />
         </div>
@@ -700,7 +701,7 @@ export default function Pitch() {
       <section className="relative z-10 py-32 px-4">
         <AnimSection className="text-center max-w-3xl mx-auto space-y-6">
           <h2 className="text-3xl md:text-5xl font-black">
-            מוכן <span className="text-primary">לעבוד חכם</span>?
+            מוכן <span className="gradient-header">לעבוד חכם</span>?
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             10 לידים ראשונים בחינם. בלי כרטיס אשראי. בלי התחייבות.
@@ -708,7 +709,7 @@ export default function Pitch() {
             פשוט תירשם ותראה את ההבדל.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-            <Button size="lg" className="text-lg px-12 py-7 rounded-xl shadow-lg shadow-primary/25" onClick={() => navigate("/auth")}>
+            <Button size="lg" className="text-lg px-12 py-7 rounded-xl bg-gold text-gold-foreground hover:bg-gold/90 shadow-lg shadow-gold/25 glow-gold animate-glow-pulse" onClick={() => navigate("/auth")}>
               <Sparkles className="w-5 h-5 ml-2" />
               אני רוצה לנסות — בחינם
             </Button>
@@ -721,7 +722,7 @@ export default function Pitch() {
 
       {/* ═══════ FOOTER ═══════ */}
       <footer className="relative z-10 border-t border-border/30 py-8 px-4 text-center text-sm text-muted-foreground">
-        <p>© 2026 חיתומית — כל הזכויות שמורות</p>
+        <p>© 2026 חיתומית — <span className="text-gold">הבינה שמאחורי האישור</span> — כל הזכויות שמורות</p>
       </footer>
     </div>
   );
