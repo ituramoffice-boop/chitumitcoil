@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export function useAdvisorSync() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [advisorId, setAdvisorId] = useState<string | null>(null);
   const [advisorName, setAdvisorName] = useState<string | null>(null);
@@ -19,6 +21,14 @@ export function useAdvisorSync() {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
     if (!ref || ref === user.id) return;
+
+    // In demo mode, show modal immediately with mock data
+    if (isDemoMode) {
+      setAdvisorId(ref);
+      setAdvisorName("יועץ דמו");
+      setShowSyncModal(true);
+      return;
+    }
 
     // Check if sync already exists
     (async () => {
@@ -46,7 +56,7 @@ export function useAdvisorSync() {
         console.error("Advisor sync check failed:", err);
       }
     })();
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   return { showSyncModal, setShowSyncModal, advisorId, advisorName };
 }
