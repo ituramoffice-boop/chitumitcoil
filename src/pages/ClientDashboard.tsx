@@ -519,36 +519,20 @@ const ClientDashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {REQUIRED_DOCS.map((doc) => {
                 const found = uploadedClassifications.includes(doc.key);
-                const Icon = doc.icon;
+                const acceptPdf = [".pdf"];
+                const acceptAll = [".pdf", ".jpg", ".jpeg", ".png", ".webp"];
                 return (
-                  <motion.div
+                  <DocumentIntelligenceZone
                     key={doc.key}
-                    whileHover={{ scale: 1.01 }}
-                    className={cn(
-                      "flex items-center gap-3 p-4 rounded-xl border transition-all",
-                      found
-                        ? "bg-success/5 border-success/20 text-success"
-                        : "bg-card/40 border-border/40 text-muted-foreground hover:border-cyan-500/30 hover:bg-cyan-500/[0.03]"
-                    )}
-                  >
-                    <div className={cn("p-2 rounded-lg", found ? "bg-success/10" : "bg-secondary/60")}>
-                      {found ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={cn("text-sm font-medium", found ? "text-success" : "text-foreground")}>
-                        {doc.label}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {found ? "✓ הועלה בהצלחה" : "ממתין להעלאה"}
-                      </p>
-                    </div>
-                    {!found && (
-                      <Button size="sm" variant="ghost" className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 text-xs gap-1 shrink-0">
-                        <Upload className="w-3.5 h-3.5" />
-                        העלה
-                      </Button>
-                    )}
-                  </motion.div>
+                    docKey={doc.key}
+                    label={doc.label}
+                    icon={doc.icon}
+                    found={found}
+                    acceptedTypes={doc.key === 'צילום ת"ז' ? acceptAll : acceptPdf}
+                    onFileAccepted={(file) => {
+                      toast.success(`${doc.label} אומת בהצלחה`, { description: file.name });
+                    }}
+                  />
                 );
               })}
             </div>
