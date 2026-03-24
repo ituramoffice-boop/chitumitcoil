@@ -380,12 +380,15 @@ export default function Investors() {
               { label: "LTV:CAC", value: "150x", sub: "יחס בריא מאוד" },
               { label: "Churn", value: "2.5%", sub: "נטישה חודשית" },
             ].map((m, i) => (
-              <Reveal key={i} delay={i * 0.1}>
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-gold/15 text-center space-y-1">
+              <Reveal key={i} delay={i * 0.1} variant="stat">
+                <motion.div
+                  whileHover={{ scale: 1.06, borderColor: "rgba(212, 175, 55, 0.4)" }}
+                  className="p-4 rounded-xl bg-slate-800/50 border border-gold/15 text-center space-y-1"
+                >
                   <div className="text-xl font-black text-gold">{m.value}</div>
                   <div className="text-xs font-bold text-slate-300">{m.label}</div>
                   <div className="text-[10px] text-slate-500">{m.sub}</div>
-                </div>
+                </motion.div>
               </Reveal>
             ))}
           </div>
