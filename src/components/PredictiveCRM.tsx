@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Brain,
   TrendingUp,
@@ -22,10 +23,21 @@ import {
   Flame,
   Snowflake,
   ThermometerSun,
+  Mail,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Lead {
   id: string;
@@ -187,6 +199,9 @@ export function PriorityBoard({
 }) {
   const [selectedBulk, setSelectedBulk] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<"board" | "list">("board");
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [bankEmail, setBankEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const enrichedLeads: LeadWithAI[] = useMemo(() => {
     return leads
@@ -238,47 +253,34 @@ export function PriorityBoard({
     toast.success(`${ids.size} תיקים מוכנים נבחרו`);
   };
 
-  const handleGenerateMasterFile = useCallback(() => {
-    const selected = enrichedLeads.filter(l => selectedBulk.has(l.id));
-    if (selected.length === 0) return;
-
+  // Build PDF doc from selected leads (reusable for download & email)
+  const buildPdfDoc = useCallback((selected: LeadWithAI[]) => {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-
-    // Load Heebo font fallback — use built-in helvetica with manual RTL reversal
     const rtl = (text: string) => text.split("").reverse().join("");
 
     // ─── Cover Page ───
-    doc.setFillColor(15, 23, 42); // dark navy
+    doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, 297, 210, "F");
-
-    // Gold accent line
     doc.setDrawColor(212, 175, 55);
     doc.setLineWidth(1.5);
     doc.line(20, 30, 277, 30);
-
     doc.setTextColor(212, 175, 55);
     doc.setFontSize(28);
     doc.text("Chitumit", 148.5, 55, { align: "center" });
-
     doc.setFontSize(14);
     doc.setTextColor(200, 200, 200);
     doc.text(rtl("קובץ הגשה מרכזי לבנק"), 148.5, 70, { align: "center" });
-
     doc.setFontSize(11);
     doc.setTextColor(150, 150, 150);
     const dateStr = new Date().toLocaleDateString("he-IL");
     doc.text(`${rtl("תאריך הפקה:")} ${dateStr}`, 148.5, 85, { align: "center" });
     doc.text(`${selected.length} ${rtl("תיקים")}`, 148.5, 93, { align: "center" });
-
-    // Total pipeline value
     const totalVolume = selected.reduce((s, l) => s + (Number(l.mortgage_amount) || 0), 0);
     doc.setFontSize(18);
     doc.setTextColor(16, 185, 129);
     doc.text(`${rtl("נפח הלוואות כולל:")} ${totalVolume.toLocaleString()} NIS`, 148.5, 115, { align: "center" });
-
     doc.setDrawColor(212, 175, 55);
     doc.line(20, 180, 277, 180);
-
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     doc.text(rtl("מסמך זה הופק אוטומטית ע\"י מערכת חיתומית — כל הזכויות שמורות"), 148.5, 195, { align: "center" });
@@ -287,17 +289,13 @@ export function PriorityBoard({
     doc.addPage("a4", "landscape");
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, 297, 210, "F");
-
     doc.setTextColor(212, 175, 55);
     doc.setFontSize(16);
     doc.text(rtl("סיכום תיקים להגשה"), 277, 20, { align: "right" });
-
-    // Table header
     const headers = ["#", "Client Name", "Mortgage (NIS)", "Property (NIS)", "Income (NIS)", "LTV%", "DTI%", "Status", "Probability"];
     const colWidths = [10, 45, 35, 35, 35, 25, 25, 30, 30];
     let startX = 15;
     const headerY = 35;
-
     doc.setFillColor(30, 41, 59);
     doc.rect(startX, headerY - 5, 270, 10, "F");
     doc.setFontSize(8);
@@ -308,7 +306,6 @@ export function PriorityBoard({
       cx += colWidths[i];
     });
 
-    // Table rows
     selected.forEach((lead, idx) => {
       const y = headerY + 12 + idx * 10;
       if (y > 190) {
@@ -316,38 +313,19 @@ export function PriorityBoard({
         doc.setFillColor(15, 23, 42);
         doc.rect(0, 0, 297, 210, "F");
       }
-
       const rowY = y > 190 ? 25 + ((idx * 10) % 170) : y;
-
-      // Zebra stripe
       if (idx % 2 === 0) {
         doc.setFillColor(20, 30, 50);
         doc.rect(startX, rowY - 5, 270, 10, "F");
       }
-
       const mortgage = Number(lead.mortgage_amount) || 0;
       const property = Number(lead.property_value) || 0;
       const income = Number(lead.monthly_income) || 0;
       const ltv = property > 0 ? ((mortgage / property) * 100).toFixed(1) : "N/A";
       const dti = income > 0 ? ((mortgage / (income * 12)) * 100).toFixed(1) : "N/A";
-
       const probLabel = lead.closingProbability === "high" ? "HIGH" : lead.closingProbability === "medium" ? "MED" : "LOW";
-
-      const row = [
-        String(idx + 1),
-        lead.full_name,
-        mortgage.toLocaleString(),
-        property.toLocaleString(),
-        income.toLocaleString(),
-        String(ltv),
-        String(dti),
-        lead.status,
-        probLabel,
-      ];
-
+      const row = [String(idx + 1), lead.full_name, mortgage.toLocaleString(), property.toLocaleString(), income.toLocaleString(), String(ltv), String(dti), lead.status, probLabel];
       doc.setFontSize(8);
-
-      // Prob color
       cx = startX;
       row.forEach((cell, ci) => {
         if (ci === 8) {
@@ -367,45 +345,32 @@ export function PriorityBoard({
       doc.addPage("a4", "portrait");
       doc.setFillColor(15, 23, 42);
       doc.rect(0, 0, 210, 297, "F");
-
-      // Gold accent
       doc.setDrawColor(212, 175, 55);
       doc.setLineWidth(0.8);
       doc.line(15, 20, 195, 20);
-
       doc.setTextColor(212, 175, 55);
       doc.setFontSize(14);
       doc.text(`${rtl("כרטיס לקוח")} #${idx + 1}`, 195, 15, { align: "right" });
-
-      // Client name
       doc.setFontSize(20);
       doc.setTextColor(255, 255, 255);
       doc.text(lead.full_name, 195, 35, { align: "right" });
-
-      // Data fields
       const mortgage = Number(lead.mortgage_amount) || 0;
       const property = Number(lead.property_value) || 0;
       const income = Number(lead.monthly_income) || 0;
       const ltv = property > 0 ? ((mortgage / property) * 100).toFixed(1) + "%" : "N/A";
       const dti = income > 0 ? ((mortgage / (income * 12)) * 100).toFixed(1) + "%" : "N/A";
-
       const fields = [
         [rtl("סכום משכנתא"), `${mortgage.toLocaleString()} NIS`],
         [rtl("שווי נכס"), `${property.toLocaleString()} NIS`],
         [rtl("הכנסה חודשית"), `${income.toLocaleString()} NIS`],
-        ["LTV", ltv],
-        ["DTI", dti],
+        ["LTV", ltv], ["DTI", dti],
         [rtl("סטטוס"), lead.status],
         [rtl("סיכוי סגירה"), lead.closingProbability === "high" ? "HIGH" : lead.closingProbability === "medium" ? "MEDIUM" : "LOW"],
         [rtl("בריאות מסמכים"), lead.docHealth === "green" ? rtl("מוכן לבנק") : lead.docHealth === "yellow" ? rtl("חסר מידע") : rtl("חריגה")],
       ];
-
       let fy = 55;
       fields.forEach(([label, value], fi) => {
-        if (fi % 2 === 0) {
-          doc.setFillColor(20, 30, 50);
-          doc.rect(15, fy - 5, 180, 12, "F");
-        }
+        if (fi % 2 === 0) { doc.setFillColor(20, 30, 50); doc.rect(15, fy - 5, 180, 12, "F"); }
         doc.setFontSize(9);
         doc.setTextColor(150, 150, 150);
         doc.text(label, 190, fy + 2, { align: "right" });
@@ -413,10 +378,7 @@ export function PriorityBoard({
         doc.text(value, 80, fy + 2, { align: "center" });
         fy += 12;
       });
-
-      // AI Insight
       fy += 10;
-      doc.setFillColor(6, 182, 212, 0.1);
       doc.setFillColor(20, 40, 60);
       doc.roundedRect(15, fy - 5, 180, 20, 3, 3, "F");
       doc.setFontSize(8);
@@ -424,8 +386,6 @@ export function PriorityBoard({
       doc.text("AI Insight:", 190, fy + 2, { align: "right" });
       doc.setTextColor(180, 200, 210);
       doc.text(lead.aiInsight, 190, fy + 10, { align: "right", maxWidth: 170 });
-
-      // Footer
       doc.setDrawColor(212, 175, 55);
       doc.line(15, 277, 195, 277);
       doc.setFontSize(7);
@@ -433,7 +393,14 @@ export function PriorityBoard({
       doc.text("Chitumit - Bank Submission File", 105, 285, { align: "center" });
     });
 
-    // Save
+    return { doc, totalVolume };
+  }, []);
+
+  const handleGenerateMasterFile = useCallback(() => {
+    const selected = enrichedLeads.filter(l => selectedBulk.has(l.id));
+    if (selected.length === 0) return;
+
+    const { doc } = buildPdfDoc(selected);
     const fileName = `chitumit_bank_submission_${new Date().toISOString().slice(0, 10)}.pdf`;
     doc.save(fileName);
 
@@ -442,7 +409,76 @@ export function PriorityBoard({
       duration: 5000,
     });
     setSelectedBulk(new Set());
-  }, [enrichedLeads, selectedBulk]);
+  }, [enrichedLeads, selectedBulk, buildPdfDoc]);
+
+  const handleSendToBank = useCallback(async () => {
+    if (!bankEmail || !bankEmail.includes("@")) {
+      toast.error("נא להזין כתובת מייל תקינה");
+      return;
+    }
+
+    const selected = enrichedLeads.filter(l => selectedBulk.has(l.id));
+    if (selected.length === 0) return;
+
+    setIsSendingEmail(true);
+
+    try {
+      // Build PDF
+      const { doc, totalVolume } = buildPdfDoc(selected);
+      const pdfBlob = doc.output("blob");
+      const fileName = `bank_submission_${new Date().toISOString().slice(0, 10)}_${crypto.randomUUID().slice(0, 8)}.pdf`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("signed-documents")
+        .upload(`bank-submissions/${fileName}`, pdfBlob, {
+          contentType: "application/pdf",
+          upsert: false,
+        });
+
+      if (uploadError) throw new Error(`שגיאה בהעלאת הקובץ: ${uploadError.message}`);
+
+      // Get signed URL (7 days)
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from("signed-documents")
+        .createSignedUrl(`bank-submissions/${fileName}`, 60 * 60 * 24 * 7);
+
+      if (urlError || !urlData?.signedUrl) throw new Error("שגיאה ביצירת קישור הורדה");
+
+      // Send email
+      const idempotencyKey = `bank-submission-${crypto.randomUUID()}`;
+      const { error: emailError } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "bank-submission",
+          recipientEmail: bankEmail,
+          idempotencyKey,
+          templateData: {
+            consultantName: "",
+            leadCount: selected.length,
+            totalVolume: totalVolume.toLocaleString(),
+            downloadUrl: urlData.signedUrl,
+            generatedDate: new Date().toLocaleDateString("he-IL"),
+          },
+        },
+      });
+
+      if (emailError) throw new Error(`שגיאה בשליחת המייל: ${emailError.message}`);
+
+      toast.success(`קובץ ההגשה נשלח בהצלחה למייל ${bankEmail}`, {
+        description: `${selected.length} תיקים • קישור תקף ל-7 ימים`,
+        duration: 6000,
+      });
+
+      setShowEmailDialog(false);
+      setBankEmail("");
+      setSelectedBulk(new Set());
+    } catch (err: any) {
+      console.error("Send to bank error:", err);
+      toast.error(err.message || "שגיאה בשליחת המייל לבנק");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  }, [enrichedLeads, selectedBulk, bankEmail, buildPdfDoc]);
 
   const toggleBulk = (id: string) => {
     setSelectedBulk(prev => {
@@ -492,14 +528,25 @@ export function PriorityBoard({
             </Button>
           )}
           {selectedBulk.size > 0 && (
-            <Button
-              size="sm"
-              className="text-xs bg-gradient-to-l from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]"
-              onClick={handleGenerateMasterFile}
-            >
-              <Package className="w-3.5 h-3.5 ml-1" />
-              הגש {selectedBulk.size} תיקים לבנק
-            </Button>
+            <>
+              <Button
+                size="sm"
+                className="text-xs bg-gradient-to-l from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                onClick={handleGenerateMasterFile}
+              >
+                <Package className="w-3.5 h-3.5 ml-1" />
+                הגש {selectedBulk.size} תיקים לבנק
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs border-accent/40 text-accent hover:bg-accent/10"
+                onClick={() => setShowEmailDialog(true)}
+              >
+                <Mail className="w-3.5 h-3.5 ml-1" />
+                שלח במייל לבנק
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -561,6 +608,70 @@ export function PriorityBoard({
           ))}
         </div>
       )}
+
+      {/* Email to Bank Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="sm:max-w-md bg-card border-border/50" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground flex items-center gap-2">
+              <Mail className="w-5 h-5 text-accent" />
+              שליחת קובץ הגשה למייל הבנק
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="bank-email" className="text-muted-foreground text-sm">
+                כתובת מייל של הבנק
+              </Label>
+              <Input
+                id="bank-email"
+                type="email"
+                placeholder="mortgage@bank.co.il"
+                value={bankEmail}
+                onChange={(e) => setBankEmail(e.target.value)}
+                className="bg-secondary/50 border-border/30 text-foreground"
+                dir="ltr"
+              />
+            </div>
+            <div className="rounded-lg bg-secondary/30 border border-border/20 p-3 space-y-1">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{selectedBulk.size}</span> תיקים נבחרו להגשה
+              </p>
+              <p className="text-xs text-muted-foreground">
+                המייל יכלול קישור להורדת קובץ PDF (תקף ל-7 ימים)
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEmailDialog(false)}
+              disabled={isSendingEmail}
+            >
+              ביטול
+            </Button>
+            <Button
+              size="sm"
+              className="bg-gradient-to-l from-accent to-yellow-600 hover:from-accent/90 hover:to-yellow-500 text-accent-foreground"
+              onClick={handleSendToBank}
+              disabled={isSendingEmail || !bankEmail}
+            >
+              {isSendingEmail ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 ml-1 animate-spin" />
+                  שולח...
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5 ml-1" />
+                  שלח לבנק
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
