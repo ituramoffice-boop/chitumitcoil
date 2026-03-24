@@ -80,7 +80,7 @@ const Auth = () => {
               <Brain className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">SmartMortgage AI</h1>
+          <h1 className="text-2xl font-bold text-foreground">חיתומית</h1>
           <p className="text-sm text-muted-foreground">
             {mode === "login" ? "התחבר לחשבון שלך" : "צור חשבון חדש"}
           </p>

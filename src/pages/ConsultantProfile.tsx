@@ -104,7 +104,7 @@ export default function ConsultantProfile() {
                 <h1 className="text-2xl md:text-3xl font-black">{profile.full_name || "יועץ"}</h1>
                 {isPro && (
                   <Badge className="bg-gold/10 text-gold border-gold/20">
-                    <CheckCircle2 className="w-3.5 h-3.5 ml-1" /> SmartMortgage Verified
+                    <CheckCircle2 className="w-3.5 h-3.5 ml-1" /> חיתומית Verified
                   </Badge>
                 )}
               </div>

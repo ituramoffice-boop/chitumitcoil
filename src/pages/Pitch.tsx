@@ -721,7 +721,7 @@ export default function Pitch() {
 
       {/* ═══════ FOOTER ═══════ */}
       <footer className="relative z-10 border-t border-border/30 py-8 px-4 text-center text-sm text-muted-foreground">
-        <p>© 2026 SmartMortgage AI — כל הזכויות שמורות</p>
+        <p>© 2026 חיתומית — כל הזכויות שמורות</p>
       </footer>
     </div>
   );
