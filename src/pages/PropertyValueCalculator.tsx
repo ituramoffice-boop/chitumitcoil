@@ -749,7 +749,7 @@ const PropertyValueCalculator = () => {
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid md:grid-cols-3 gap-3">
               {insights.map((tip, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/15">
+                <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/15 hover:border-[hsl(38,92%,50%)]/30 transition-all duration-300 hover:scale-[1.02]" style={{ animationDelay: `${i * 0.15}s`, animation: 'fadeSlideUp 0.6s ease-out both' }}>
                   <span className="text-lg flex-shrink-0">{tip.icon}</span>
                   <div>
                     <div className="flex items-center gap-1 mb-1">
