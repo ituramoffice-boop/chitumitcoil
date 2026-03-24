@@ -14,6 +14,7 @@ import {
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
   Download,
 } from "lucide-react";
+import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import IsraelHeatMap from "@/components/IsraelHeatMap";

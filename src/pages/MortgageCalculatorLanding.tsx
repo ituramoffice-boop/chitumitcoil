@@ -13,6 +13,7 @@ import {
   Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
   Download,
 } from "lucide-react";
+import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
