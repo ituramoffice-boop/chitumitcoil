@@ -104,7 +104,7 @@ export default function ConsultantDirectory() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#060a18] text-slate-100 overflow-x-hidden" dir="rtl">
+    <div className="relative min-h-screen bg-[#060a18] text-slate-100 overflow-x-hidden" dir="rtl" id="main-content">
       <StarField />
 
       {/* Hero */}
