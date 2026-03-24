@@ -5,7 +5,7 @@ import StarField from "@/components/StarField";
 import {
   TrendingUp, Users, Globe, Zap, Shield, Brain, DollarSign, Target,
   Layers, BarChart3, Sparkles, ArrowDown, Calendar, CheckCircle2,
-  Phone, FileSignature, ScanSearch, Calculator, ChevronLeft
+  Phone, FileSignature, ScanSearch, Calculator, Crown, Award, Rocket
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
@@ -41,8 +41,8 @@ function Bullet({ children, delay, icon: Icon }: { children: React.ReactNode; de
       className="flex items-start gap-3"
     >
       {Icon && (
-        <div className="p-1.5 rounded-lg bg-emerald-500/10 shrink-0 mt-0.5">
-          <Icon className="w-4 h-4 text-emerald-400" />
+        <div className="p-1.5 rounded-lg bg-gold/10 shrink-0 mt-0.5">
+          <Icon className="w-4 h-4 text-gold" />
         </div>
       )}
       <span className="text-sm md:text-base text-slate-300 leading-relaxed">{children}</span>
@@ -83,9 +83,9 @@ const revenueData = [
 ];
 
 const marketSegments = [
-  { name: "משכנתאות", value: 4500, fill: "#6366f1" },
-  { name: "ביטוח", value: 3200, fill: "#10b981" },
-  { name: "פנסיה", value: 2800, fill: "#f59e0b" },
+  { name: "משכנתאות", value: 4500, fill: "#3b5bdb" },
+  { name: "ביטוח", value: 3200, fill: "#eab308" },
+  { name: "פנסיה", value: 2800, fill: "#10b981" },
   { name: "השקעות", value: 1500, fill: "#ef4444" },
 ];
 
@@ -97,15 +97,15 @@ export default function Investors() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
-    <div className="relative min-h-screen bg-[#0a0e1a] text-slate-100 overflow-x-hidden" dir="rtl">
+    <div className="relative min-h-screen bg-[#060a18] text-slate-100 overflow-x-hidden" dir="rtl">
       <StarField />
 
       {/* ═══════ HERO ═══════ */}
       <section ref={heroRef} className="relative z-10 min-h-screen flex items-center justify-center px-4">
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="text-center max-w-5xl mx-auto space-y-8">
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }}>
-            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium">
-              <Sparkles className="w-4 h-4" /> Investor Deck · מצגת למשקיעים
+            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold/10 border border-gold/30 text-gold text-sm font-medium">
+              <Crown className="w-4 h-4" /> Investor Deck · מצגת למשקיעים
             </span>
           </motion.div>
 
@@ -113,11 +113,11 @@ export default function Investors() {
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }}
             className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight"
           >
-            <span className="bg-gradient-to-l from-indigo-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-l from-gold via-amber-300 to-primary bg-clip-text text-transparent">
               SmartMortgage AI
             </span>
             <br />
-            <span className="text-slate-200">העתיד של הייעוץ הפיננסי</span>
+            <span className="text-slate-200">מערכת ההפעלה של שוק המשכנתאות</span>
           </motion.h1>
 
           <motion.p
@@ -126,7 +126,7 @@ export default function Investors() {
           >
             פלטפורמת SaaS מבוססת AI שמחליפה 4 כלים יקרים ליועצי משכנתאות.
             <br />
-            <strong className="text-slate-200">שוק של 12,000+ יועצים בישראל. הפוטנציאל: ₪60M ARR.</strong>
+            <strong className="text-gold">שוק של 12,000+ יועצים בישראל. הפוטנציאל: ₪60M ARR.</strong>
           </motion.p>
 
           <motion.div
@@ -135,7 +135,7 @@ export default function Investors() {
           >
             <Button
               size="lg"
-              className="text-lg px-10 py-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/25"
+              className="text-lg px-10 py-6 rounded-xl bg-gradient-to-l from-gold to-amber-500 hover:from-amber-500 hover:to-gold text-slate-900 font-bold shadow-lg shadow-gold/25"
               onClick={() => window.open("https://calendly.com", "_blank")}
             >
               <Calendar className="w-5 h-5 ml-2" />
@@ -153,8 +153,8 @@ export default function Investors() {
         </motion.div>
 
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} className="absolute bottom-10 left-1/2 -translate-x-1/2">
-          <div className="w-6 h-10 rounded-full border-2 border-slate-600 flex justify-center pt-2">
-            <div className="w-1.5 h-3 rounded-full bg-indigo-400/60" />
+          <div className="w-6 h-10 rounded-full border-2 border-gold/40 flex justify-center pt-2">
+            <div className="w-1.5 h-3 rounded-full bg-gold/60" />
           </div>
         </motion.div>
       </section>
@@ -163,7 +163,7 @@ export default function Investors() {
       <section id="problem" className="relative z-10 py-28 px-4">
         <div className="max-w-4xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-indigo-400 tracking-widest uppercase">01 — הבעיה</span>
+            <span className="text-xs font-bold text-gold tracking-widest uppercase">01 — הבעיה</span>
           </Reveal>
           <Reveal className="mb-10" delay={0.1}>
             <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
@@ -193,34 +193,26 @@ export default function Investors() {
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-5xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">02 — הפתרון</span>
+            <span className="text-xs font-bold text-primary tracking-widest uppercase">02 — הפתרון</span>
           </Reveal>
           <Reveal className="mb-14" delay={0.1}>
             <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
-              מערכת <span className="text-emerald-400">All-in-One</span> שמחליפה
+              מערכת <span className="text-gold">All-in-One</span> שמחליפה
               <br />את כל מה שהיועץ צריך
             </h2>
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
-              { icon: Phone, title: "חייגן AI", desc: "חיוג אוטומטי + תמלול Whisper בעברית + סיכום AI + ציון רגש. היועץ מתקשר — המערכת רושמת.", color: "indigo" },
-              { icon: FileSignature, title: "חתימה דיגיטלית", desc: "שלח לינק → הלקוח חותם מהנייד. חוסך הדפסות, סריקות, ונסיעות למשרד.", color: "emerald" },
-              { icon: ScanSearch, title: "סורק מסמכים AI", desc: "OCR + AI שמנתח תלושי משכורת ודפי בנק. שולף הכנסות, הלוואות וחריגות בשניות.", color: "amber" },
-              { icon: Calculator, title: "מחשבונים ממותגים", desc: "מחשבון משכנתא + שווי נכס שממותגים בשם היועץ. הגולש ממלא → ליד חם נכנס ל-CRM.", color: "rose" },
+              { icon: Phone, title: "חייגן AI", desc: "חיוג אוטומטי + תמלול Whisper בעברית + סיכום AI + ציון רגש. היועץ מתקשר — המערכת רושמת.", gradient: "from-primary/20 to-primary/5", iconColor: "text-primary" },
+              { icon: FileSignature, title: "חתימה דיגיטלית", desc: "שלח לינק → הלקוח חותם מהנייד. חוסך הדפסות, סריקות, ונסיעות למשרד.", gradient: "from-gold/20 to-gold/5", iconColor: "text-gold" },
+              { icon: ScanSearch, title: "סורק מסמכים AI", desc: "OCR + AI שמנתח תלושי משכורת ודפי בנק. שולף הכנסות, הלוואות וחריגות בשניות.", gradient: "from-emerald-500/20 to-emerald-500/5", iconColor: "text-emerald-400" },
+              { icon: Calculator, title: "מחשבונים ממותגים", desc: "מחשבון משכנתא + שווי נכס שממותגים בשם היועץ. הגולש ממלא → ליד חם נכנס ל-CRM.", gradient: "from-rose-500/20 to-rose-500/5", iconColor: "text-rose-400" },
             ].map((f, i) => (
               <Reveal key={i} delay={i * 0.1}>
-                <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm space-y-3 h-full">
-                  <div className={`p-2.5 rounded-lg w-fit ${
-                    f.color === "indigo" ? "bg-indigo-500/15" :
-                    f.color === "emerald" ? "bg-emerald-500/15" :
-                    f.color === "amber" ? "bg-amber-500/15" : "bg-rose-500/15"
-                  }`}>
-                    <f.icon className={`w-6 h-6 ${
-                      f.color === "indigo" ? "text-indigo-400" :
-                      f.color === "emerald" ? "text-emerald-400" :
-                      f.color === "amber" ? "text-amber-400" : "text-rose-400"
-                    }`} />
+                <div className={`p-6 rounded-2xl bg-gradient-to-br ${f.gradient} border border-slate-700/50 backdrop-blur-sm space-y-3 h-full hover:border-gold/30 transition-colors duration-300`}>
+                  <div className="p-2.5 rounded-lg w-fit bg-slate-800/60">
+                    <f.icon className={`w-6 h-6 ${f.iconColor}`} />
                   </div>
                   <h3 className="text-lg font-bold text-slate-100">{f.title}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
@@ -235,35 +227,35 @@ export default function Investors() {
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-5xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-indigo-400 tracking-widest uppercase">03 — גודל השוק</span>
+            <span className="text-xs font-bold text-gold tracking-widest uppercase">03 — גודל השוק</span>
           </Reveal>
           <Reveal className="mb-14" delay={0.1}>
             <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
-              שוק של <span className="text-emerald-400">₪60M+ ARR</span>
+              שוק של <span className="text-gold">₪60M+ ARR</span>
               <br />רק בישראל — לפני הרחבה גלובלית
             </h2>
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <Reveal delay={0}>
-              <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center space-y-2">
-                <div className="text-3xl md:text-4xl font-black text-indigo-400">
+              <div className="p-6 rounded-2xl bg-slate-800/50 border border-gold/20 text-center space-y-2">
+                <div className="text-3xl md:text-4xl font-black text-gold">
                   <Counter value={12000} suffix="+" />
                 </div>
                 <div className="text-sm text-slate-400">יועצי משכנתאות בישראל</div>
               </div>
             </Reveal>
             <Reveal delay={0.1}>
-              <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center space-y-2">
-                <div className="text-3xl md:text-4xl font-black text-emerald-400">
+              <div className="p-6 rounded-2xl bg-slate-800/50 border border-primary/20 text-center space-y-2">
+                <div className="text-3xl md:text-4xl font-black text-primary">
                   ₪<Counter value={500} />
                 </div>
                 <div className="text-sm text-slate-400">ARPU חודשי (ממוצע)</div>
               </div>
             </Reveal>
             <Reveal delay={0.2}>
-              <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center space-y-2">
-                <div className="text-3xl md:text-4xl font-black text-amber-400">
+              <div className="p-6 rounded-2xl bg-slate-800/50 border border-gold/20 text-center space-y-2">
+                <div className="text-3xl md:text-4xl font-black text-gold">
                   ₪<Counter value={60} suffix="M" />
                 </div>
                 <div className="text-sm text-slate-400">TAM שנתי — ישראל בלבד</div>
@@ -271,7 +263,6 @@ export default function Investors() {
             </Reveal>
           </div>
 
-          {/* Market segments chart */}
           <Reveal delay={0.3}>
             <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50">
               <h3 className="text-lg font-bold text-slate-200 mb-4">פוטנציאל הרחבה — ייעוץ פיננסי (אלפי יועצים)</h3>
@@ -296,11 +287,11 @@ export default function Investors() {
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-5xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">04 — תחזית הכנסות</span>
+            <span className="text-xs font-bold text-primary tracking-widest uppercase">04 — תחזית הכנסות</span>
           </Reveal>
           <Reveal className="mb-14" delay={0.1}>
             <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
-              ₪<span className="text-emerald-400">5,000,000</span>/חודש
+              ₪<span className="text-gold">5,000,000</span>/חודש
               <br />תוך 24 חודשים
             </h2>
           </Reveal>
@@ -311,24 +302,23 @@ export default function Investors() {
                 <AreaChart data={revenueData}>
                   <defs>
                     <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#eab308" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#eab308" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
                   <YAxis stroke="#64748b" fontSize={12} tickFormatter={(v) => `₪${(v / 1000000).toFixed(1)}M`} />
                   <Tooltip
-                    contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#e2e8f0" }}
+                    contentStyle={{ background: "#1e293b", border: "1px solid #eab308", borderRadius: "8px", color: "#e2e8f0" }}
                     formatter={(value: number) => [`₪${value.toLocaleString()}`, "הכנסה חודשית"]}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} fill="url(#revenueGrad)" />
+                  <Area type="monotone" dataKey="revenue" stroke="#eab308" strokeWidth={3} fill="url(#revenueGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </Reveal>
 
-          {/* Unit economics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
             {[
               { label: "CAC", value: "₪120", sub: "עלות רכישת לקוח" },
@@ -337,8 +327,8 @@ export default function Investors() {
               { label: "Churn", value: "2.5%", sub: "נטישה חודשית" },
             ].map((m, i) => (
               <Reveal key={i} delay={i * 0.1}>
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-center space-y-1">
-                  <div className="text-xl font-black text-emerald-400">{m.value}</div>
+                <div className="p-4 rounded-xl bg-slate-800/50 border border-gold/15 text-center space-y-1">
+                  <div className="text-xl font-black text-gold">{m.value}</div>
                   <div className="text-xs font-bold text-slate-300">{m.label}</div>
                   <div className="text-[10px] text-slate-500">{m.sub}</div>
                 </div>
@@ -352,10 +342,10 @@ export default function Investors() {
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-4xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-indigo-400 tracking-widest uppercase">05 — יתרון תחרותי</span>
+            <span className="text-xs font-bold text-gold tracking-widest uppercase">05 — יתרון תחרותי</span>
           </Reveal>
           <Reveal className="mb-10" delay={0.1}>
-            <h2 className="text-3xl md:text-4xl font-extrabold">למה אנחנו <span className="text-indigo-400">מנצחים</span>?</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold">למה אנחנו <span className="text-gold">מנצחים</span>?</h2>
           </Reveal>
 
           <div className="space-y-4">
@@ -382,10 +372,10 @@ export default function Investors() {
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-4xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-emerald-400 tracking-widest uppercase">06 — Traction</span>
+            <span className="text-xs font-bold text-primary tracking-widest uppercase">06 — Traction</span>
           </Reveal>
           <Reveal className="mb-10" delay={0.1}>
-            <h2 className="text-3xl md:text-4xl font-extrabold">מה כבר <span className="text-emerald-400">בנינו</span></h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold">מה כבר <span className="text-gold">בנינו</span></h2>
           </Reveal>
 
           <div className="space-y-4">
@@ -396,10 +386,12 @@ export default function Investors() {
               "תמלול שיחות בעברית עם Whisper + ניתוח GPT-4o",
               "תשתית Multi-tenant — כל יועץ רואה רק את הלידים שלו",
               "Paywall + תוכניות מנוי (Free/Pro/Enterprise)",
+              "מדריך יועצים ציבורי עם מערכת ביקורות מאומתות",
+              "שוק לידים — מנגנון מונטיזציה נוסף ליועצי Pro",
             ].map((item, i) => (
               <Reveal key={i} delay={i * 0.08}>
-                <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-gold/5 border border-gold/15">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
                   <span className="text-sm text-slate-300">{item}</span>
                 </div>
               </Reveal>
@@ -412,19 +404,19 @@ export default function Investors() {
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-4xl mx-auto">
           <Reveal className="mb-4">
-            <span className="text-xs font-bold text-indigo-400 tracking-widest uppercase">07 — ההזדמנות</span>
+            <span className="text-xs font-bold text-gold tracking-widest uppercase">07 — ההזדמנות</span>
           </Reveal>
           <Reveal className="mb-10" delay={0.1}>
             <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
-              מגייסים <span className="text-emerald-400">סבב Pre-Seed</span>
+              מגייסים <span className="text-gold">סבב Pre-Seed</span>
               <br />לצמיחה אגרסיבית
             </h2>
           </Reveal>
 
           <Reveal delay={0.2}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 space-y-4">
-                <h3 className="text-lg font-bold text-indigo-400">שימוש בכספים</h3>
+              <div className="p-6 rounded-2xl bg-slate-800/50 border border-primary/20 space-y-4">
+                <h3 className="text-lg font-bold text-primary flex items-center gap-2"><Rocket className="w-5 h-5" /> שימוש בכספים</h3>
                 <div className="space-y-3">
                   {[
                     { label: "פיתוח מוצר + AI", pct: 50 },
@@ -437,23 +429,21 @@ export default function Investors() {
                         <span className="text-slate-400">{item.pct}%</span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-700 overflow-hidden">
-                        <Reveal delay={0.3 + i * 0.1}>
-                          <motion.div
-                            className="h-full rounded-full bg-gradient-to-l from-indigo-500 to-emerald-500"
-                            initial={{ width: "0%" }}
-                            whileInView={{ width: `${item.pct}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, delay: 0.5 + i * 0.15 }}
-                          />
-                        </Reveal>
+                        <motion.div
+                          className="h-full rounded-full bg-gradient-to-l from-gold to-primary"
+                          initial={{ width: "0%" }}
+                          whileInView={{ width: `${item.pct}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1, delay: 0.5 + i * 0.15 }}
+                        />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 space-y-4">
-                <h3 className="text-lg font-bold text-emerald-400">יעדים ל-18 חודש</h3>
+              <div className="p-6 rounded-2xl bg-slate-800/50 border border-gold/20 space-y-4">
+                <h3 className="text-lg font-bold text-gold flex items-center gap-2"><Award className="w-5 h-5" /> יעדים ל-18 חודש</h3>
                 <div className="space-y-3">
                   <Bullet delay={0} icon={Users}>500+ יועצים משלמים</Bullet>
                   <Bullet delay={0.1} icon={DollarSign}>₪2M MRR</Bullet>
@@ -470,20 +460,20 @@ export default function Investors() {
       <section className="relative z-10 py-32 px-4">
         <Reveal className="text-center max-w-3xl mx-auto space-y-8">
           <h2 className="text-3xl md:text-5xl font-black">
-            בואו <span className="bg-gradient-to-l from-indigo-400 to-emerald-400 bg-clip-text text-transparent">נדבר</span>
+            בואו <span className="bg-gradient-to-l from-gold to-primary bg-clip-text text-transparent">נדבר</span>
           </h2>
           <p className="text-lg text-slate-400">
             20 דקות של Demo חי — ואתם תבינו למה זה הדבר הבא בפינטק הישראלי.
           </p>
 
           <motion.div
-            animate={{ boxShadow: ["0 0 0 0 rgba(16,185,129,0.4)", "0 0 30px 10px rgba(16,185,129,0.15)", "0 0 0 0 rgba(16,185,129,0.4)"] }}
+            animate={{ boxShadow: ["0 0 0 0 rgba(234,179,8,0.4)", "0 0 30px 10px rgba(234,179,8,0.15)", "0 0 0 0 rgba(234,179,8,0.4)"] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             className="inline-block rounded-xl"
           >
             <Button
               size="lg"
-              className="text-xl px-14 py-8 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+              className="text-xl px-14 py-8 rounded-xl bg-gradient-to-l from-gold to-amber-500 hover:from-amber-500 hover:to-gold text-slate-900 font-bold"
               onClick={() => window.open("https://calendly.com", "_blank")}
             >
               <Calendar className="w-6 h-6 ml-2" />
@@ -495,7 +485,7 @@ export default function Investors() {
         </Reveal>
       </section>
 
-      <footer className="relative z-10 border-t border-slate-800 py-8 px-4 text-center text-sm text-slate-600">
+      <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
         <p>© 2026 SmartMortgage AI · Confidential Investor Materials</p>
       </footer>
     </div>
