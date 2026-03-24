@@ -21,18 +21,20 @@ const JoinTheElite = () => {
     if (!name || !phone) return;
     setLoading(true);
     try {
-      await supabase.from("leads").insert({
+      const { error } = await supabase.from("leads").insert({
         full_name: name,
         phone,
         email: email || null,
-        consultant_id: "00000000-0000-0000-0000-000000000000",
+        consultant_id: "7216126b-7293-488c-9689-917e172ad5ce",
         lead_source: "join-the-elite",
         is_marketplace: true,
         notes: "מועמדות דרך דף האליטה",
       });
+      if (error) throw error;
       setSubmitted(true);
-    } catch {
-      toast({ title: "שגיאה", description: "אנא נסו שוב", variant: "destructive" });
+    } catch (err: any) {
+      console.error("Lead insert error:", err);
+      toast({ title: "שגיאה", description: err?.message || "אנא נסו שוב", variant: "destructive" });
     } finally {
       setLoading(false);
     }
