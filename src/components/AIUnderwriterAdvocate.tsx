@@ -19,10 +19,17 @@ import {
   Star,
   MessageCircle,
   Send,
+  Link2,
+  Calculator,
+  ShieldCheck,
+  Eye,
+  FileSearch,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface Lead {
   id: string;
