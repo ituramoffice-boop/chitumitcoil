@@ -124,9 +124,17 @@ export default function Investors() {
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }}
             className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight"
           >
-            <span className="bg-gradient-to-l from-gold via-amber-300 to-primary bg-clip-text text-transparent">
+            <motion.span
+              className="inline-block bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(90deg, #D4AF37 0%, #F5E6A3 25%, #D4AF37 50%, #B8941F 75%, #D4AF37 100%)",
+                backgroundSize: "200% 100%",
+              }}
+              animate={{ backgroundPosition: ["0% 0%", "200% 0%"] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            >
               חיתומית
-            </span>
+            </motion.span>
             <br />
             <span className="text-slate-200">מערכת ההפעלה של שוק המשכנתאות</span>
           </motion.h1>
