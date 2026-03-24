@@ -73,6 +73,7 @@ export default {
           DEFAULT: "hsl(var(--gold))",
           foreground: "hsl(var(--gold-foreground))",
         },
+        "cyan-glow": "hsl(var(--cyan-glow))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -108,6 +109,10 @@ export default {
           "0%, 100%": { boxShadow: "0 0 0 0 hsl(0 84% 60% / 0.4)" },
           "50%": { boxShadow: "0 0 12px 4px hsl(0 84% 60% / 0.15)" },
         },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 15px -3px hsl(43 74% 52% / 0.3)" },
+          "50%": { boxShadow: "0 0 25px -3px hsl(43 74% 52% / 0.5)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -117,6 +122,7 @@ export default {
         "fade-in": "fade-in 0.25s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "heat-pulse": "heat-pulse 2s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },
