@@ -38,6 +38,7 @@ import { DocumentIntelligenceZone, ComplianceFooter } from "@/components/Documen
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
+import confetti from "canvas-confetti";
 
 /* ── Stage pipeline — "Path to Your Keys" ──── */
 const CASE_STAGES = [
