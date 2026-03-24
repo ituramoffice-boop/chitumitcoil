@@ -8,11 +8,12 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {
   Calculator, Shield, TrendingUp, CheckCircle2, ArrowLeft,
-  Sparkles, Building2, Phone, Mail, User, ChevronDown,
+  Sparkles, Phone, Mail, User, ChevronDown,
   Lock, Award, Star, Zap, BarChart3, Clock, FileCheck, Upload,
   Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
   Download,
 } from "lucide-react";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
