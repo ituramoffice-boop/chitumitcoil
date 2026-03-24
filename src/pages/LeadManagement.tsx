@@ -41,6 +41,9 @@ import { PowerDialer } from "@/components/PowerDialer";
 import { CallHistory } from "@/components/CallHistory";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
+import { PLAN_LIMITS } from "@/hooks/useConsultantBranding";
+import { Link } from "react-router-dom";
+import { Crown, Lock } from "lucide-react";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -268,6 +271,30 @@ const NEXT_STEP_OPTIONS = [
 const LeadManagement = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Fetch user plan for paywall
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile-plan", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("plan, lead_count")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data as { plan: string; lead_count: number } | null;
+    },
+    enabled: !!user,
+  });
+
+  const userPlan = userProfile?.plan || "free";
+  const leadLimit = PLAN_LIMITS[userPlan] || 10;
+  const isAtLimit = userPlan === "free" && (userProfile?.lead_count || 0) >= leadLimit;
+
+  // Helper: should this lead index be blurred?
+  const isLeadBlurred = (index: number) => {
+    if (userPlan !== "free") return false;
+    return index >= leadLimit;
+  };
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("created_at");
@@ -866,6 +893,25 @@ const LeadManagement = () => {
         </div>
       )}
 
+      {/* Paywall Banner */}
+      {isAtLimit && (
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Crown className="h-6 w-6 text-primary" />
+            <div>
+              <p className="font-bold text-sm">הגעת למגבלת הלידים בתוכנית החינמית ({leadLimit} לידים)</p>
+              <p className="text-xs text-muted-foreground">שדרג ל-Pro כדי לפתוח גישה ל-100 לידים ותכונות מתקדמות</p>
+            </div>
+          </div>
+          <Button asChild size="sm" className="gap-1">
+            <Link to="/dashboard/consultant-settings">
+              <Crown className="h-4 w-4" />
+              שדרג ל-Pro
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -907,9 +953,10 @@ const LeadManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredLeads.map(lead => {
+                  {filteredLeads.map((lead, leadIndex) => {
                     const fu = needsFollowUp(lead);
                     const src = SOURCE_CONFIG[lead.lead_source || "organic"];
+                    const blurred = isLeadBlurred(leadIndex);
                     return (
                       <TableRow key={lead.id} className={cn(
                         "group transition-colors",
@@ -937,6 +984,12 @@ const LeadManagement = () => {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {blurred ? (
+                            <div className="flex items-center gap-1 blur-sm select-none pointer-events-none">
+                              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">Pro</span>
+                            </div>
+                          ) : (
                           <div className="flex items-center gap-1">
                             {lead.phone && (
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openWhatsApp(lead)}>
@@ -954,13 +1007,14 @@ const LeadManagement = () => {
                               </Button>
                             )}
                           </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge className={cn("text-xs", STATUS_CONFIG[lead.status].bg, STATUS_CONFIG[lead.status].color)} variant="outline">
                             {STATUS_CONFIG[lead.status].label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className={cn("text-sm", blurred && "blur-sm select-none")}>
                           {lead.mortgage_amount ? `₪${lead.mortgage_amount.toLocaleString()}` : "-"}
                         </TableCell>
                         <TableCell>
@@ -1053,19 +1107,27 @@ const LeadManagement = () => {
                     const score = lead.lead_score;
                     const fu = needsFollowUp(lead);
                     const src = SOURCE_CONFIG[lead.lead_source || "organic"];
+                    const kanbanBlurred = isLeadBlurred(filteredLeads.indexOf(lead));
                     return (
                       <div
                         key={lead.id}
-                        draggable
-                        onDragStart={() => handleDragStart(lead)}
+                        draggable={!kanbanBlurred}
+                        onDragStart={() => !kanbanBlurred && handleDragStart(lead)}
                         className={cn(
                           "p-2.5 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
                           "hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group",
                           score >= 85 ? "heat-hot" : score >= 50 ? "heat-warm" : score >= 0 ? "heat-cold" : "",
                           fu.needed && "border-destructive/30",
-                          draggedLead?.id === lead.id && "opacity-40 scale-95 rotate-1"
+                          draggedLead?.id === lead.id && "opacity-40 scale-95 rotate-1",
+                          kanbanBlurred && "relative"
                         )}
                       >
+                        {kanbanBlurred && (
+                          <div className="absolute inset-0 z-10 backdrop-blur-sm bg-background/60 rounded-lg flex flex-col items-center justify-center gap-1">
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-[10px] font-medium text-muted-foreground">שדרג ל-Pro</span>
+                          </div>
+                        )}
                         <div className="flex items-start justify-between mb-1.5">
                           <LeadHeatPopup lead={lead}>
                             <p className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
