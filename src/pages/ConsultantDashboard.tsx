@@ -82,6 +82,7 @@ import { he } from "date-fns/locale";
 import { RevenueForecaster, PriorityBoard } from "@/components/PredictiveCRM";
 import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
+import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
