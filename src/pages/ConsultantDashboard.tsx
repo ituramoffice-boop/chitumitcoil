@@ -699,7 +699,10 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
         </div>
 
         {/* Profit Intelligence */}
-        <PerformanceStats leads={leads} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PerformanceStats leads={leads} />
+          <PipelineTicker leads={leads} />
+        </div>
 
         {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
