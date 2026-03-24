@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import { supabase } from "@/integrations/supabase/client";
+import { computeMetrics, generateNarrative, generateBrightSpots } from "@/components/AIUnderwriterAdvocate";
 import {
   Brain,
   TrendingUp,
