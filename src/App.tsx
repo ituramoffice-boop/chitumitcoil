@@ -17,6 +17,7 @@ import Pitch from "./pages/Pitch";
 import Investors from "./pages/Investors";
 import ConsultantDirectory from "./pages/ConsultantDirectory";
 import ConsultantProfile from "./pages/ConsultantProfile";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Accessibility from "./pages/Accessibility";
 import Terms from "./pages/Terms";

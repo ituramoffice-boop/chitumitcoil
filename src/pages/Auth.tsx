@@ -185,6 +185,31 @@ const Auth = () => {
           </form>
 
           <div className="mt-6 text-center space-y-2">
+            {mode === "login" && (
+              <button
+                onClick={async () => {
+                  if (!email) {
+                    toast.error("הזן אימייל קודם");
+                    return;
+                  }
+                  setLoading(true);
+                  try {
+                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                      redirectTo: `${window.location.origin}/reset-password`,
+                    });
+                    if (error) throw error;
+                    toast.success("קישור לאיפוס סיסמה נשלח למייל שלך");
+                  } catch (error: any) {
+                    toast.error(error.message || "שגיאה בשליחת קישור");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="text-xs text-muted-foreground hover:text-primary hover:underline"
+              >
+                שכחת סיסמה?
+              </button>
+            )}
             <button
               onClick={() => setMode(mode === "login" ? "signup" : "login")}
               className="text-sm text-primary hover:underline"
