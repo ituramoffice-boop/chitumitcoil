@@ -17,6 +17,7 @@ import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
+import { useConsultantBranding, PLAN_LIMITS } from "@/hooks/useConsultantBranding";
 
 // Mortgage calculator logic
 function calculateMortgage(amount: number, years: number, rate: number) {
