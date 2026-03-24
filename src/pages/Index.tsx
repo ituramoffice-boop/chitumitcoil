@@ -605,6 +605,110 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ═══════ BANKER'S RADAR — STRATEGIC INTELLIGENCE ═══════ */}
+      <section className="relative py-20 sm:py-28 overflow-hidden">
+        <GlowOrbs />
+        <div className="container mx-auto px-4 sm:px-6">
+          <FadeSection>
+            <div className="text-center mb-14 sm:mb-20">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-gold/10 text-gold text-xs font-semibold mb-4 border border-gold/20">
+                🎯 ליועצי משכנתאות
+              </span>
+              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground mb-4">
+                תפסיק לנחש,{" "}
+                <span className="text-gold">תתחיל לאשר.</span>
+              </h3>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
+                רתום את הכוח של 2,000 יועצים. חיתומית AI מזהה אילו סניפי בנק מאשרים את הפרופיל של הלקוח שלך <span className="text-foreground font-semibold">עכשיו</span>. אם הוא עבר בלאומי כפר-סבא, נגיד לך בדיוק איך לשווק אותו לדיסקונט תל-אביב.
+              </p>
+            </div>
+          </FadeSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 max-w-5xl mx-auto">
+            {[
+              {
+                icon: Search,
+                title: "רדאר בנקאי",
+                desc: "זיהוי בזמן אמת של סניפים עם שיעורי אישור גבוהים לפרופיל הלקוח שלך. חיתום יצירתי מבוסס נתונים.",
+                badge: "Real-time",
+                color: "gold",
+              },
+              {
+                icon: Users,
+                title: "מודיעין קולקטיבי",
+                desc: "כל אישור של יועץ במערכת מזין את ה-AI. אנונימי לחלוטין — רק מספרים ואסטרטגיות מנצחות.",
+                badge: "2,000+ יועצים",
+                color: "cyan-glow",
+              },
+              {
+                icon: Zap,
+                title: "נרטיב מנצח",
+                desc: "AI שכותב מכתב חיתום בשפת הבנקאים — 'כושר החזר מוכח', 'טיב בטוחה גבוה'. מוכן להגשה בלחיצה.",
+                badge: "One-Click",
+                color: "gold",
+              },
+            ].map((card, i) => (
+              <FadeSection key={i} delay={i * 0.12}>
+                <motion.div
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="group relative glass-card p-7 sm:p-9 space-y-5 hover:border-gold/30 transition-colors text-center h-full"
+                >
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gold/[0.02]" />
+                  <span className={`absolute top-4 left-4 px-2.5 py-1 rounded-full text-[9px] font-bold ${card.color === "gold" ? "bg-gold/10 text-gold" : "bg-[hsl(var(--cyan-glow))]/10 text-[hsl(var(--cyan-glow))]"}`}>
+                    {card.badge}
+                  </span>
+                  <div className="relative mx-auto p-4 rounded-2xl w-fit bg-gold/10 group-hover:bg-gold/15 transition-colors">
+                    <card.icon className={`w-7 h-7 ${card.color === "gold" ? "text-gold" : "text-[hsl(var(--cyan-glow))]"}`} />
+                  </div>
+                  <h4 className="relative text-xl font-black text-foreground">{card.title}</h4>
+                  <p className="relative text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+                </motion.div>
+              </FadeSection>
+            ))}
+          </div>
+
+          {/* Success Feed Ticker */}
+          <FadeSection delay={0.4}>
+            <div className="mt-10 max-w-2xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-card p-4 flex items-center gap-3 border-gold/20"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="p-2 rounded-full bg-emerald-500/10 shrink-0"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-emerald-400 font-bold">Success Alert:</span>{" "}
+                    פרופיל עם ציון 72 אושר כרגע בבנק הפועלים באמצעות אסטרטגיית הנרטיב של חיתומית
+                  </p>
+                </div>
+                <Badge variant="outline" className="border-gold/30 text-gold text-[9px] shrink-0">Live</Badge>
+              </motion.div>
+            </div>
+          </FadeSection>
+
+          {/* CTA */}
+          <FadeSection delay={0.5}>
+            <div className="text-center mt-10">
+              <Button
+                onClick={() => navigate("/advisor-plans")}
+                className="bg-gold hover:bg-gold/90 text-black font-bold px-8 py-5 text-base gap-2 shadow-lg shadow-gold/20"
+              >
+                <Zap className="w-5 h-5" />
+                הצטרף לרשת המודיעין
+              </Button>
+            </div>
+          </FadeSection>
+        </div>
+      </section>
+
       {/* ═══════ SOCIAL PROOF ═══════ */}
       <section className="py-20 sm:py-24 relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6">
