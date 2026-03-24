@@ -33,6 +33,7 @@ const sectionComponents: Record<string, React.FC> = {
   "client-management": () => <ClientManagement />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
+  "consultant-settings": () => <ConsultantSettings />,
 };
 
 

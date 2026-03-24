@@ -40,6 +40,7 @@ const baseNavItems = [
   { title: "חתימות מרחוק", url: "/dashboard/signatures", icon: Pen },
   { title: "חייגן", url: "/dashboard/dialer", icon: Phone },
   { title: "תוצאות מכירות", url: "/dashboard/sales-results", icon: Trophy },
+  { title: "הגדרות יועץ", url: "/dashboard/consultant-settings", icon: Settings },
 ];
 
 const agencyNavItems = [
