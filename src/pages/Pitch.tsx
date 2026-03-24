@@ -460,7 +460,7 @@ export default function Pitch() {
           >
             נמאס לך לרדוף
             <br />
-            אחרי <span className="bg-gradient-to-l from-destructive via-destructive/80 to-destructive/60 bg-clip-text text-transparent">לידים שמתים</span>?
+            אחרי <span className="gradient-header">לידים שמתים</span>?
           </motion.h1>
 
           <motion.p
