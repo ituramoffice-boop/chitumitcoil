@@ -55,6 +55,11 @@ const agencyNavItems = [
   { title: "דוחות סוכנות", url: "/dashboard/agency-reports", icon: BarChart3 },
 ];
 
+const adminNavItems = [
+  { title: "חדר מלחמה", url: "/admin/war-room", icon: Swords },
+  { title: "מרכז שיווק", url: "/master-admin/marketing", icon: Megaphone },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
