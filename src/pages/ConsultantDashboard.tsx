@@ -83,6 +83,7 @@ import { RevenueForecaster, PriorityBoard } from "@/components/PredictiveCRM";
 import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
 import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
+import { InsiderFeed } from "@/components/InsiderFeed";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -966,6 +967,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             />
           )}
         </div>
+
+        {/* Insider Feed */}
+        <InsiderFeed leads={leads} />
 
         {/* Selected Lead Detail */}
         {selectedLead && (
