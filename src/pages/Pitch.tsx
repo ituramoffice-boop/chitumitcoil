@@ -708,7 +708,7 @@ export default function Pitch() {
             פשוט תירשם ותראה את ההבדל.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-            <Button size="lg" className="text-lg px-12 py-7 rounded-xl shadow-lg shadow-primary/25" onClick={() => navigate("/auth")}>
+            <Button size="lg" className="text-lg px-12 py-7 rounded-xl bg-gold text-gold-foreground hover:bg-gold/90 shadow-lg shadow-gold/25 glow-gold animate-glow-pulse" onClick={() => navigate("/auth")}>
               <Sparkles className="w-5 h-5 ml-2" />
               אני רוצה לנסות — בחינם
             </Button>
