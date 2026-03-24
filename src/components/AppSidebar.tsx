@@ -13,6 +13,8 @@ import {
   Settings,
   ShoppingCart,
   TrendingUp,
+  Swords,
+  Megaphone,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { AppStoreBadges } from "@/components/AppStoreBadges";
@@ -53,6 +55,11 @@ const agencyNavItems = [
   { title: "דוחות סוכנות", url: "/dashboard/agency-reports", icon: BarChart3 },
 ];
 
+const adminNavItems = [
+  { title: "חדר מלחמה", url: "/admin/war-room", icon: Swords },
+  { title: "מרכז שיווק", url: "/master-admin/marketing", icon: Megaphone },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -90,6 +97,29 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/dashboard"}
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-gold/10 text-gold font-medium"
+                    >
+                      <item.icon className="ml-2 h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Admin tools */}
+        <SidebarGroup>
+          <SidebarGroupLabel>כלי ניהול</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
                       className="hover:bg-muted/50"
                       activeClassName="bg-gold/10 text-gold font-medium"
                     >
