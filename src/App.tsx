@@ -13,6 +13,7 @@ import SelfCheck from "./pages/SelfCheck";
 import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
 import PropertyValueCalculator from "./pages/PropertyValueCalculator";
 import RemoteSign from "./pages/RemoteSign";
+import Pitch from "./pages/Pitch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/calculator" element={<MortgageCalculatorLanding />} />
               <Route path="/property-value" element={<PropertyValueCalculator />} />
               <Route path="/sign/:token" element={<RemoteSign />} />
+              <Route path="/pitch" element={<Pitch />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:section" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
