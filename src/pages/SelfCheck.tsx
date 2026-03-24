@@ -432,7 +432,7 @@ const SelfCheck = () => {
 
             <SmartIngestion />
             <div className="text-center">
-              <Button size="lg" onClick={() => setStep("result")} className="shadow-lg shadow-primary/25">
+              <Button size="lg" onClick={() => { setStep("result"); sendSelfCheckEmail(); }} className="shadow-lg shadow-primary/25">
                 <Sparkles className="w-4 h-4 ml-2" />
                 בדוק היתכנות
               </Button>
