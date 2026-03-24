@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, CheckCircle2, AlertCircle, X } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertCircle, X, HelpCircle, Building2, Receipt, CreditCard, Home, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UploadedFile {
@@ -27,9 +27,38 @@ const DEMO_FILES: UploadedFile[] = [
   { id: "5", name: "צילום_נכס_חזית.jpg", type: "jpg", status: "classified", classification: "תמונת נכס" },
 ];
 
+const GUIDE_STEPS = [
+  {
+    icon: UserCheck,
+    title: "צילום תעודת זהות",
+    desc: "צלמו את שני הצדדים של ת\"ז + ספח. ודאו שהתמונה ברורה וקריאה.",
+  },
+  {
+    icon: Receipt,
+    title: "3 תלושי שכר אחרונים",
+    desc: "ניתן להוריד מאזור האישי במקום העבודה או דרך אתר מס הכנסה.",
+  },
+  {
+    icon: Building2,
+    title: "דפי עו\"ש (6 חודשים)",
+    desc: "היכנסו לאפליקציית הבנק → דפי חשבון → ייצוא ל-PDF. גם חשבון עו\"ש וגם חסכונות.",
+  },
+  {
+    icon: CreditCard,
+    title: "דוח BDI / אשראי",
+    desc: "ניתן להפיק בחינם באתר check.co.il או דרך הבנק שלכם.",
+  },
+  {
+    icon: Home,
+    title: "מסמכי הנכס",
+    desc: "חוזה רכישה / שומת מקרקעין / נסח טאבו. צרו קשר עם עורך הדין לקבלתם.",
+  },
+];
+
 export function DocumentUpload() {
   const [files, setFiles] = useState<UploadedFile[]>(DEMO_FILES);
   const [isDragging, setIsDragging] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -60,53 +89,94 @@ export function DocumentUpload() {
   };
 
   return (
-    <div className="glass-card p-6 space-y-4">
-      <h3 className="text-lg font-semibold text-foreground">העלאת מסמכים</h3>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Upload Area */}
+      <div className="lg:col-span-2 glass-card p-6 space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">נשמח לעזור לך לרכז את המסמכים 📋</h3>
+        <p className="text-sm text-muted-foreground">גרור את הקבצים לכאן ואנחנו נדאג לסווג אותם אוטומטית. פשוט ומהיר.</p>
 
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={cn(
-          "border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer",
-          isDragging
-            ? "border-primary bg-primary/5 scale-[1.02]"
-            : "border-border/50 hover:border-primary/50 hover:bg-muted/30"
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer",
+            isDragging
+              ? "border-primary bg-primary/5 scale-[1.02]"
+              : "border-border/50 hover:border-primary/50 hover:bg-muted/30"
+          )}
+        >
+          <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">שחרר קבצים כאן ואנחנו נטפל בשאר</p>
+          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG • עד 50 קבצים בבת אחת</p>
+        </div>
+
+        {files.length > 0 && (
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {files.map(file => (
+              <div
+                key={file.id}
+                className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 animate-fade-in"
+              >
+                <FileText className="w-4 h-4 text-accent shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground truncate">{file.name}</p>
+                  {file.classification && (
+                    <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary mt-1">
+                      ✓ {file.classification}
+                    </span>
+                  )}
+                </div>
+                {file.status === "classified" ? (
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                ) : file.status === "error" ? (
+                  <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+                ) : null}
+                <button onClick={() => removeFile(file.id)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
         )}
-      >
-        <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-        <p className="text-sm font-medium text-foreground">גרור ושחרר קבצים כאן</p>
-        <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG • עד 50 קבצים</p>
       </div>
 
-      {files.length > 0 && (
-        <div className="space-y-2 max-h-[300px] overflow-y-auto">
-          {files.map(file => (
-            <div
-              key={file.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 animate-slide-in"
-            >
-              <FileText className="w-4 h-4 text-accent shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground truncate">{file.name}</p>
-                {file.classification && (
-                  <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary mt-1">
-                    {file.classification}
-                  </span>
-                )}
+      {/* Helpful Assistant Sidebar */}
+      <div className="glass-card p-5 space-y-4 h-fit">
+        <button
+          onClick={() => setShowGuide(!showGuide)}
+          className="flex items-center gap-2 w-full text-right"
+        >
+          <div className="p-2 rounded-full bg-gold/10">
+            <HelpCircle className="w-5 h-5 text-gold" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-foreground">המדריך שלך 💡</h4>
+            <p className="text-[11px] text-muted-foreground">איפה מוצאים כל מסמך?</p>
+          </div>
+        </button>
+
+        {showGuide && (
+          <div className="space-y-3 animate-fade-in">
+            {GUIDE_STEPS.map((step, i) => (
+              <div key={i} className="flex gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                <div className="p-1.5 rounded-lg bg-gold/10 h-fit shrink-0">
+                  <step.icon className="w-4 h-4 text-gold" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{step.desc}</p>
+                </div>
               </div>
-              {file.status === "classified" ? (
-                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-              ) : file.status === "error" ? (
-                <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
-              ) : null}
-              <button onClick={() => removeFile(file.id)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-4 h-4" />
-              </button>
+            ))}
+            <div className="p-3 rounded-lg border border-gold/20 bg-gold/5 text-center">
+              <p className="text-xs text-gold">
+                💬 צריך עזרה? שלח לנו הודעה ונדריך אותך צעד אחר צעד
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
