@@ -11,16 +11,16 @@ interface StatsCardProps {
 }
 
 const variantStyles = {
-  default: "glow-accent border-accent/20",
-  success: "glow-primary border-primary/20",
-  warning: "border-warning/20",
-  danger: "glow-danger border-destructive/20",
+  default: "glow-gold border-gold/20",
+  success: "glow-cyan border-cyan-glow/20",
+  warning: "border-gold/20 glow-gold",
+  danger: "border-destructive/20",
 };
 
 const iconVariantStyles = {
-  default: "text-accent",
-  success: "text-primary",
-  warning: "text-warning",
+  default: "text-gold",
+  success: "text-cyan-glow",
+  warning: "text-gold",
   danger: "text-destructive",
 };
 
@@ -30,10 +30,10 @@ export function StatsCard({ title, value, subtitle, icon: Icon, variant = "defau
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-2xl font-bold gradient-header">{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
         </div>
-        <div className={cn("p-2.5 rounded-lg bg-secondary", iconVariantStyles[variant])}>
+        <div className={cn("p-2.5 rounded-lg bg-secondary/80", iconVariantStyles[variant])}>
           <Icon className="w-5 h-5" />
         </div>
       </div>
