@@ -333,8 +333,6 @@ const MortgageInsurance = () => {
                       animSavings={animSavings}
                       monthlySavings={monthlySavings}
                       loanTerm={loanTerm}
-                      marketRate={marketRate}
-                      chitumitRate={chitumitRate}
                     />
                   )}
 
