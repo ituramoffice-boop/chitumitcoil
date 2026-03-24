@@ -17,9 +17,12 @@ import {
   Lightbulb,
   ArrowUpRight,
   Star,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Lead {
   id: string;
@@ -60,47 +63,58 @@ function computeMetrics(lead: Lead) {
 function generateNarrative(lead: Lead, metrics: ReturnType<typeof computeMetrics>, bankerMode: boolean) {
   const { ltv, dti, income, equityPotential, score, mortgage, property } = metrics;
 
-  // Strengths
   const strengths: string[] = [];
-  if (income >= 25000) strengths.push(bankerMode ? "כושר החזר מוכח — הכנסה גבוהה ויציבה" : "הכנסה חודשית גבוהה ויציבה");
-  else if (income >= 15000) strengths.push(bankerMode ? "כושר החזר סביר — הכנסה ממוצעת-גבוהה" : "הכנסה חודשית סבירה");
-  if (ltv < 60) strengths.push(bankerMode ? "טיב בטוחה גבוה — LTV נמוך מ-60%" : `יחס LTV נמוך (${ltv.toFixed(0)}%) — סיכון מופחת`);
-  else if (ltv < 75) strengths.push(bankerMode ? "בטוחה הולמת — LTV בטווח סביר" : `יחס LTV סביר (${ltv.toFixed(0)}%)`);
-  if (dti < 30) strengths.push(bankerMode ? "יחס חוב/הכנסה תקין ומבטיח" : `DTI נמוך (${dti.toFixed(0)}%) — יכולת החזר טובה`);
-  if (equityPotential > 500000) strengths.push(bankerMode ? "הון עצמי משמעותי בנכס" : `פוטנציאל הון עצמי גבוה — ₪${equityPotential.toLocaleString()}`);
+  if (income >= 25000) strengths.push(bankerMode ? "כושר החזר מוכח — הכנסה גבוהה ויציבה, יחס החזר ריאלי עומד בקריטריונים" : "הכנסה חודשית גבוהה ויציבה");
+  else if (income >= 15000) strengths.push(bankerMode ? "כושר החזר סביר — הכנסה ממוצעת-גבוהה, עמידה בנורמטיבים" : "הכנסה חודשית סבירה");
+  if (ltv < 60) strengths.push(bankerMode ? "טיב בטוחה גבוה — LTV נמוך מ-60%, כרית ביטחון משמעותית לבנק" : `יחס LTV נמוך (${ltv.toFixed(0)}%) — סיכון מופחת`);
+  else if (ltv < 75) strengths.push(bankerMode ? "בטוחה הולמת — LTV בטווח סביר, חיתום יצירתי אפשרי" : `יחס LTV סביר (${ltv.toFixed(0)}%)`);
+  if (dti < 30) strengths.push(bankerMode ? "יחס חוב/הכנסה תקין — מרווח תזרימי לחיתום יצירתי" : `DTI נמוך (${dti.toFixed(0)}%) — יכולת החזר טובה`);
+  if (equityPotential > 500000) strengths.push(bankerMode ? "הון עצמי משמעותי בנכס — טיב בטוחה מעולה" : `פוטנציאל הון עצמי גבוה — ₪${equityPotential.toLocaleString()}`);
 
-  if (strengths.length === 0) strengths.push(bankerMode ? "לווה מגיש בקשה ראשונית — בשלב איסוף נתונים" : "הלקוח בתחילת התהליך — נדרש השלמת נתונים");
+  if (strengths.length === 0) strengths.push(bankerMode ? "לווה מגיש בקשה ראשונית — בשלב איסוף נתונים והבראה פיננסית מנוהלת" : "הלקוח בתחילת התהליך — נדרש השלמת נתונים");
 
-  // Weaknesses & mitigation
   const weaknesses: string[] = [];
   if (ltv >= 75) weaknesses.push(bankerMode
-    ? "יחס מימון גבוה — ניתן למיטיגציה ע\"י ערבים או ביטוח משכנתא מורחב"
+    ? "יחס מימון גבוה — ניתן למיטיגציה ע\"י ערבים או ביטוח משכנתא מורחב. הבראה פיננסית מנוהלת בתהליך"
     : `LTV גבוה (${ltv.toFixed(0)}%) — מומלץ להוסיף ערבים או להפחית סכום`
   );
   if (dti >= 40) weaknesses.push(bankerMode
-    ? "עומס חוב גבוה — בתהליך ייעול וסגירת התחייבויות קיימות"
+    ? "עומס חוב גבוה — בתהליך ייעול וסגירת התחייבויות קיימות. יחס החזר ריאלי ישתפר תוך 60 יום"
     : `DTI גבוה (${dti.toFixed(0)}%) — נדרש סגירת הלוואות קטנות`
   );
   if (income < 15000 && income > 0) weaknesses.push(bankerMode
-    ? "הכנסה בתחום הבינוני — צפוי גידול בהתאם למסלול קריירה"
+    ? "הכנסה בתחום הבינוני — צפוי גידול בהתאם למסלול קריירה מתועד. אירוע חד-פעמי שאינו משקף התנהלות שוטפת"
     : "הכנסה נמוכה יחסית — מומלץ לתעד פוטנציאל עליית שכר"
   );
 
-  // P1: Strengths paragraph
   const p1 = bankerMode
-    ? `לכבוד ועדת האשראי, הריני מגיש/ה את תיק הלווה ${lead.full_name} לבחינתכם. ${strengths.join(". ")}. התנהלות עו"ש תקינה ומסודרת, ללא חריגות ממשיות בתקופה האחרונה.`
+    ? `לכבוד ועדת האשראי, הריני מגיש/ה את תיק הלווה ${lead.full_name} לבחינתכם. ${strengths.join(". ")}. התנהלות עו"ש תקינה ומסודרת, ללא חריגות ממשיות בתקופה האחרונה. ניתוח חיתום יצירתי מצביע על פוטנציאל אישור גבוה.`
     : `סיכום חוזקות: ${lead.full_name} מציג/ה פרופיל פיננסי ${score >= 75 ? "חזק" : score >= 50 ? "סביר" : "בהתפתחות"}. ${strengths.join(". ")}.`;
 
-  // P2: Mitigation
   const p2 = weaknesses.length > 0
     ? (bankerMode
-        ? `לעניין הנקודות לבחינה: ${weaknesses.join(". ")}. יצוין כי התנהלות הלווה מראה מגמת שיפור מתמדת ומחויבות לעמידה בתנאים.`
-        : `נקודות לשיפור: ${weaknesses.join(". ")}. ניתן לשפר את הפרופיל באמצעות הפעולות המפורטות בתוכנית ההתאוששות.`)
+        ? `לעניין הנקודות לבחינה: ${weaknesses.join(". ")}. יצוין כי התנהלות הלווה מראה מגמת שיפור מתמדת ומחויבות לעמידה בתנאים. מדובר באירועים חד-פעמיים שאחריהם 12 חודשי התנהלות תקינה.`
+        : `נקודות לשיפור: ${weaknesses.join(". ")}. ניתן לשפר את הפרופיל באמצעות הפעולות המפורטות בתוכנית ההבראה.`)
     : (bankerMode
-        ? "לא זוהו חולשות מהותיות בתיק. הלווה עומד/ת בכל הקריטריונים לאישור."
+        ? "לא זוהו חולשות מהותיות בתיק. הלווה עומד/ת בכל הקריטריונים לאישור. חיתום יצירתי מומלץ."
         : "לא זוהו חולשות משמעותיות — התיק מוכן להגשה.");
 
   return { p1, p2, strengths, weaknesses };
+}
+
+/* ── Advisor Whisperer Tips ── */
+function generateWhisperTips(metrics: ReturnType<typeof computeMetrics>): string[] {
+  const tips: string[] = [];
+  const { ltv, dti, income, equityPotential } = metrics;
+
+  if (ltv < 70) tips.push("💡 ציין למנהל שה-LTV יורד בשנה הקרובה עקב עליית ערך הנכס באזור");
+  if (dti < 35) tips.push("💡 הדגש שיחס ההחזר הריאלי נמוך — מרחב תמרון לבנק");
+  if (income >= 20000) tips.push("💡 בקש ריבית מועדפת — הלקוח עומד בקריטריון 'לווה איכותי'");
+  if (equityPotential > 500000) tips.push("💡 הצע למנהל: 'הנכס מגבה את עצמו — טיב בטוחה מדרגה ראשונה'");
+  tips.push("💡 הזכר שכל המסמכים אומתו דיגיטלית — חוסך זמן לוועדת האשראי");
+  if (dti >= 35) tips.push("💡 הצע סגירת הלוואה קטנה לפני ההגשה — ירידה דרמטית ב-DTI");
+
+  return tips.slice(0, 4);
 }
 
 /* ── Bright spots ── */
@@ -138,19 +152,21 @@ function generateRecoveryPlan(metrics: ReturnType<typeof computeMetrics>): { act
 }
 
 /* ── Component ── */
-export function AIUnderwriterAdvocate({ lead }: { lead: Lead }) {
+export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onGeneratePDF?: () => void }) {
   const [bankerMode, setBankerMode] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({ narrative: true, brightSpots: true, recovery: true });
+  const [expandedSections, setExpandedSections] = useState({ narrative: true, brightSpots: true, recovery: true, whisper: false });
 
   const metrics = useMemo(() => computeMetrics(lead), [lead]);
   const narrative = useMemo(() => generateNarrative(lead, metrics, bankerMode), [lead, metrics, bankerMode]);
   const brightSpots = useMemo(() => generateBrightSpots(metrics, bankerMode), [metrics, bankerMode]);
   const recoveryPlan = useMemo(() => generateRecoveryPlan(metrics), [metrics]);
+  const whisperTips = useMemo(() => generateWhisperTips(metrics), [metrics]);
 
   const toggle = (key: keyof typeof expandedSections) =>
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
 
   return (
+    <TooltipProvider>
     <div className="space-y-4">
       {/* Header + Banker Toggle */}
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -347,12 +363,64 @@ export function AIUnderwriterAdvocate({ lead }: { lead: Lead }) {
         </div>
       )}
 
+      {/* ── Advisor Whisperer ── */}
+      <div className="rounded-xl border border-primary/15 bg-gradient-to-br from-card to-primary/3 overflow-hidden">
+        <button
+          onClick={() => toggle("whisper")}
+          className="w-full flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm text-foreground">Advisor Whisperer — טיפים למנהל הסניף</span>
+          </div>
+          {expandedSections.whisper ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <AnimatePresence>
+          {expandedSections.whisper && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 space-y-2">
+                {whisperTips.map((tip, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10"
+                  >
+                    <span className="text-sm text-foreground">{tip}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Generate Bank Submission button */}
+      {onGeneratePDF && (
+        <Button
+          onClick={onGeneratePDF}
+          className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20"
+          size="lg"
+        >
+          <Send className="w-4 h-4" />
+          הפק הגשה לבנק — מכתב חיתום + מסמכים + ציון
+        </Button>
+      )}
+
       {/* Footer disclaimer */}
       <div className="flex items-center gap-2 text-[10px] text-muted-foreground p-2">
         <Lightbulb className="w-3 h-3 text-accent/50" />
         <span>התובנות מיוצרות ע״י AI ואינן מחליפות ייעוץ מקצועי. הסיכום ייכלל ב-PDF הגשה לבנק באופן אוטומטי.</span>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
 
