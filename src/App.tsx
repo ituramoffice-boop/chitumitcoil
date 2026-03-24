@@ -36,6 +36,7 @@ import DemoHub from "./pages/DemoHub";
 import AdvisorPricing from "./pages/AdvisorPricing";
 import AdvisorPlans from "./pages/AdvisorPlans";
 import MasterAdmin from "./pages/MasterAdmin";
+import CEOReport from "./pages/CEOReport";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
