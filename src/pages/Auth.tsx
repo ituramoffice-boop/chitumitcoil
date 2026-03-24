@@ -1,30 +1,36 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Brain, Loader2 } from "lucide-react";
+import { Loader2, Users, User, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 
 type Mode = "login" | "signup";
+type RoleType = "consultant" | "client";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
+  const initialRole = (searchParams.get("role") as RoleType) || "client";
+
   const [mode, setMode] = useState<Mode>("login");
+  const [roleType, setRoleType] = useState<RoleType>(initialRole);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [isConsultant, setIsConsultant] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  // Redirect logged-in users to appropriate dashboard
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && role) {
       navigate("/dashboard", { replace: true });
     }
-  }, [authLoading, user, navigate]);
+  }, [authLoading, user, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +38,7 @@ const Auth = () => {
 
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -43,16 +49,12 @@ const Auth = () => {
         if (error) throw error;
 
         // If consultant signup, update role after signup
-        if (isConsultant) {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          if (user) {
-            await supabase
-              .from("user_roles")
-              .update({ role: "consultant" as any })
-              .eq("user_id", user.id);
-          }
+        if (roleType === "consultant" && data.user) {
+          // The trigger creates a default 'client' role, update it to 'consultant'
+          await supabase
+            .from("user_roles")
+            .update({ role: "consultant" as any })
+            .eq("user_id", data.user.id);
         }
 
         toast.success("נרשמת בהצלחה! בדוק את המייל לאימות.");
@@ -70,20 +72,58 @@ const Auth = () => {
     }
   };
 
+  const isConsultant = roleType === "consultant";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="w-8 h-8 text-primary" />
-            </div>
+          <div className="flex items-center justify-center">
+            <ChitumitLogo size={48} />
           </div>
           <h1 className="text-2xl font-bold text-foreground">חיתומית</h1>
           <p className="text-sm text-muted-foreground">
             {mode === "login" ? "התחבר לחשבון שלך" : "צור חשבון חדש"}
           </p>
+        </div>
+
+        {/* Role Toggle */}
+        <div className="flex gap-2 p-1 rounded-xl bg-secondary">
+          <button
+            onClick={() => setRoleType("consultant")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              isConsultant
+                ? "bg-gold text-gold-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            יועץ משכנתאות
+          </button>
+          <button
+            onClick={() => setRoleType("client")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              !isConsultant
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <User className="w-4 h-4" />
+            לקוח
+          </button>
+        </div>
+
+        {/* Info banner */}
+        <div className={`rounded-xl p-3 text-xs text-center border ${
+          isConsultant 
+            ? "bg-gold/5 border-gold/20 text-gold" 
+            : "bg-primary/5 border-primary/20 text-primary"
+        }`}>
+          {isConsultant
+            ? "גישה מלאה ל-CRM, ניתוח תיקים, חייגן, ניהול לידים ודוחות"
+            : "מעקב אחר סטטוס התיק, העלאת מסמכים וצפייה בהתקדמות"
+          }
         </div>
 
         {/* Form */}
@@ -129,33 +169,35 @@ const Auth = () => {
               />
             </div>
 
-            {mode === "signup" && (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary">
-                <input
-                  type="checkbox"
-                  id="isConsultant"
-                  checked={isConsultant}
-                  onChange={(e) => setIsConsultant(e.target.checked)}
-                  className="rounded border-border"
-                />
-                <Label htmlFor="isConsultant" className="cursor-pointer text-sm">
-                  אני יועץ משכנתאות
-                </Label>
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className={`w-full ${
+                isConsultant
+                  ? "bg-gold text-gold-foreground hover:bg-gold/90"
+                  : ""
+              }`}
+              disabled={loading}
+            >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {mode === "login" ? "התחבר" : "הירשם"}
+              {isConsultant ? " כיועץ" : " כלקוח"}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <button
               onClick={() => setMode(mode === "login" ? "signup" : "login")}
               className="text-sm text-primary hover:underline"
             >
               {mode === "login" ? "אין לך חשבון? הירשם" : "כבר יש לך חשבון? התחבר"}
+            </button>
+            <br />
+            <button
+              onClick={() => navigate("/")}
+              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            >
+              <ArrowRight className="w-3 h-3" />
+              חזרה לדף הבית
             </button>
           </div>
         </div>
