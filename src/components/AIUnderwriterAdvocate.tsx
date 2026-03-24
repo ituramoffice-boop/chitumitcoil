@@ -365,6 +365,131 @@ export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onG
         </AnimatePresence>
       </div>
 
+      {/* ── Data Mismatch Alerts (Red Flags) ── */}
+      {conflicts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border-2 border-destructive/30 bg-gradient-to-br from-card to-destructive/5 p-4 space-y-3"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <span className="font-bold text-sm text-destructive">⚠️ התראות אי-התאמה — נדרש אימות לפני הגשה</span>
+          </div>
+          {conflicts.map((c, i) => (
+            <div key={i} className={cn(
+              "p-3 rounded-lg border",
+              c.severity === "critical" ? "bg-destructive/5 border-destructive/20" : "bg-amber-500/5 border-amber-500/20"
+            )}>
+              <p className={cn("text-sm font-semibold", c.severity === "critical" ? "text-destructive" : "text-amber-500")}>
+                {c.title}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">{c.detail}</p>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* ── Source-to-Speech Mapping ── */}
+      <div className="rounded-xl border border-border/30 bg-gradient-to-br from-card to-secondary/10 overflow-hidden">
+        <button
+          onClick={() => setShowSourceMap(!showSourceMap)}
+          className="w-full flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-accent" />
+            <span className="font-semibold text-sm text-foreground">מיפוי מקורות — Source Mapping</span>
+            <Badge variant="outline" className="text-[9px] border-accent/20 text-accent">
+              {sourceMappings.length} נתונים מאומתים
+            </Badge>
+          </div>
+          {showSourceMap ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <AnimatePresence>
+          {showSourceMap && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 space-y-2">
+                <p className="text-[10px] text-muted-foreground mb-2">כל טענה בסיכום החיתומי מקושרת לנקודת נתון ספציפית במסמכים</p>
+                {sourceMappings.map((m, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-start gap-3 p-2.5 rounded-lg bg-secondary/20 border border-border/20"
+                  >
+                    <FileSearch className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground">{m.claim}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        📄 {m.source} → <span className="text-accent">{m.field}</span>
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-[8px] shrink-0 border-emerald-500/30 text-emerald-500">
+                      {m.confidence}%
+                    </Badge>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Formula View (Calculation Transparency) ── */}
+      <div className="rounded-xl border border-primary/15 bg-gradient-to-br from-card to-primary/3 overflow-hidden">
+        <button
+          onClick={() => toggle("formulas")}
+          className="w-full flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Calculator className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm text-foreground">שקיפות חישובים — Formula View</span>
+          </div>
+          {expandedSections.formulas ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <AnimatePresence>
+          {expandedSections.formulas && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 space-y-2">
+                <p className="text-[10px] text-muted-foreground mb-2">ללא 'קופסה שחורה' — כל חישוב פתוח לעיון</p>
+                {formulas.map((f, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="p-3 rounded-lg bg-primary/5 border border-primary/10"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-foreground">{f.name}</span>
+                      <span className="text-sm font-black text-primary">{f.result}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono bg-secondary/30 rounded px-2 py-1">
+                      <Calculator className="w-3 h-3 shrink-0" />
+                      <span dir="ltr">{f.formula}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1.5">{f.explanation}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* ── Financial Bright Spots ── */}
       <div className="rounded-xl border border-emerald-500/15 bg-gradient-to-br from-card to-emerald-500/3 overflow-hidden">
         <button
