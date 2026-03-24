@@ -153,6 +153,7 @@ interface CriticalAlert {
 
 const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
   const { user, role, signOut } = useAuth();
+  const { isDemoMode } = useDemo();
   const { isAgency } = useWorkspace();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -202,9 +203,29 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
     window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
+  // Demo data for consultant
+  const DEMO_LEADS: Lead[] = [
+    { id: "d1", full_name: "דנה כהן", phone: "052-1111111", email: "dana@test.com", status: "new", notes: "פנתה דרך הפייסבוק", mortgage_amount: 800000, property_value: 1500000, monthly_income: 18000, created_at: new Date(Date.now() - 86400000).toISOString(), lead_source: "facebook", last_contact: null, next_step: "העלאת תלושי שכר" },
+    { id: "d2", full_name: "אבי לוי", phone: "054-2222222", email: "avi@test.com", status: "contacted", notes: "זוג צעיר", mortgage_amount: 1200000, property_value: 2000000, monthly_income: 25000, created_at: new Date(Date.now() - 172800000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 43200000).toISOString(), next_step: "העלאת דפי בנק" },
+    { id: "d3", full_name: "שרה מזרחי", phone: "050-3333333", email: "sara@test.com", status: "in_progress", notes: "מחכה לאישור BDI", mortgage_amount: 950000, property_value: 1800000, monthly_income: 20000, created_at: new Date(Date.now() - 604800000).toISOString(), lead_source: "organic", last_contact: new Date(Date.now() - 86400000).toISOString(), next_step: "המתנה לאישור עקרוני" },
+    { id: "d4", full_name: "יוסי ברק", phone: "058-4444444", email: "yossi@test.com", status: "submitted", notes: "הוגש לבנק הפועלים", mortgage_amount: 1500000, property_value: 2500000, monthly_income: 30000, created_at: new Date(Date.now() - 1209600000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 172800000).toISOString(), next_step: "חתימה על מסמכים" },
+    { id: "d5", full_name: "מיכל אדרי", phone: "053-5555555", email: "michal@test.com", status: "approved", notes: "אושר! מזל טוב", mortgage_amount: 700000, property_value: 1300000, monthly_income: 16000, created_at: new Date(Date.now() - 2592000000).toISOString(), lead_source: "facebook", last_contact: new Date().toISOString(), next_step: null },
+    { id: "d6", full_name: "רון גבאי", phone: "050-6666666", email: "ron@test.com", status: "new", notes: null, mortgage_amount: null, property_value: null, monthly_income: null, created_at: new Date(Date.now() - 3600000).toISOString(), lead_source: "organic", last_contact: null, next_step: null },
+  ];
+
+  const DEMO_DOCS: Document[] = [
+    { lead_id: "d2", classification: "תלושי שכר", created_at: new Date().toISOString(), risk_flags: null, extracted_data: { analyzed_at: new Date().toISOString() } },
+    { lead_id: "d3", classification: 'דפי עו"ש', created_at: new Date().toISOString(), risk_flags: null, extracted_data: { analyzed_at: new Date().toISOString() } },
+    { lead_id: "d3", classification: "תלושי שכר", created_at: new Date().toISOString(), risk_flags: null, extracted_data: null },
+    { lead_id: "d4", classification: "תלושי שכר", created_at: new Date().toISOString(), risk_flags: null, extracted_data: { analyzed_at: new Date().toISOString() } },
+    { lead_id: "d4", classification: 'דפי עו"ש', created_at: new Date().toISOString(), risk_flags: null, extracted_data: { analyzed_at: new Date().toISOString() } },
+    { lead_id: "d4", classification: 'דו"ח BDI', created_at: new Date().toISOString(), risk_flags: null, extracted_data: { analyzed_at: new Date().toISOString() } },
+  ];
+
   const { data: leads = [], isLoading } = useQuery({
-    queryKey: ["leads"],
+    queryKey: ["leads", isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) return DEMO_LEADS;
       const { data, error } = await supabase
         .from("leads")
         .select("*")
@@ -215,8 +236,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   });
 
   const { data: documents = [], dataUpdatedAt } = useQuery({
-    queryKey: ["all-documents"],
+    queryKey: ["all-documents", isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) return DEMO_DOCS;
       const { data, error } = await supabase
         .from("documents")
         .select("lead_id, classification, created_at, risk_flags, extracted_data")
@@ -230,8 +252,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
   // Profile: plan & lead_count
   const { data: profile } = useQuery({
-    queryKey: ["my-profile"],
+    queryKey: ["my-profile", isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) return { plan: "pro", lead_count: 6 };
       const { data, error } = await supabase
         .from("profiles")
         .select("plan, lead_count")
@@ -250,6 +273,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
   // Realtime: auto-refresh leads & documents on any change
   useEffect(() => {
+    if (isDemoMode) return;
     const channel = supabase
       .channel('consultant-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
@@ -263,7 +287,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
+  }, [queryClient, isDemoMode]);
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
