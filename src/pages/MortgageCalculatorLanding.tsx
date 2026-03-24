@@ -442,7 +442,7 @@ const MortgageCalculatorLanding = () => {
                         </div>
                         <Slider
                           value={[rate * 10]}
-                          onValueChange={v => setRate(v[0] / 10)}
+                          onValueChange={v => { setRate(v[0] / 10); setLastSliderTouched("rate"); }}
                           min={20}
                           max={80}
                           step={1}
