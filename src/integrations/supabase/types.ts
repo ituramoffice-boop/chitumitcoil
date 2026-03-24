@@ -55,6 +55,42 @@ export type Database = {
           },
         ]
       }
+      advisor_client_sync: {
+        Row: {
+          advisor_user_id: string
+          client_user_id: string
+          consent_granted_at: string | null
+          created_at: string
+          id: string
+          revoked_at: string | null
+          security_log: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          advisor_user_id: string
+          client_user_id: string
+          consent_granted_at?: string | null
+          created_at?: string
+          id?: string
+          revoked_at?: string | null
+          security_log?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          advisor_user_id?: string
+          client_user_id?: string
+          consent_granted_at?: string | null
+          created_at?: string
+          id?: string
+          revoked_at?: string | null
+          security_log?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_logs: {
         Row: {
           action_items: Json | null

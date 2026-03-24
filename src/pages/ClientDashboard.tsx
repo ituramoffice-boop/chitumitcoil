@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { useAdvisorSync } from "@/hooks/useAdvisorSync";
+import { AdvisorSyncModal } from "@/components/AdvisorSyncModal";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
@@ -213,6 +215,7 @@ const ClientDashboard = () => {
   const [paymentIncrease, setPaymentIncrease] = useState(0);
   const [scanningDocId, setScanningDocId] = useState<string | null>(null);
   const [verifiedDocs, setVerifiedDocs] = useState<Set<string>>(new Set());
+  const { showSyncModal, setShowSyncModal, advisorId, advisorName } = useAdvisorSync();
 
   useEffect(() => {
     if (!user || isDemoMode) return;
@@ -321,6 +324,15 @@ const ClientDashboard = () => {
   const status = myLead ? STATUS_MAP[myLead.status] || STATUS_MAP.new : null;
 
   return (
+    <>
+    {advisorId && (
+      <AdvisorSyncModal
+        open={showSyncModal}
+        onOpenChange={setShowSyncModal}
+        advisorId={advisorId}
+        advisorName={advisorName}
+      />
+    )}
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Ambient glow orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -750,6 +762,7 @@ const ClientDashboard = () => {
         )}
       </AnimatePresence>
     </div>
+    </>
   );
 };
 

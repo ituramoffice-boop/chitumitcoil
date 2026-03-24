@@ -63,6 +63,7 @@ import {
   Lock,
   Crown,
   Zap,
+  Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -95,6 +96,7 @@ interface Lead {
   lead_source: string | null;
   last_contact: string | null;
   next_step: string | null;
+  client_user_id: string | null;
 }
 
 interface Document {
@@ -205,12 +207,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
   // Demo data for consultant
   const DEMO_LEADS: Lead[] = [
-    { id: "d1", full_name: "דנה כהן", phone: "052-1111111", email: "dana@test.com", status: "new", notes: "פנתה דרך הפייסבוק", mortgage_amount: 800000, property_value: 1500000, monthly_income: 18000, created_at: new Date(Date.now() - 86400000).toISOString(), lead_source: "facebook", last_contact: null, next_step: "העלאת תלושי שכר" },
-    { id: "d2", full_name: "אבי לוי", phone: "054-2222222", email: "avi@test.com", status: "contacted", notes: "זוג צעיר", mortgage_amount: 1200000, property_value: 2000000, monthly_income: 25000, created_at: new Date(Date.now() - 172800000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 43200000).toISOString(), next_step: "העלאת דפי בנק" },
-    { id: "d3", full_name: "שרה מזרחי", phone: "050-3333333", email: "sara@test.com", status: "in_progress", notes: "מחכה לאישור BDI", mortgage_amount: 950000, property_value: 1800000, monthly_income: 20000, created_at: new Date(Date.now() - 604800000).toISOString(), lead_source: "organic", last_contact: new Date(Date.now() - 86400000).toISOString(), next_step: "המתנה לאישור עקרוני" },
-    { id: "d4", full_name: "יוסי ברק", phone: "058-4444444", email: "yossi@test.com", status: "submitted", notes: "הוגש לבנק הפועלים", mortgage_amount: 1500000, property_value: 2500000, monthly_income: 30000, created_at: new Date(Date.now() - 1209600000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 172800000).toISOString(), next_step: "חתימה על מסמכים" },
-    { id: "d5", full_name: "מיכל אדרי", phone: "053-5555555", email: "michal@test.com", status: "approved", notes: "אושר! מזל טוב", mortgage_amount: 700000, property_value: 1300000, monthly_income: 16000, created_at: new Date(Date.now() - 2592000000).toISOString(), lead_source: "facebook", last_contact: new Date().toISOString(), next_step: null },
-    { id: "d6", full_name: "רון גבאי", phone: "050-6666666", email: "ron@test.com", status: "new", notes: null, mortgage_amount: null, property_value: null, monthly_income: null, created_at: new Date(Date.now() - 3600000).toISOString(), lead_source: "organic", last_contact: null, next_step: null },
+    { id: "d1", full_name: "דנה כהן", phone: "052-1111111", email: "dana@test.com", status: "new", notes: "פנתה דרך הפייסבוק", mortgage_amount: 800000, property_value: 1500000, monthly_income: 18000, created_at: new Date(Date.now() - 86400000).toISOString(), lead_source: "facebook", last_contact: null, next_step: "העלאת תלושי שכר", client_user_id: null },
+    { id: "d2", full_name: "אבי לוי", phone: "054-2222222", email: "avi@test.com", status: "contacted", notes: "זוג צעיר", mortgage_amount: 1200000, property_value: 2000000, monthly_income: 25000, created_at: new Date(Date.now() - 172800000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 43200000).toISOString(), next_step: "העלאת דפי בנק", client_user_id: null },
+    { id: "d3", full_name: "שרה מזרחי", phone: "050-3333333", email: "sara@test.com", status: "in_progress", notes: "מחכה לאישור BDI", mortgage_amount: 950000, property_value: 1800000, monthly_income: 20000, created_at: new Date(Date.now() - 604800000).toISOString(), lead_source: "organic", last_contact: new Date(Date.now() - 86400000).toISOString(), next_step: "המתנה לאישור עקרוני", client_user_id: null },
+    { id: "d4", full_name: "יוסי ברק", phone: "058-4444444", email: "yossi@test.com", status: "submitted", notes: "הוגש לבנק הפועלים", mortgage_amount: 1500000, property_value: 2500000, monthly_income: 30000, created_at: new Date(Date.now() - 1209600000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 172800000).toISOString(), next_step: "חתימה על מסמכים", client_user_id: null },
+    { id: "d5", full_name: "מיכל אדרי", phone: "053-5555555", email: "michal@test.com", status: "approved", notes: "אושר! מזל טוב", mortgage_amount: 700000, property_value: 1300000, monthly_income: 16000, created_at: new Date(Date.now() - 2592000000).toISOString(), lead_source: "facebook", last_contact: new Date().toISOString(), next_step: null, client_user_id: "demo-synced" },
+    { id: "d6", full_name: "רון גבאי", phone: "050-6666666", email: "ron@test.com", status: "new", notes: null, mortgage_amount: null, property_value: null, monthly_income: null, created_at: new Date(Date.now() - 3600000).toISOString(), lead_source: "organic", last_contact: null, next_step: null, client_user_id: null },
   ];
 
   const DEMO_DOCS: Document[] = [
@@ -1003,6 +1005,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-semibold text-foreground">{lead.full_name}</span>
+                          {lead.lead_source === "advisor_sync" && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1 font-medium">
+                              <Link2 className="w-2.5 h-2.5" />
+                              סונכרן מ-Global DB
+                            </span>
+                          )}
                           <span className={cn(
                             "text-[11px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1",
                             sc.color, sc.bg,
