@@ -741,8 +741,8 @@ const MortgageCalculatorLanding = () => {
       <footer className="relative z-10 border-t border-white/5 py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-white/30 text-xs">
-            <Building2 className="w-4 h-4" />
-            <span>Chitumit © {new Date().getFullYear()}</span>
+            <ChitumitLogo size={16} />
+            <span>חיתומית © {new Date().getFullYear()}</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-white/20">
             <span>תנאי שימוש</span>

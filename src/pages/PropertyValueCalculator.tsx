@@ -67,7 +67,7 @@ const AREAS: AreaData[] = [
 ];
 
 const PROPERTY_TYPES = [
-  { key: "apartment", label: "דירה", icon: Building2, factor: 1.0 },
+  { key: "apartment", label: "דירה", icon: Home, factor: 1.0 },
   { key: "penthouse", label: "פנטהאוז", icon: Sparkles, factor: 1.35 },
   { key: "garden", label: "גן / קרקע", icon: TreePine, factor: 1.15 },
   { key: "cottage", label: "קוטג'", icon: Home, factor: 1.25 },
