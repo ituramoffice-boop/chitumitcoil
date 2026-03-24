@@ -43,6 +43,7 @@ import GetStarted from "./pages/GetStarted";
 import MasterAdminDemo from "./pages/MasterAdminDemo";
 import MarketingAssetsHub from "./pages/MarketingAssetsHub";
 import JoinTheElite from "./pages/JoinTheElite";
+import WarRoom from "./pages/WarRoom";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,7 @@ const App = () => {
                    <Route path="/master-admin/demo" element={<MasterAdminDemo />} />
                    <Route path="/master-admin/marketing" element={<MarketingAssetsHub />} />
                    <Route path="/join-the-elite" element={<JoinTheElite />} />
+                   <Route path="/admin/war-room" element={<WarRoom />} />
                   <Route path="/ceo-report" element={<CEOReport />} />
                   <Route path="/admin-mobile" element={<AdminMobile />} />
                   <Route path="/milestone-2000" element={<Milestone2000 />} />
