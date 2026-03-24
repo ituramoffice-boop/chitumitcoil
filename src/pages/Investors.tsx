@@ -114,7 +114,7 @@ export default function Investors() {
             className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight"
           >
             <span className="bg-gradient-to-l from-gold via-amber-300 to-primary bg-clip-text text-transparent">
-              SmartMortgage AI
+              חיתומית
             </span>
             <br />
             <span className="text-slate-200">מערכת ההפעלה של שוק המשכנתאות</span>
@@ -486,7 +486,7 @@ export default function Investors() {
       </section>
 
       <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
-        <p>© 2026 SmartMortgage AI · Confidential Investor Materials</p>
+        <p>© 2026 חיתומית · Confidential Investor Materials</p>
       </footer>
     </div>
   );

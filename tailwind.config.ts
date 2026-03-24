@@ -13,7 +13,8 @@ export default {
       },
     },
     fontFamily: {
-      heebo: ["Heebo", "sans-serif"],
+      assistant: ["Assistant", "Heebo", "sans-serif"],
+      heebo: ["Heebo", "Assistant", "sans-serif"],
     },
     extend: {
       colors: {

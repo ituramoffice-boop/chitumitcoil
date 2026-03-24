@@ -126,7 +126,7 @@ export default function ConsultantDirectory() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="text-slate-400 max-w-xl mx-auto"
           >
-            כל היועצים במדריך אומתו על ידי SmartMortgage AI. הביקורות נכתבות רק על ידי לקוחות אמיתיים שסיימו תהליך.
+            כל היועצים במדריך אומתו על ידי חיתומית. הביקורות נכתבות רק על ידי לקוחות אמיתיים שסיימו תהליך.
           </motion.p>
         </div>
       </section>
@@ -244,7 +244,7 @@ export default function ConsultantDirectory() {
       </section>
 
       <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
-        <p>© 2026 SmartMortgage AI · מדריך יועצי משכנתאות</p>
+        <p>© 2026 חיתומית · מדריך יועצי משכנתאות</p>
       </footer>
     </div>
   );

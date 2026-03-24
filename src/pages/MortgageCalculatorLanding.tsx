@@ -133,7 +133,7 @@ const MortgageCalculatorLanding = () => {
     
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
-    doc.text("SmartMortgage AI", 105, 18, { align: "center" });
+    doc.text("Chitumit", 105, 18, { align: "center" });
     doc.setFontSize(11);
     doc.text("Mortgage Feasibility Report", 105, 28, { align: "center" });
     doc.setFontSize(8);
@@ -183,9 +183,9 @@ const MortgageCalculatorLanding = () => {
     // Footer
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
-    doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
+    doc.text("This report is for estimation purposes only. Chitumit (c) 2026", 105, 285, { align: "center" });
 
-    doc.save(`SmartMortgage_Report_${formData.full_name || "Client"}.pdf`);
+    doc.save(`Chitumit_Report_${formData.full_name || "Client"}.pdf`);
   };
 
   const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
@@ -258,12 +258,12 @@ const MortgageCalculatorLanding = () => {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FinancialProduct",
-    "name": "מחשבון משכנתא חכם 2026 – SmartMortgage AI",
+    "name": "מחשבון משכנתא חכם 2026 – Chitumit",
     "description": "מחשבון משכנתא עם בינה מלאכותית לחישוב החזר חודשי, ריבית והשוואת מסלולים",
     "url": "https://chitumitcoil.lovable.app/calculator",
     "provider": {
       "@type": "Organization",
-      "name": "SmartMortgage AI"
+      "name": "Chitumit"
     },
     "category": "Mortgage Calculator"
   };
@@ -318,7 +318,7 @@ const MortgageCalculatorLanding = () => {
               </div>
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">SmartMortgage</h1>
+              <h1 className="text-lg font-bold tracking-tight">Chitumit</h1>
               <p className="text-[10px] text-white/40 tracking-wider uppercase">AI-Powered Platform</p>
             </div>
           </div>
@@ -743,7 +743,7 @@ const MortgageCalculatorLanding = () => {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-white/30 text-xs">
             <Building2 className="w-4 h-4" />
-            <span>SmartMortgage AI © {new Date().getFullYear()}</span>
+            <span>Chitumit © {new Date().getFullYear()}</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-white/20">
             <span>תנאי שימוש</span>

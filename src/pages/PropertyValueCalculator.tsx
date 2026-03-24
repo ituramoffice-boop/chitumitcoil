@@ -248,7 +248,7 @@ const PropertyValueCalculator = () => {
     doc.rect(0, 42, 210, 3, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
-    doc.text("SmartMortgage AI", 105, 18, { align: "center" });
+    doc.text("Chitumit", 105, 18, { align: "center" });
     doc.setFontSize(11);
     doc.text("Property Valuation Report", 105, 28, { align: "center" });
     doc.setFontSize(8);
@@ -291,8 +291,8 @@ const PropertyValueCalculator = () => {
     doc.link(55, y, 100, 14, { url: getWhatsAppUrl(branding?.whatsappPhone) });
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
-    doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
-    doc.save(`SmartMortgage_PropertyReport_${formData.full_name || "Client"}.pdf`);
+    doc.text("This report is for estimation purposes only. Chitumit (c) 2026", 105, 285, { align: "center" });
+    doc.save(`Chitumit_PropertyReport_${formData.full_name || "Client"}.pdf`);
   };
 
   const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
@@ -342,7 +342,7 @@ const PropertyValueCalculator = () => {
 
   // Dynamic meta tags
   useEffect(() => {
-    document.title = "מחשבון שווי נכס חכם 2026 | SmartMortgage AI – הערכת שווי דירה בחינם";
+    document.title = "מחשבון שווי נכס חכם 2026 | Chitumit – הערכת שווי דירה בחינם";
     const setMeta = (name: string, content: string, attr = "name") => {
       let el = document.querySelector(`meta[${attr}="${name}"]`);
       if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
@@ -351,13 +351,13 @@ const PropertyValueCalculator = () => {
     setMeta("description", "מחשבון שווי נכס חכם עם בינה מלאכותית. הערכת שווי דירה מיידית ב-25 אזורים בישראל, תחזית ל-5 שנים, ודוח מפורט חינם. נתוני שוק מרץ 2026.");
     setMeta("keywords", "שווי נכס, מחשבון שווי דירה, הערכת שווי נכס, שמאות מקרקעין, מחיר דירה 2026, מחיר למטר רבוע, שווי דירה תל אביב, מחשבון נדלן");
     setMeta("robots", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
-    setMeta("og:title", "מחשבון שווי נכס חכם 2026 | SmartMortgage AI", "property");
+    setMeta("og:title", "מחשבון שווי נכס חכם 2026 | Chitumit", "property");
     setMeta("og:description", "הערכת שווי דירה מיידית עם AI. 25 אזורים, תחזית ל-5 שנים, ודוח מפורט בחינם.", "property");
     setMeta("og:type", "website", "property");
     setMeta("og:url", "https://chitumitcoil.lovable.app/property-value", "property");
     setMeta("og:locale", "he_IL", "property");
     setMeta("twitter:card", "summary_large_image");
-    setMeta("twitter:title", "מחשבון שווי נכס חכם 2026 | SmartMortgage AI");
+    setMeta("twitter:title", "מחשבון שווי נכס חכם 2026 | Chitumit");
     setMeta("twitter:description", "הערכת שווי דירה מיידית עם AI ב-25 אזורים. תחזית ל-5 שנים ודוח חינם.");
 
     // Canonical
@@ -365,14 +365,14 @@ const PropertyValueCalculator = () => {
     if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
     canonical.href = "https://chitumitcoil.lovable.app/property-value";
 
-    return () => { document.title = "SmartMortgage AI"; };
+    return () => { document.title = "Chitumit"; };
   }, []);
 
   // Schema markup — WebApplication
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "מחשבון שווי נכס חכם 2026 – SmartMortgage AI",
+    "name": "מחשבון שווי נכס חכם 2026 – Chitumit",
     "description": "הערכת שווי נכס מבוססת בינה מלאכותית ונתוני שוק בזמן אמת. בדקו כמה שווה הדירה שלכם באזורים שונים בישראל.",
     "url": "https://chitumitcoil.lovable.app/property-value",
     "applicationCategory": "FinanceApplication",
@@ -380,7 +380,7 @@ const PropertyValueCalculator = () => {
     "inLanguage": "he",
     "provider": {
       "@type": "Organization",
-      "name": "SmartMortgage AI",
+      "name": "Chitumit",
       "url": "https://chitumitcoil.lovable.app",
       "logo": "https://chitumitcoil.lovable.app/placeholder.svg"
     },
@@ -418,7 +418,7 @@ const PropertyValueCalculator = () => {
   const agentJsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
-    "name": "SmartMortgage AI",
+    "name": "Chitumit",
     "url": "https://chitumitcoil.lovable.app",
     "description": "פלטפורמת AI לייעוץ משכנתאות והערכת שווי נכסים בישראל",
     "areaServed": { "@type": "Country", "name": "Israel" },
@@ -1070,10 +1070,10 @@ const PropertyValueCalculator = () => {
           <div className="max-w-4xl mx-auto px-6">
             <div className="p-4 rounded-xl bg-white/5 border border-white/5 mb-6">
               <p className="text-[10px] text-white/30 leading-relaxed text-center">
-                <strong className="text-white/40">גילוי נאות:</strong> הערכת השווי המוצגת כאן היא אומדן בלבד המבוסס על נתוני שוק סטטיסטיים ואינה מהווה חוות דעת שמאית רשמית. לצורך משכנתא או עסקה, יש להיעזר בשמאי מקרקעין מוסמך. המידע אינו מהווה ייעוץ פיננסי או השקעתי. SmartMortgage AI אינה אחראית לנזק כלשהו שייגרם משימוש במידע זה. הנתונים מבוססים על ממוצעים אזוריים ועשויים להשתנות.
+                <strong className="text-white/40">גילוי נאות:</strong> הערכת השווי המוצגת כאן היא אומדן בלבד המבוסס על נתוני שוק סטטיסטיים ואינה מהווה חוות דעת שמאית רשמית. לצורך משכנתא או עסקה, יש להיעזר בשמאי מקרקעין מוסמך. המידע אינו מהווה ייעוץ פיננסי או השקעתי. Chitumit אינה אחראית לנזק כלשהו שייגרם משימוש במידע זה. הנתונים מבוססים על ממוצעים אזוריים ועשויים להשתנות.
               </p>
             </div>
-            <p className="text-center text-xs text-white/20">© 2026 SmartMortgage AI. כל הזכויות שמורות.</p>
+            <p className="text-center text-xs text-white/20">© 2026 Chitumit. כל הזכויות שמורות.</p>
           </div>
         </footer>
       </div>
