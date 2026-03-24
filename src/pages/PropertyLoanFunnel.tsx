@@ -205,7 +205,8 @@ const PropertyLoanFunnel = () => {
         (email ? 10 : 0) +
         (marketingConsent ? 5 : 0) +
         (uploadedDocs.size * 5) +
-        (urgency === "immediate" ? 10 : urgency === "month" ? 5 : 0)
+        (urgency === "immediate" ? 10 : urgency === "month" ? 5 : 0) +
+        (["5_to_10", "10_plus"].includes(employmentSeniority) ? 5 : employmentSeniority === "less_than_1" ? -5 : 0)
       );
 
       const { error } = await supabase.from("leads").insert({
