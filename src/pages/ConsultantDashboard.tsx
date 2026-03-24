@@ -84,6 +84,7 @@ import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
 import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
 import { InsiderFeed } from "@/components/InsiderFeed";
+import { PerformanceStats, FeeEstimator, CloseDealTrigger } from "@/components/ProfitIntelligence";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -696,6 +697,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           </div>
         </div>
 
+        {/* Profit Intelligence */}
+        <PerformanceStats leads={leads} />
+
         {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Critical Alerts - 3 categories */}
@@ -978,6 +982,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <h3 className="font-bold text-foreground">{selectedLead.full_name} — ניתוח מעמיק</h3>
               <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)}>סגור</Button>
             </div>
+            {/* Profit Intelligence sidebar */}
+            <div className="space-y-3 mb-4">
+              <CloseDealTrigger lead={selectedLead} />
+              <FeeEstimator lead={selectedLead} />
+            </div>
+
             <Tabs defaultValue="advocate" dir="rtl">
               <TabsList>
                 <TabsTrigger value="advocate">AI חיתום</TabsTrigger>
