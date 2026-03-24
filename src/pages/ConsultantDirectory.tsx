@@ -10,6 +10,7 @@ import {
   Award, CheckCircle2, Crown
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 
 interface ConsultantProfile {
   id: string;
