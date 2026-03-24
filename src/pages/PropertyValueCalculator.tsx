@@ -288,7 +288,7 @@ const PropertyValueCalculator = () => {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
-    doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
+    doc.link(55, y, 100, 14, { url: getWhatsAppUrl(branding?.whatsappPhone) });
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
     doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
