@@ -63,6 +63,7 @@ import {
   Lock,
   Crown,
   Zap,
+  Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -1004,6 +1005,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-semibold text-foreground">{lead.full_name}</span>
+                          {lead.lead_source === "advisor_sync" && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1 font-medium">
+                              <Link2 className="w-2.5 h-2.5" />
+                              סונכרן מ-Global DB
+                            </span>
+                          )}
                           <span className={cn(
                             "text-[11px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1",
                             sc.color, sc.bg,
