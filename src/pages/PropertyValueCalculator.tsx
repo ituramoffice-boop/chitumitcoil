@@ -15,6 +15,7 @@ import {
   Download,
 } from "lucide-react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";

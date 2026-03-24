@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 
 /* ── Animated Section ── */
 function AnimSection({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {

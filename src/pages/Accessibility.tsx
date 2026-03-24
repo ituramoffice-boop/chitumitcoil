@@ -109,15 +109,7 @@ export default function Accessibility() {
         </section>
       </main>
 
-      <footer className="border-t border-border/30 py-6 px-6 text-center text-sm text-muted-foreground">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
-          <Link to="/terms" className="hover:text-gold transition-colors">תנאי שימוש</Link>
-          <span>·</span>
-          <Link to="/privacy" className="hover:text-gold transition-colors">מדיניות פרטיות</Link>
-          <span>·</span>
-          <span className="text-gold">הצהרת נגישות</span>
-        </div>
-      </footer>
+      <PublicFooter activePage="accessibility" />
     </div>
   );
 }
