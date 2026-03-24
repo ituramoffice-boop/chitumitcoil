@@ -537,17 +537,17 @@ function CalculatorStep({ mortgageAmount, setMortgageAmount, loanTerm, setLoanTe
 }
 
 /* ═══ STEP 2: Comparison ═══ */
-function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, animSavings, monthlySavings, loanTerm, marketRate, chitumitRate }: any) {
+function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, animSavings, monthlySavings, loanTerm }: any) {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center">📊 השוואת מחירים בזמן אמת</h2>
+      <h2 className="text-2xl font-bold text-center">📊 השוואת פרמיות בזמן אמת</h2>
 
       {/* Scanning animation */}
       {!scanComplete && (
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-cyan-500/20 p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm text-cyan-300">
             <Activity className="w-4 h-4 animate-pulse" />
-            <span>מאמת הנחות מבוססות בריאות...</span>
+            <span>סורק מחירי פוליסות בשוק...</span>
           </div>
           <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
             <motion.div
@@ -566,17 +566,17 @@ function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Market rate */}
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 space-y-3">
-              <p className="text-xs text-white/40 uppercase tracking-wider">ממוצע שוק</p>
+              <p className="text-xs text-white/40 uppercase tracking-wider">פרמיה ממוצעת בבנק</p>
               <p className="text-3xl font-bold text-white/70 line-through decoration-red-400/50">₪{animMarket.toLocaleString()}<span className="text-sm">/חודש</span></p>
-              <p className="text-xs text-white/30">ריבית: {(marketRate * 100).toFixed(2)}%</p>
+              <p className="text-xs text-white/30">ביטוח חיים למשכנתא דרך הבנק</p>
             </div>
 
             {/* Chitumit rate */}
             <div className="bg-gradient-to-br from-cyan-500/10 to-teal-500/10 backdrop-blur-xl rounded-2xl border-2 border-cyan-500/40 p-6 space-y-3 relative overflow-hidden">
               <div className="absolute top-3 left-3 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">מומלץ</div>
-              <p className="text-xs text-cyan-300 uppercase tracking-wider">חיתומית Preferred</p>
+              <p className="text-xs text-cyan-300 uppercase tracking-wider">פרמיה דרך חיתומית</p>
               <p className="text-3xl font-bold text-cyan-300">₪{animChitumit.toLocaleString()}<span className="text-sm">/חודש</span></p>
-              <p className="text-xs text-cyan-400/50">ריבית: {(chitumitRate * 100).toFixed(2)}%</p>
+              <p className="text-xs text-cyan-400/50">ביטוח פרטי במחיר מועדף</p>
             </div>
           </div>
 
