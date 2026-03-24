@@ -76,6 +76,105 @@ const MortgageCalculatorLanding = () => {
   // Financing ratio (rough estimate)
   const financingRatio = Math.min(Math.round((loanAmount / (loanAmount * 1.35)) * 100), 75);
 
+  // Calculate lead score based on calculator values
+  const calcLeadScore = () => {
+    let score = 0;
+    // Loan amount signals
+    if (loanAmount >= 2000000) score += 30;
+    else if (loanAmount >= 1000000) score += 20;
+    else if (loanAmount >= 500000) score += 10;
+    // LTV — financing ratio signals buying intent
+    if (financingRatio <= 50) score += 25; // strong equity = serious buyer
+    else if (financingRatio <= 65) score += 15;
+    else score += 5;
+    // Rate awareness — low rate = market-savvy
+    if (rate <= 4) score += 15;
+    else if (rate <= 5.5) score += 10;
+    else score += 5;
+    // Engagement: touched multiple sliders
+    if (lastSliderTouched) score += 10;
+    // Has email
+    if (formData.email) score += 10;
+    // Marketing consent
+    if (marketingConsent) score += 5;
+    return Math.min(score, 100);
+  };
+
+  // Determine lead category
+  const getLeadCategory = () => {
+    if (loanAmount >= 2000000 && financingRatio < 50) return "משקיע";
+    if (rate > 5 && years > 20) return "מחזר הלוואה";
+    return "רוכש ראשון";
+  };
+
+  // Generate PDF report
+  const generatePDF = () => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    doc.setR2L(true);
+    
+    // Header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 45, "F");
+    doc.setFillColor(59, 130, 246);
+    doc.rect(0, 42, 210, 3, "F");
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text("SmartMortgage AI", 105, 18, { align: "center" });
+    doc.setFontSize(11);
+    doc.text("Mortgage Feasibility Report", 105, 28, { align: "center" });
+    doc.setFontSize(8);
+    doc.text(new Date().toLocaleDateString("he-IL"), 105, 36, { align: "center" });
+
+    // Body
+    doc.setTextColor(30, 41, 59);
+    let y = 58;
+    
+    doc.setFontSize(14);
+    doc.text("Summary", 105, y, { align: "center" });
+    y += 12;
+    
+    doc.setFontSize(11);
+    const lines = [
+      [`Loan Amount: ${loanAmount.toLocaleString()} ILS`, ""],
+      [`Period: ${years} years`, ""],
+      [`Annual Rate: ${rate}%`, ""],
+      [`Monthly Payment: ${result.monthly.toLocaleString()} ILS`, ""],
+      [`Total Payment: ${result.total.toLocaleString()} ILS`, ""],
+      [`Total Interest: ${result.interest.toLocaleString()} ILS`, ""],
+      [`Financing Ratio: ~${financingRatio}%`, ""],
+      [`Lead Category: ${getLeadCategory()}`, ""],
+    ];
+    
+    lines.forEach(([text]) => {
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(25, y - 5, 160, 9, 2, 2, "F");
+      doc.text(text, 105, y, { align: "center" });
+      y += 12;
+    });
+
+    y += 5;
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text("AI Tip: " + (activeTip?.tip || ""), 105, y, { align: "center", maxWidth: 150 });
+    
+    y += 20;
+    // WhatsApp CTA
+    doc.setFillColor(37, 211, 102);
+    doc.roundedRect(55, y, 100, 14, 4, 4, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
+    doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
+
+    // Footer
+    doc.setTextColor(148, 163, 184);
+    doc.setFontSize(7);
+    doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
+
+    doc.save(`SmartMortgage_Report_${formData.full_name || "Client"}.pdf`);
+  };
+
   const handleSubmit = async () => {
     if (!formData.full_name || !formData.phone) {
       toast({ title: "נא למלא שם וטלפון", variant: "destructive" });
@@ -83,11 +182,12 @@ const MortgageCalculatorLanding = () => {
     }
     setSubmitting(true);
     try {
-      // Use current user's ID if logged in, otherwise use default
       const { data: { session } } = await supabase.auth.getSession();
       const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      const leadScore = calcLeadScore();
+      const category = getLeadCategory();
       
-      const { error } = await supabase.from("leads").insert({
+      const { data: insertedLead, error } = await supabase.from("leads").insert({
         consultant_id: consultantId,
         full_name: formData.full_name,
         phone: formData.phone || null,
@@ -96,11 +196,27 @@ const MortgageCalculatorLanding = () => {
         property_value: Math.round(loanAmount * 1.35),
         lead_source: "organic",
         marketing_consent: marketingConsent,
-        notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}`,
-      } as any);
+        lead_score: leadScore,
+        notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}. קטגוריה: ${category}. סליידר אחרון: ${lastSliderTouched}. ציון: ${leadScore}`,
+      } as any).select("id").single();
       if (error) throw error;
+      
+      if (insertedLead?.id) {
+        setSavedLeadId(insertedLead.id);
+        // Fire notification for CRM (best-effort, don't block)
+        if (session?.user?.id) {
+          supabase.from("notifications").insert({
+            user_id: session.user.id,
+            title: `🔥 ליד חם חדש: ${formData.full_name}`,
+            body: `₪${loanAmount.toLocaleString()} ל-${years} שנה • ציון ${leadScore} • ${category}`,
+            type: leadScore >= 70 ? "urgent" : "info",
+            link: "/dashboard/leads",
+          } as any).then(() => {});
+        }
+      }
+      
+      setIsUnlocked(true);
       setStep("success");
-      // After 3 seconds, start the journey
       setTimeout(() => {
         setStep("journey");
         setJourneyStep(0);
