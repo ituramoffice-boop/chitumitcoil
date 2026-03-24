@@ -496,15 +496,13 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="w-6 h-6 text-primary" />
-            </div>
+            <ChitumitLogoImport size={36} />
             <div>
-              <h1 className="text-xl font-bold text-foreground">SmartMortgage AI</h1>
-              <p className="text-xs text-muted-foreground">פאנל יועץ</p>
+              <h1 className="text-xl font-bold text-gold">חיתומית</h1>
+              <p className="text-[10px] text-muted-foreground">הבינה שמאחורי האישור</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
