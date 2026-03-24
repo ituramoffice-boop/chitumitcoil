@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import StarField from "@/components/StarField";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import {
   TrendingUp, Users, Globe, Zap, Shield, Brain, DollarSign, Target,
   Layers, BarChart3, Sparkles, ArrowDown, Calendar, CheckCircle2,
