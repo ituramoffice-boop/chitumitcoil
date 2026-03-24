@@ -252,7 +252,7 @@ export default function ConsultantDirectory() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           {c.logo_url ? (
-                            <img src={c.logo_url} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-gold/20" />
+                            <img src={c.logo_url} alt={`לוגו של ${c.full_name || 'יועץ'}`} className="w-12 h-12 rounded-full object-cover border-2 border-gold/20" />
                           ) : (
                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-gold flex items-center justify-center text-white font-bold text-lg">
                               {c.full_name?.[0] || "?"}

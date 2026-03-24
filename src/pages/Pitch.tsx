@@ -437,7 +437,7 @@ export default function Pitch() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden" id="main-content">
       <StarField />
 
       {/* ═══════ HERO — Personal & Direct ═══════ */}
