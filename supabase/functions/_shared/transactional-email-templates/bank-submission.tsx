@@ -5,7 +5,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "Chitumit"
+const SITE_NAME = "חיתומית"
 
 interface BankSubmissionProps {
   consultantName?: string
@@ -81,6 +81,7 @@ const BankSubmissionEmail = ({
         <Text style={footer}>
           לבירורים ניתן להשיב על מייל זה או ליצור קשר עם היועץ ישירות.
         </Text>
+        <Text style={brandFooter}>חיתומית — האישור בדרך, תהיה מאושר.</Text>
       </Container>
     </Body>
   </Html>
@@ -131,3 +132,4 @@ const ctaButton = {
 }
 const ctaNote = { fontSize: '11px', color: '#9CA3AF', margin: '10px 0 0' }
 const footer = { fontSize: '12px', color: '#9CA3AF', margin: '0 0 5px', lineHeight: '1.5' }
+const brandFooter = { fontSize: '11px', color: '#D4AF37', padding: '8px 0', margin: '0', textAlign: 'center' as const, fontWeight: '500' as const }
