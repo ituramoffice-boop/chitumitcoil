@@ -700,7 +700,7 @@ export default function Pitch() {
       <section className="relative z-10 py-32 px-4">
         <AnimSection className="text-center max-w-3xl mx-auto space-y-6">
           <h2 className="text-3xl md:text-5xl font-black">
-            מוכן <span className="text-primary">לעבוד חכם</span>?
+            מוכן <span className="gradient-header">לעבוד חכם</span>?
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             10 לידים ראשונים בחינם. בלי כרטיס אשראי. בלי התחייבות.
