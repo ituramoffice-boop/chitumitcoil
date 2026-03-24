@@ -1,4 +1,5 @@
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { FileText, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
