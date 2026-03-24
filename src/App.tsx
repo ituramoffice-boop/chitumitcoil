@@ -36,6 +36,7 @@ import DemoHub from "./pages/DemoHub";
 import AdvisorPricing from "./pages/AdvisorPricing";
 import AdvisorPlans from "./pages/AdvisorPlans";
 import MasterAdmin from "./pages/MasterAdmin";
+import CEOReport from "./pages/CEOReport";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
@@ -74,7 +75,8 @@ const App = () => {
                 <Route path="/demo" element={<DemoHub />} />
                 <Route path="/advisor-pricing" element={<AdvisorPricing />} />
                  <Route path="/advisor-plans" element={<AdvisorPlans />} />
-                 <Route path="/master-admin" element={<MasterAdmin />} />
+                  <Route path="/master-admin" element={<MasterAdmin />} />
+                  <Route path="/ceo-report" element={<CEOReport />} />
                <Route path="/accessibility" element={<Accessibility />} />
                <Route path="/reset-password" element={<ResetPassword />} />
                <Route path="/terms" element={<Terms />} />
