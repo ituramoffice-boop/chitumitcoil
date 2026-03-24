@@ -984,6 +984,12 @@ const LeadManagement = () => {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {blurred ? (
+                            <div className="flex items-center gap-1 blur-sm select-none pointer-events-none">
+                              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">Pro</span>
+                            </div>
+                          ) : (
                           <div className="flex items-center gap-1">
                             {lead.phone && (
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openWhatsApp(lead)}>
@@ -1001,13 +1007,14 @@ const LeadManagement = () => {
                               </Button>
                             )}
                           </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge className={cn("text-xs", STATUS_CONFIG[lead.status].bg, STATUS_CONFIG[lead.status].color)} variant="outline">
                             {STATUS_CONFIG[lead.status].label}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className={cn("text-sm", blurred && "blur-sm select-none")}>
                           {lead.mortgage_amount ? `₪${lead.mortgage_amount.toLocaleString()}` : "-"}
                         </TableCell>
                         <TableCell>
