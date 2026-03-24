@@ -60,9 +60,8 @@ export default function LeadMarketplace() {
       .from("leads")
       .update({
         consultant_id: user!.id,
-        is_marketplace: false,
         status: "contacted" as any,
-      })
+      } as any)
       .eq("id", leadId);
 
     if (error) {
