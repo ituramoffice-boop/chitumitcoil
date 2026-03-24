@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   Users, User, ShieldCheck, Home, FileText, Calculator, 
   Briefcase, BarChart3, Phone, Settings, MessageCircle, 
-  TrendingUp, Store, ArrowLeft, Sparkles
+  TrendingUp, Store, ArrowLeft, Sparkles, Shield
 } from "lucide-react";
 
 const ROLE_SECTIONS = [
@@ -59,6 +59,7 @@ const PUBLIC_PAGES = [
   { path: "/calculator", label: "מחשבון משכנתא", icon: Calculator },
   { path: "/property-value", label: "מחשבון שווי נכס", icon: TrendingUp },
   { path: "/property-loan", label: "הלוואה כנגד נכס", icon: Briefcase },
+  { path: "/mortgage-insurance", label: "ביטוח משכנתא חכם", icon: Shield },
   { path: "/directory", label: "מדריך יועצים", icon: Users },
   { path: "/pitch", label: "מצגת Pitch", icon: Sparkles },
   { path: "/investors", label: "עמוד משקיעים", icon: Briefcase },
