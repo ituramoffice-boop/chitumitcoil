@@ -15,7 +15,7 @@ export function PublicFooter({ className = "", activePage }: PublicFooterProps) 
       <div className="max-w-5xl mx-auto space-y-5">
         <p className="flex items-center justify-center gap-2">
           <ChitumitLogo size={18} />
-          <span>© 2026 חיתומית — <span className="text-gold/50">הבינה שמאחורי האישור</span></span>
+          <span>© 2026 חיתומית — <span className="text-gold/50">האישור בדרך, תהיה מאושר.</span></span>
         </p>
 
         {/* Social Icons */}

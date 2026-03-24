@@ -5,7 +5,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "SmartMortgage AI"
+const SITE_NAME = "חיתומית"
 
 interface NewLeadNotificationProps {
   consultantName?: string
@@ -63,6 +63,7 @@ const NewLeadNotificationEmail = ({
           בהצלחה,<br />
           {SITE_NAME}
         </Text>
+        <Text style={brandFooter}>חיתומית — האישור בדרך, תהיה מאושר.</Text>
       </Container>
     </Body>
   </Html>
@@ -86,24 +87,24 @@ export const template = {
 const main = { backgroundColor: '#ffffff', fontFamily: "'Heebo', Arial, sans-serif" }
 const container = { padding: '20px 25px', maxWidth: '560px', margin: '0 auto' }
 const headerSection = {
-  backgroundColor: 'hsl(234, 89%, 63%)',
-  padding: '20px',
+  backgroundColor: '#2C2C2C',
+  padding: '24px 20px',
   borderRadius: '10px 10px 0 0',
   textAlign: 'center' as const,
 }
-const h1 = { fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0' }
+const h1 = { fontSize: '24px', fontWeight: 'bold', color: '#D4AF37', margin: '0', letterSpacing: '1px' }
 const greeting = { fontSize: '16px', color: '#000000', lineHeight: '1.6', margin: '20px 0 8px' }
 const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', margin: '0 0 16px' }
 const detailsBox = {
-  backgroundColor: '#f8fafc',
-  border: '1px solid #e2e8f0',
+  backgroundColor: '#FFFFF0',
+  border: '1px solid #D4AF3733',
   borderRadius: '8px',
   padding: '16px',
 }
 const detailRow = { fontSize: '14px', color: '#1e293b', lineHeight: '1.8', margin: '0' }
 const button = {
-  backgroundColor: 'hsl(234, 89%, 63%)',
-  color: '#ffffff',
+  backgroundColor: '#D4AF37',
+  color: '#1e1e1e',
   padding: '12px 28px',
   borderRadius: '10px',
   fontSize: '14px',
@@ -112,3 +113,4 @@ const button = {
 }
 const hr = { borderColor: '#e2e8f0', margin: '24px 0' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0', lineHeight: '1.6' }
+const brandFooter = { fontSize: '11px', color: '#D4AF37', padding: '8px 0', margin: '0', textAlign: 'center' as const, fontWeight: '500' as const }

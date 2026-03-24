@@ -69,7 +69,7 @@ export function AppSidebar() {
             <div className="flex items-center gap-2 flex-1">
               <div>
                 <h1 className="text-sm font-bold text-gold">חיתומית</h1>
-                <p className="text-[10px] text-sidebar-foreground/60 font-assistant">הבינה שמאחורי האישור</p>
+                <p className="text-[10px] text-sidebar-foreground/60 font-assistant">תהיה מאושר.</p>
               </div>
               <div className="mr-auto">
                 <ThemeToggle />

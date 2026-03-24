@@ -195,7 +195,7 @@ const Index = () => {
             </motion.div>
             <div>
               <h1 className="text-lg sm:text-xl font-bold text-gold">חיתומית</h1>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground hidden sm:block">הבינה שמאחורי האישור</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground hidden sm:block">תהיה מאושר.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -59,7 +59,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             transition={{ duration: 0.5, delay: 0.9 }}
             className="mt-2 text-sm text-muted-foreground"
           >
-            הבינה שמאחורי האישור
+            תהיה מאושר.
           </motion.p>
 
           {/* Loading bar */}
