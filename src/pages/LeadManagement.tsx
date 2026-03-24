@@ -893,6 +893,25 @@ const LeadManagement = () => {
         </div>
       )}
 
+      {/* Paywall Banner */}
+      {isAtLimit && (
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Crown className="h-6 w-6 text-primary" />
+            <div>
+              <p className="font-bold text-sm">הגעת למגבלת הלידים בתוכנית החינמית ({leadLimit} לידים)</p>
+              <p className="text-xs text-muted-foreground">שדרג ל-Pro כדי לפתוח גישה ל-100 לידים ותכונות מתקדמות</p>
+            </div>
+          </div>
+          <Button asChild size="sm" className="gap-1">
+            <Link to="/dashboard/consultant-settings">
+              <Crown className="h-4 w-4" />
+              שדרג ל-Pro
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
