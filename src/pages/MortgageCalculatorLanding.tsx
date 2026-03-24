@@ -13,6 +13,7 @@ import {
   Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
   Download,
 } from "lucide-react";
+import { TrustBankLogos } from "@/components/TrustBankLogos";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
