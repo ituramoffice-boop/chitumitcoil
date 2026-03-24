@@ -566,29 +566,41 @@ function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Market rate */}
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 space-y-3">
-              <p className="text-xs text-white/40 uppercase tracking-wider">פרמיה ממוצעת בבנק</p>
+              <p className="text-xs text-white/40 uppercase tracking-wider">פרמיה ממוצעת בשוק</p>
               <p className="text-3xl font-bold text-white/70 line-through decoration-red-400/50">₪{animMarket.toLocaleString()}<span className="text-sm">/חודש</span></p>
-              <p className="text-xs text-white/30">ביטוח חיים למשכנתא דרך הבנק</p>
+              <p className="text-xs text-white/30">ממוצע חברות הביטוח בישראל</p>
             </div>
 
-            {/* Chitumit rate */}
+            {/* Best rate via Chitumit */}
             <div className="bg-gradient-to-br from-cyan-500/10 to-teal-500/10 backdrop-blur-xl rounded-2xl border-2 border-cyan-500/40 p-6 space-y-3 relative overflow-hidden">
               <div className="absolute top-3 left-3 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">מומלץ</div>
-              <p className="text-xs text-cyan-300 uppercase tracking-wider">פרמיה דרך חיתומית</p>
+              <p className="text-xs text-cyan-300 uppercase tracking-wider">המחיר הטוב ביותר דרכנו</p>
               <p className="text-3xl font-bold text-cyan-300">₪{animChitumit.toLocaleString()}<span className="text-sm">/חודש</span></p>
-              <p className="text-xs text-cyan-400/50">ביטוח פרטי במחיר מועדף</p>
+              <p className="text-xs text-cyan-400/50">השוואה חכמה בין כל חברות הביטוח</p>
             </div>
           </div>
 
-          {/* Savings summary */}
-          <div className="bg-gradient-to-l from-emerald-500/10 to-teal-500/10 rounded-2xl border border-emerald-500/30 p-5 text-center space-y-2">
-            <p className="text-sm text-emerald-300">חיסכון כולל לאורך חיי ההלוואה</p>
-            <p className="text-4xl font-bold text-emerald-400">₪{animSavings.toLocaleString()}</p>
-            <p className="text-xs text-white/40">₪{monthlySavings.toLocaleString()} × {loanTerm * 12} חודשים</p>
+          {/* Savings summary — yearly, 5-year, full term */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl border border-emerald-500/20 p-4 text-center space-y-1">
+              <p className="text-[11px] text-emerald-300/70">חיסכון שנתי</p>
+              <p className="text-2xl font-bold text-emerald-400">₪{(monthlySavings * 12).toLocaleString()}</p>
+              <p className="text-[10px] text-white/30">₪{monthlySavings.toLocaleString()} × 12 חודשים</p>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-2xl border border-emerald-500/25 p-4 text-center space-y-1">
+              <p className="text-[11px] text-emerald-300/70">חיסכון ב-5 שנים</p>
+              <p className="text-2xl font-bold text-emerald-400">₪{(monthlySavings * 60).toLocaleString()}</p>
+              <p className="text-[10px] text-white/30">₪{monthlySavings.toLocaleString()} × 60 חודשים</p>
+            </div>
+            <div className="bg-gradient-to-br from-cyan-500/10 to-teal-500/10 rounded-2xl border border-cyan-500/30 p-4 text-center space-y-1">
+              <p className="text-[11px] text-cyan-300/70">חיסכון לאורך המשכנתא</p>
+              <p className="text-2xl font-bold text-cyan-300">₪{animSavings.toLocaleString()}</p>
+              <p className="text-[10px] text-white/30">₪{monthlySavings.toLocaleString()} × {loanTerm * 12} חודשים</p>
+            </div>
           </div>
 
           {/* Insurance companies comparison table */}
-          <InsuranceCompaniesTable marketPremium={animMarket} chitumitPremium={animChitumit} />
+          <InsuranceCompaniesTable marketPremium={animMarket} />
         </motion.div>
       )}
     </div>
@@ -716,11 +728,11 @@ function CaptureStep({ fullName, setFullName, phone, setPhone, email, setEmail, 
 }
 
 /* ═══ Insurance Companies Comparison Table ═══ */
-function InsuranceCompaniesTable({ marketPremium, chitumitPremium }: { marketPremium: number; chitumitPremium: number }) {
+function InsuranceCompaniesTable({ marketPremium }: { marketPremium: number }) {
   const companies = [
-    { name: "הראל", factor: 1.08, color: "text-blue-400" },
-    { name: "הפניקס", factor: 1.02, color: "text-orange-400" },
-    { name: "מגדל", factor: 0.97, color: "text-red-400" },
+    { name: "הראל ביטוח", factor: 1.08, color: "text-blue-400" },
+    { name: "הפניקס ביטוח", factor: 1.02, color: "text-orange-400" },
+    { name: "מגדל ביטוח", factor: 0.97, color: "text-red-400" },
     { name: "מנורה מבטחים", factor: 1.05, color: "text-purple-400" },
     { name: "כלל ביטוח", factor: 0.99, color: "text-sky-400" },
   ];
@@ -739,7 +751,7 @@ function InsuranceCompaniesTable({ marketPremium, chitumitPremium }: { marketPre
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/10">
-              <th className="text-right py-2 px-3 text-[11px] text-white/40 font-medium">חברה</th>
+              <th className="text-right py-2 px-3 text-[11px] text-white/40 font-medium">חברת ביטוח</th>
               <th className="text-center py-2 px-3 text-[11px] text-white/40 font-medium">פרמיה חודשית</th>
               <th className="text-center py-2 px-3 text-[11px] text-white/40 font-medium">יחס לממוצע</th>
               <th className="text-center py-2 px-3 text-[11px] text-white/40 font-medium hidden sm:table-cell">דירוג</th>
@@ -781,36 +793,6 @@ function InsuranceCompaniesTable({ marketPremium, chitumitPremium }: { marketPre
                 </motion.tr>
               );
             })}
-            {/* Chitumit row - highlighted */}
-            <motion.tr
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
-              className="bg-gradient-to-l from-cyan-500/10 to-teal-500/10 border-2 border-cyan-500/30"
-            >
-              <td className="py-3 px-3">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="font-bold text-cyan-300 text-xs">חיתומית</span>
-                  <span className="bg-cyan-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded-full mr-1">הכי זול</span>
-                </div>
-              </td>
-              <td className="py-3 px-3 text-center">
-                <span className="text-cyan-300 font-bold text-xs">₪{chitumitPremium.toLocaleString()}</span>
-              </td>
-              <td className="py-3 px-3 text-center">
-                <span className="text-[11px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
-                  -40%
-                </span>
-              </td>
-              <td className="py-3 px-3 text-center hidden sm:table-cell">
-                <div className="flex justify-center gap-0.5">
-                  {Array.from({ length: 5 }, (_, s) => (
-                    <div key={s} className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  ))}
-                </div>
-              </td>
-            </motion.tr>
           </tbody>
         </table>
       </div>
