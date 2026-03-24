@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { Upload, FileText, CheckCircle2, AlertCircle, X, HelpCircle, Building2, Receipt, CreditCard, Home, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClientTermsGate } from "@/components/LiabilityShield";
-import { cn } from "@/lib/utils";
 
 interface UploadedFile {
   id: string;
