@@ -692,7 +692,7 @@ const PropertyValueCalculator = () => {
                           </div>
                           <Slider
                             value={[rooms * 2]}
-                            onValueChange={v => { setRooms(v[0] / 2); setLastSliderTouched("rooms"); }}}
+                            onValueChange={v => { setRooms(v[0] / 2); setLastSliderTouched("rooms"); }}
                             min={2}
                             max={14}
                             step={1}
