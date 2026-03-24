@@ -81,7 +81,7 @@ const SocialMediaGenerator = () => {
         </div>
 
         {/* Preview Card */}
-        <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[hsl(222,47%,7%)] via-[hsl(222,47%,12%)] to-[hsl(43,74%,15%)] p-6 border border-gold/20">
+        <div ref={previewRef} className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[hsl(222,47%,7%)] via-[hsl(222,47%,12%)] to-[hsl(43,74%,15%)] p-6 border border-gold/20">
           <div className="absolute inset-0 opacity-10" style={{
             backgroundImage: `radial-gradient(circle at 20% 80%, hsl(43 74% 52% / 0.3), transparent 50%),
               radial-gradient(circle at 80% 20%, hsl(234 89% 63% / 0.2), transparent 50%)`
