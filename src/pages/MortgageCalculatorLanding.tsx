@@ -184,39 +184,36 @@ const MortgageCalculatorLanding = () => {
     doc.save(`SmartMortgage_Report_${formData.full_name || "Client"}.pdf`);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.full_name || !formData.phone) {
-      toast({ title: "נא למלא שם וטלפון", variant: "destructive" });
-      return;
-    }
-    setSubmitting(true);
+  const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
+    setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
-      const leadScore = calcLeadScore();
-      const category = getLeadCategory();
+      const leadScore = calcLeadScore(data.email, marketingConsent);
+      const category = getLeadCategory(data.category);
+      const tags = getLeadTags();
       
       const { data: insertedLead, error } = await supabase.from("leads").insert({
         consultant_id: consultantId,
-        full_name: formData.full_name,
-        phone: formData.phone || null,
-        email: formData.email || null,
+        full_name: data.full_name,
+        phone: data.phone || null,
+        email: data.email || null,
         mortgage_amount: loanAmount,
         property_value: Math.round(loanAmount * 1.35),
         lead_source: "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
-        notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}. קטגוריה: ${category}. סליידר אחרון: ${lastSliderTouched}. ציון: ${leadScore}`,
+        notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר אחרון: ${lastSliderTouched}. ציון: ${leadScore}`,
       } as any).select("id").single();
       if (error) throw error;
       
       if (insertedLead?.id) {
         setSavedLeadId(insertedLead.id);
-        // Fire notification for CRM (best-effort, don't block)
         if (session?.user?.id) {
+          const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
           supabase.from("notifications").insert({
             user_id: session.user.id,
-            title: `🔥 ליד חם חדש: ${formData.full_name}`,
+            title: `🔥 ליד חם חדש: ${data.full_name}${tagLabel}`,
             body: `₪${loanAmount.toLocaleString()} ל-${years} שנה • ציון ${leadScore} • ${category}`,
             type: leadScore >= 70 ? "urgent" : "info",
             link: "/dashboard/leads",
@@ -225,15 +222,9 @@ const MortgageCalculatorLanding = () => {
       }
       
       setIsUnlocked(true);
-      setStep("success");
-      setTimeout(() => {
-        setStep("journey");
-        setJourneyStep(0);
-      }, 3000);
     } catch (e: any) {
       toast({ title: "שגיאה בשליחה", description: e.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
+      throw e;
     }
   };
 
