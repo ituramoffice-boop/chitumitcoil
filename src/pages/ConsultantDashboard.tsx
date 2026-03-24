@@ -84,6 +84,7 @@ import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
 import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
 import { InsiderFeed } from "@/components/InsiderFeed";
+import { PerformanceStats, FeeEstimator, CloseDealTrigger } from "@/components/ProfitIntelligence";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
