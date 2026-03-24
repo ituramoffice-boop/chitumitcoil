@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import {
   Brain,
   LogOut,
@@ -26,17 +27,21 @@ import {
   Banknote,
   Building2,
   FileSearch,
+  KeyRound,
+  ScanLine,
+  Home,
 } from "lucide-react";
 import SmartIngestion from "@/components/SmartIngestion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 
-/* ── Stage pipeline ─────────────────────────── */
+/* ── Stage pipeline — "Path to Your Keys" ──── */
 const CASE_STAGES = [
   { key: "document_collection", label: "איסוף מסמכים", icon: FileSearch, description: "העלאת מסמכים ואימות" },
   { key: "analysis", label: "ניתוח AI", icon: Brain, description: "ניתוח אוטומטי ובדיקת היתכנות" },
   { key: "bank_submission", label: "הגשה לבנק", icon: Building2, description: "שליחת התיק למוסד פיננסי" },
+  { key: "keys", label: "המפתחות שלך!", icon: KeyRound, description: "קבלת המפתחות לבית החדש 🏠" },
 ];
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -56,7 +61,6 @@ const REQUIRED_DOCS = [
   { key: 'צילום ת"ז', icon: User, label: 'צילום תעודת זהות' },
 ];
 
-/* ── Mock advisor messages ─────────────────── */
 const MOCK_MESSAGES = [
   { id: 1, text: "שלום! קיבלתי את המסמכים שלך, בודק עכשיו.", time: "10:32", fromAdvisor: true },
   { id: 2, text: "הכל נראה תקין. צריך רק את דוח BDI העדכני.", time: "10:45", fromAdvisor: true },
@@ -73,11 +77,88 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.08 } },
 };
 
+/* ── Animated Counter ──────────────────────── */
+function AnimatedCounter({ value, prefix = "" }: { value: number; prefix?: string }) {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  const prevValue = useRef(value);
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+    const controls = animate(prevValue.current, value, {
+      duration: 0.8,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate(v) {
+        node.textContent = `${prefix}${Math.round(v).toLocaleString()}`;
+      },
+    });
+    prevValue.current = value;
+    return () => controls.stop();
+  }, [value, prefix]);
+
+  return <span ref={nodeRef}>{prefix}{Math.round(value).toLocaleString()}</span>;
+}
+
+/* ── AI Scan Animation ─────────────────────── */
+function AIScanOverlay({ scanning }: { scanning: boolean }) {
+  if (!scanning) return null;
+  return (
+    <motion.div
+      className="absolute inset-0 z-10 rounded-xl overflow-hidden pointer-events-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      {/* Scan line */}
+      <motion.div
+        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_4px_hsl(var(--cyan-glow)/0.6)]"
+        initial={{ top: "0%" }}
+        animate={{ top: ["0%", "100%", "0%"] }}
+        transition={{ duration: 2, repeat: 1, ease: "easeInOut" }}
+      />
+      {/* Grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_24%,hsl(186_100%_50%/0.03)_25%,hsl(186_100%_50%/0.03)_26%,transparent_27%),linear-gradient(90deg,transparent_24%,hsl(186_100%_50%/0.03)_25%,hsl(186_100%_50%/0.03)_26%,transparent_27%)] bg-[size:30px_30px]" />
+      {/* Corner brackets */}
+      <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400/60 rounded-tl" />
+      <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400/60 rounded-tr" />
+      <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400/60 rounded-bl" />
+      <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400/60 rounded-br" />
+    </motion.div>
+  );
+}
+
+/* ── AI Verified Badge ─────────────────────── */
+function AIVerifiedBadge({ show }: { show: boolean }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ type: "spring", damping: 15, stiffness: 300, delay: 0.1 }}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] font-semibold"
+        >
+          <motion.div
+            animate={{ boxShadow: ["0 0 0px hsl(186 100% 50% / 0)", "0 0 12px hsl(186 100% 50% / 0.4)", "0 0 0px hsl(186 100% 50% / 0)"] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-2 h-2 rounded-full bg-cyan-400"
+          />
+          AI Verified
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 const ClientDashboard = () => {
   const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
   const [chatOpen, setChatOpen] = useState(false);
   const [newMsg, setNewMsg] = useState("");
+  const [paymentIncrease, setPaymentIncrease] = useState(0); // 0-5000 extra per month
+  const [scanningDocId, setScanningDocId] = useState<string | null>(null);
+  const [verifiedDocs, setVerifiedDocs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
@@ -123,6 +204,22 @@ const ClientDashboard = () => {
     enabled: !!user,
   });
 
+  // Trigger scan animation for newly loaded docs
+  useEffect(() => {
+    if (myDocuments.length > 0 && verifiedDocs.size === 0) {
+      // Auto-verify existing docs with a staggered scan
+      myDocuments.forEach((doc: any, i: number) => {
+        setTimeout(() => {
+          setScanningDocId(doc.id);
+          setTimeout(() => {
+            setScanningDocId(null);
+            setVerifiedDocs(prev => new Set(prev).add(doc.id));
+          }, 2500);
+        }, i * 3000);
+      });
+    }
+  }, [myDocuments.length]);
+
   const uploadedClassifications = myDocuments.map((d: any) => d.classification);
   const completedDocs = REQUIRED_DOCS.filter((doc) => uploadedClassifications.includes(doc.key));
   const completionPercent = Math.round((completedDocs.length / REQUIRED_DOCS.length) * 100);
@@ -131,9 +228,11 @@ const ClientDashboard = () => {
   const hasAnalysis = myDocuments.some((d: any) => d.extracted_data?.analyzed_at);
   const currentStep = !hasDocuments ? 0 : !hasAnalysis ? 1 : completionPercent < 100 ? 1 : 2;
 
-  // Savings calc (mock)
+  // Savings calc with What-If slider
   const income = myLead?.monthly_income ? Number(myLead.monthly_income) : 22000;
-  const estimatedSavings = Math.round(income * 0.18 * 12 * 25);
+  const baseSavings = Math.round(income * 0.18 * 12 * 25);
+  const extraSavings = Math.round(paymentIncrease * 12 * 18); // simplified extra savings
+  const totalSavings = baseSavings + extraSavings;
 
   if (profileLoading) {
     return (
@@ -170,12 +269,7 @@ const ClientDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setChatOpen(!chatOpen)}
-              className="relative"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setChatOpen(!chatOpen)} className="relative">
               <MessageCircle className="w-4 h-4" />
               <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-cyan-400 border-2 border-background animate-pulse" />
             </Button>
@@ -213,16 +307,17 @@ const ClientDashboard = () => {
             </div>
           </motion.div>
 
-          {/* ── Case Status Tracker ──────────── */}
+          {/* ── Path to Your Keys (Gamified Progress) ─── */}
           <motion.div variants={fadeUp} className="glass-card p-6 sm:p-8 overflow-x-auto">
             <h3 className="text-sm font-semibold text-muted-foreground mb-6 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-cyan-400" />
-              סטטוס התיק שלך
+              <Home className="w-4 h-4 text-cyan-400" />
+              🔑 הדרך למפתחות שלך
             </h3>
-            <div className="flex items-start justify-between min-w-[420px]">
+            <div className="flex items-start justify-between min-w-[520px]">
               {CASE_STAGES.map((stage, i) => {
                 const isDone = i < currentStep;
                 const isActive = i === currentStep;
+                const isKeys = i === CASE_STAGES.length - 1;
                 const Icon = stage.icon;
                 return (
                   <div key={stage.key} className="flex items-center flex-1 last:flex-none">
@@ -230,28 +325,49 @@ const ClientDashboard = () => {
                       <motion.div
                         className={cn(
                           "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 relative",
-                          isDone
+                          isKeys && !isDone
+                            ? "bg-gradient-to-br from-amber-500/20 to-yellow-500/10 text-amber-400 ring-2 ring-amber-500/30 ring-offset-2 ring-offset-background"
+                            : isDone
                             ? "bg-gradient-to-br from-primary to-cyan-500 text-white shadow-lg shadow-primary/30"
                             : isActive
                             ? "bg-primary/10 text-primary ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
                             : "bg-secondary/60 text-muted-foreground"
                         )}
-                        animate={isActive ? { scale: [1, 1.06, 1] } : {}}
-                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        animate={
+                          isKeys && !isDone
+                            ? { scale: [1, 1.08, 1], boxShadow: ["0 0 0px hsl(43 74% 52% / 0)", "0 0 24px hsl(43 74% 52% / 0.4)", "0 0 0px hsl(43 74% 52% / 0)"] }
+                            : isActive
+                            ? { scale: [1, 1.06, 1] }
+                            : {}
+                        }
+                        transition={{ repeat: Infinity, duration: isKeys ? 2.5 : 2, ease: "easeInOut" }}
                       >
-                        {isDone ? <CheckCircle2 className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
-                        {isActive && (
-                          <div className="absolute inset-0 rounded-2xl bg-primary/10 animate-ping" />
+                        {isDone ? (
+                          <CheckCircle2 className="w-6 h-6" />
+                        ) : isKeys ? (
+                          <KeyRound className="w-7 h-7" />
+                        ) : (
+                          <Icon className="w-6 h-6" />
+                        )}
+                        {(isActive || (isKeys && !isDone)) && (
+                          <motion.div
+                            className={cn(
+                              "absolute inset-0 rounded-2xl",
+                              isKeys ? "bg-amber-500/10" : "bg-primary/10"
+                            )}
+                            animate={{ opacity: [0, 0.6, 0], scale: [1, 1.3, 1] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
                         )}
                       </motion.div>
                       <div>
                         <p className={cn(
                           "text-xs font-semibold whitespace-nowrap",
-                          isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground"
+                          isKeys && !isDone ? "text-amber-400" : isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground"
                         )}>
                           {stage.label}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[100px]">
+                        <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[110px]">
                           {stage.description}
                         </p>
                       </div>
@@ -260,7 +376,12 @@ const ClientDashboard = () => {
                       <div className="flex-1 mx-3 mt-[-24px]">
                         <div className="h-[3px] rounded-full relative overflow-hidden bg-border/60">
                           <motion.div
-                            className="h-full bg-gradient-to-r from-primary to-cyan-500 rounded-full"
+                            className={cn(
+                              "h-full rounded-full",
+                              i === CASE_STAGES.length - 2 && isDone
+                                ? "bg-gradient-to-r from-cyan-500 to-amber-400"
+                                : "bg-gradient-to-r from-primary to-cyan-500"
+                            )}
                             initial={{ width: "0%" }}
                             animate={{ width: isDone ? "100%" : isActive ? "50%" : "0%" }}
                             transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
@@ -274,9 +395,8 @@ const ClientDashboard = () => {
             </div>
           </motion.div>
 
-          {/* ── Savings Widget + Stats Row ───── */}
+          {/* ── Savings Widget + What-If Slider ──── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Savings — takes 2 cols on lg */}
             <motion.div
               variants={fadeUp}
               className="lg:col-span-2 relative overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-card/80 via-card/60 to-cyan-500/[0.06] backdrop-blur-xl p-6 sm:p-8"
@@ -285,8 +405,8 @@ const ClientDashboard = () => {
                 <div className="absolute top-[-30%] left-[-20%] w-[400px] h-[400px] rounded-full bg-cyan-500/[0.06] blur-[80px]" />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[300px] h-[300px] rounded-full bg-primary/[0.05] blur-[60px]" />
               </div>
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="relative space-y-6">
+                <div className="flex items-center gap-2">
                   <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
                     <TrendingDown className="w-5 h-5 text-cyan-400" />
                   </div>
@@ -295,17 +415,62 @@ const ClientDashboard = () => {
                     <p className="text-[11px] text-muted-foreground">לאורך חיי המשכנתא</p>
                   </div>
                 </div>
+
+                {/* Animated savings number with glow pulse */}
                 <motion.div
                   className="flex items-baseline gap-2"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  key={totalSavings}
+                  animate={{
+                    textShadow: paymentIncrease > 0
+                      ? ["0 0 20px hsl(186 100% 50% / 0.2)", "0 0 40px hsl(186 100% 50% / 0.5)", "0 0 20px hsl(186 100% 50% / 0.2)"]
+                      : "none"
+                  }}
+                  transition={{ duration: 1.5, repeat: paymentIncrease > 0 ? 2 : 0 }}
                 >
                   <span className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-cyan-400 via-primary to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(186,100%,50%,0.3)]">
-                    ₪{estimatedSavings.toLocaleString()}
+                    <AnimatedCounter value={totalSavings} prefix="₪" />
                   </span>
                 </motion.div>
-                <p className="text-xs text-muted-foreground mt-3">
+
+                {/* What-If Slider */}
+                <div className="space-y-3 pt-2 border-t border-border/30">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      מה אם אגדיל את ההחזר החודשי?
+                    </label>
+                    <motion.span
+                      className={cn(
+                        "text-sm font-bold tabular-nums transition-colors",
+                        paymentIncrease > 0 ? "text-cyan-400" : "text-muted-foreground"
+                      )}
+                      animate={paymentIncrease > 0 ? { scale: [1, 1.1, 1] } : {}}
+                      transition={{ duration: 0.3 }}
+                    >
+                      +₪{paymentIncrease.toLocaleString()}
+                    </motion.span>
+                  </div>
+                  <div className="relative group">
+                    <Slider
+                      value={[paymentIncrease]}
+                      onValueChange={([v]) => setPaymentIncrease(v)}
+                      max={5000}
+                      step={100}
+                      className="w-full [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-cyan-400 [&_[role=slider]]:to-primary [&_[role=slider]]:border-cyan-400/50 [&_[role=slider]]:shadow-[0_0_12px_hsl(186_100%_50%/0.4)] [&_[role=slider]]:w-6 [&_[role=slider]]:h-6 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-primary [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-cyan-400"
+                    />
+                    {paymentIncrease > 0 && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-[11px] text-cyan-400/80 mt-2"
+                      >
+                        תחסוך עוד ₪{extraSavings.toLocaleString()} לאורך חיי המשכנתא! 🎉
+                      </motion.p>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
                   * הערכה מבוססת על ניתוח AI. ייעוץ מקצועי יכול להציג תמונה מדויקת יותר.
                 </p>
               </div>
@@ -340,7 +505,6 @@ const ClientDashboard = () => {
               </Badge>
             </div>
 
-            {/* Progress bar */}
             <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-primary to-cyan-500"
@@ -350,7 +514,6 @@ const ClientDashboard = () => {
               />
             </div>
 
-            {/* Checklist */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {REQUIRED_DOCS.map((doc) => {
                 const found = uploadedClassifications.includes(doc.key);
@@ -366,10 +529,7 @@ const ClientDashboard = () => {
                         : "bg-card/40 border-border/40 text-muted-foreground hover:border-cyan-500/30 hover:bg-cyan-500/[0.03]"
                     )}
                   >
-                    <div className={cn(
-                      "p-2 rounded-lg",
-                      found ? "bg-success/10" : "bg-secondary/60"
-                    )}>
+                    <div className={cn("p-2 rounded-lg", found ? "bg-success/10" : "bg-secondary/60")}>
                       {found ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -392,16 +552,21 @@ const ClientDashboard = () => {
             </div>
           </motion.div>
 
-          {/* ── My uploaded documents ────────── */}
+          {/* ── My uploaded documents with AI Scan ─── */}
           {myDocuments.length > 0 && (
             <motion.div variants={fadeUp} className="glass-card p-6 space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2 text-sm">
-                <File className="w-4 h-4 text-primary" />
+                <ScanLine className="w-4 h-4 text-cyan-400" />
                 המסמכים שלי ({myDocuments.length})
               </h3>
               <div className="space-y-2">
                 {myDocuments.slice(0, 6).map((doc: any) => (
-                  <div key={doc.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/60 transition-all group">
+                  <div key={doc.id} className="relative flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/60 transition-all group overflow-hidden">
+                    {/* AI Scan overlay */}
+                    <AnimatePresence>
+                      <AIScanOverlay scanning={scanningDocId === doc.id} />
+                    </AnimatePresence>
+
                     {doc.file_type?.includes("pdf") ? (
                       <FileText className="w-5 h-5 text-destructive/70 shrink-0" />
                     ) : doc.file_type?.includes("image") ? (
@@ -420,9 +585,12 @@ const ClientDashboard = () => {
                         <span>{new Date(doc.created_at).toLocaleDateString("he-IL")}</span>
                       </div>
                     </div>
-                    {doc.extracted_data?.analyzed_at && (
-                      <Badge variant="outline" className="text-success border-success/20 text-[10px]">נותח</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {doc.extracted_data?.analyzed_at && (
+                        <Badge variant="outline" className="text-success border-success/20 text-[10px]">נותח</Badge>
+                      )}
+                      <AIVerifiedBadge show={verifiedDocs.has(doc.id)} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -440,7 +608,6 @@ const ClientDashboard = () => {
       <AnimatePresence>
         {chatOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -448,7 +615,6 @@ const ClientDashboard = () => {
               onClick={() => setChatOpen(false)}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
             />
-            {/* Panel */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -456,7 +622,6 @@ const ClientDashboard = () => {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="fixed top-0 right-auto left-0 h-full w-[340px] max-w-[85vw] z-50 bg-card/90 backdrop-blur-2xl border-r border-border/40 shadow-2xl flex flex-col"
             >
-              {/* Chat header */}
               <div className="p-4 border-b border-border/30 flex items-center gap-3">
                 <Button size="icon" variant="ghost" onClick={() => setChatOpen(false)} className="shrink-0">
                   <ChevronLeft className="w-5 h-5" />
@@ -472,8 +637,6 @@ const ClientDashboard = () => {
                   <User className="w-5 h-5 text-primary" />
                 </div>
               </div>
-
-              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {MOCK_MESSAGES.map((msg) => (
                   <div key={msg.id} className={cn("flex", msg.fromAdvisor ? "justify-start" : "justify-end")}>
@@ -484,18 +647,13 @@ const ClientDashboard = () => {
                         : "bg-gradient-to-br from-primary to-primary/80 text-white rounded-bl-sm"
                     )}>
                       <p>{msg.text}</p>
-                      <p className={cn(
-                        "text-[10px] mt-1",
-                        msg.fromAdvisor ? "text-muted-foreground" : "text-white/60"
-                      )}>
+                      <p className={cn("text-[10px] mt-1", msg.fromAdvisor ? "text-muted-foreground" : "text-white/60")}>
                         {msg.time}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* Input */}
               <div className="p-3 border-t border-border/30">
                 <div className="flex items-center gap-2">
                   <input
