@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { MessageCircle } from "lucide-react";
 import { AppStoreBadges } from "@/components/AppStoreBadges";
+import { ComplianceBanner } from "@/components/ComplianceBanner";
 
 interface PublicFooterProps {
   className?: string;
@@ -57,6 +58,7 @@ export function PublicFooter({ className = "", activePage }: PublicFooterProps) 
         {/* App Store Badges */}
         <AppStoreBadges />
       </div>
+      <ComplianceBanner />
     </footer>
   );
 }

@@ -248,6 +248,35 @@ function DashboardView({
 }: any) {
   return (
     <div className="space-y-8">
+      {/* System Health Banner */}
+      <div className="relative overflow-hidden rounded-xl border border-gold/30 bg-gradient-to-l from-gold/10 via-gold/5 to-transparent p-5 glow-gold">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-gold/15">
+              <Shield className="w-6 h-6 text-gold" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">System Health — Chitumit Platform</h3>
+              <p className="text-xs text-muted-foreground">All systems operational · Uptime 99.97%</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-xl font-bold text-gold font-heebo">₪{(totalMortgage / 1000000).toFixed(0)}M</p>
+              <p className="text-[10px] text-muted-foreground">Total Underwriting Volume</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-cyan-glow font-heebo">{totalLeads}</p>
+              <p className="text-[10px] text-muted-foreground">Cases Managed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-success font-heebo">{conversionRate}%</p>
+              <p className="text-[10px] text-muted-foreground">Approval Rate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard icon={Users} label="סה״כ לקוחות" value={totalLeads} />

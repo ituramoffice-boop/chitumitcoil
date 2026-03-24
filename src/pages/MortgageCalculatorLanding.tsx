@@ -526,6 +526,14 @@ const MortgageCalculatorLanding = () => {
                         <Shield className="w-3 h-3" />
                         ללא התחייבות • תוצאות תוך 60 שניות
                       </p>
+                      {/* Non-bank financing check */}
+                      <button
+                        onClick={() => window.open("https://wa.me/972501234567?text=" + encodeURIComponent("היי, אני מעוניין בבדיקת התאמה למימון חוץ-בנקאי"), "_blank")}
+                        className="mt-2 flex items-center gap-1.5 text-xs text-gold/70 hover:text-gold transition-colors"
+                      >
+                        <Shield className="w-3 h-3" />
+                        בדיקת התאמה למימון חוץ-בנקאי →
+                      </button>
                     </div>
                   )}
                 </div>
