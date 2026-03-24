@@ -587,7 +587,7 @@ export default function Pitch() {
                 { num: 340, suffix: "%", prefix: "+", label: "שיפור בהמרות", icon: TrendingUp },
               ].map((s, i) => (
                 <AnimSection key={i} delay={i * 0.1}>
-                  <s.icon className="w-6 h-6 text-primary mx-auto mb-2" />
+                  <s.icon className="w-6 h-6 text-gold mx-auto mb-2" />
                   <div className="text-2xl md:text-3xl font-black text-foreground">
                     <Counter value={s.num} suffix={s.suffix} prefix={s.prefix || ""} />
                   </div>
