@@ -327,7 +327,6 @@ const PropertyValueCalculator = () => {
       throw e;
     }
   };
-  };
 
   const scrollToForm = () => {
     setStep("form");
