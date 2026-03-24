@@ -73,7 +73,8 @@ const App = () => {
                <Route path="/client-dashboard" element={<ClientDashboard />} />
                 <Route path="/demo" element={<DemoHub />} />
                 <Route path="/advisor-pricing" element={<AdvisorPricing />} />
-                <Route path="/advisor-plans" element={<AdvisorPlans />} />
+                 <Route path="/advisor-plans" element={<AdvisorPlans />} />
+                 <Route path="/master-admin" element={<MasterAdmin />} />
                <Route path="/accessibility" element={<Accessibility />} />
                <Route path="/reset-password" element={<ResetPassword />} />
                <Route path="/terms" element={<Terms />} />
