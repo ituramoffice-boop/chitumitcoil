@@ -32,7 +32,6 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import DemoHub from "./pages/DemoHub";
 import { DemoBanner } from "@/components/DemoBanner";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
