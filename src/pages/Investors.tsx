@@ -7,7 +7,7 @@ import { PublicFooter } from "@/components/PublicFooter";
 import {
   TrendingUp, Users, Globe, Zap, Shield, Brain, DollarSign, Target,
   Layers, BarChart3, Sparkles, ArrowDown, Calendar, CheckCircle2,
-  Phone, FileSignature, ScanSearch, Calculator, Crown, Award, Rocket
+  Phone, FileSignature, ScanSearch, Calculator, Crown, Award, Rocket, Megaphone
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
@@ -225,6 +225,7 @@ export default function Investors() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { icon: Phone, title: "חייגן AI", desc: "חיוג אוטומטי + תמלול Whisper בעברית + סיכום AI + ציון רגש. היועץ מתקשר — המערכת רושמת.", gradient: "from-gold/20 to-gold/5", iconColor: "text-gold" },
+              { icon: Megaphone, title: "מערכת לידים מובנית", desc: "CRM חכם עם ניקוד אוטומטי, שוק לידים, התראות בזמן אמת, ומשפך מכירות ויזואלי. כל ליד מנוהל מהרגע שנכנס ועד לסגירה.", gradient: "from-gold/20 to-gold/5", iconColor: "text-gold" },
               { icon: FileSignature, title: "חתימה דיגיטלית", desc: "שלח לינק → הלקוח חותם מהנייד. חוסך הדפסות, סריקות, ונסיעות למשרד.", gradient: "from-gold/20 to-gold/5", iconColor: "text-gold" },
               { icon: ScanSearch, title: "סורק מסמכים AI", desc: "OCR + AI שמנתח תלושי משכורת ודפי בנק. שולף הכנסות, הלוואות וחריגות בשניות.", gradient: "from-gold/15 to-gold/5", iconColor: "text-gold/80" },
               { icon: Calculator, title: "מחשבונים ממותגים", desc: "מחשבון משכנתא + שווי נכס שממותגים בשם היועץ. הגולש ממלא → ליד חם נכנס ל-CRM.", gradient: "from-gold/10 to-gold/5", iconColor: "text-gold/70" },
