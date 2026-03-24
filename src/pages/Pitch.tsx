@@ -193,7 +193,7 @@ function LiveDemoMockup() {
         </div>
         <div className="flex-1 mx-4">
           <div className="bg-background/60 rounded-md px-3 py-1 text-[11px] text-muted-foreground text-center">
-            smart-mortgage.ai/calc?ref=avilevy
+            chitumit.ai/calc?ref=avilevy
           </div>
         </div>
       </div>
