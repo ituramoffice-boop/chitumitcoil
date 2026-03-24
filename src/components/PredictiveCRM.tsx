@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import { supabase } from "@/integrations/supabase/client";
 import { computeMetrics, generateNarrative, generateBrightSpots } from "@/components/AIUnderwriterAdvocate";
+import { addDisclaimerToAllPages, addSecureWatermark, LEGAL_DISCLAIMER_HE } from "@/components/LiabilityShield";
 import {
   Brain,
   TrendingUp,
@@ -765,6 +766,16 @@ export function PriorityBoard({
     doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
     doc.text(rtl("© 2026 חיתומית — האישור בדרך, תהיה מאושר."), 105, 280, { align: "center" });
+
+    // Add secure watermark to every page
+    const totalPages = doc.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      addSecureWatermark(doc);
+    }
+
+    // Add legal disclaimer footer to all pages
+    addDisclaimerToAllPages(doc);
 
     return { doc, totalVolume };
   }, []);

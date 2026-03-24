@@ -86,6 +86,7 @@ import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
 import { InsiderFeed } from "@/components/InsiderFeed";
 import { PerformanceStats, FeeEstimator, CloseDealTrigger, PipelineTicker } from "@/components/ProfitIntelligence";
 import { PresentationMode } from "@/components/PresentationMode";
+import { ComplianceGuardrail, AuditLog, ClientTermsGate } from "@/components/LiabilityShield";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -1000,6 +1001,8 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                 <Crown className="w-3.5 h-3.5 ml-1.5" />
                 מצב מצגת ללקוח
               </Button>
+              <ComplianceGuardrail lead={selectedLead} />
+              <AuditLog lead={selectedLead} />
             </div>
 
             <Tabs defaultValue="advocate" dir="rtl">

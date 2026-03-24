@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Upload, FileText, CheckCircle2, AlertCircle, X, HelpCircle, Building2, Receipt, CreditCard, Home, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClientTermsGate } from "@/components/LiabilityShield";
 
 interface UploadedFile {
   id: string;
@@ -59,6 +60,7 @@ export function DocumentUpload() {
   const [files, setFiles] = useState<UploadedFile[]>(DEMO_FILES);
   const [isDragging, setIsDragging] = useState(false);
   const [showGuide, setShowGuide] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -89,7 +91,11 @@ export function DocumentUpload() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-6">
+      {/* Terms acceptance gate */}
+      <ClientTermsGate accepted={termsAccepted} onAccept={() => setTermsAccepted(true)} />
+
+      <div className={cn("grid grid-cols-1 lg:grid-cols-3 gap-6", !termsAccepted && "opacity-50 pointer-events-none")}>
       {/* Main Upload Area */}
       <div className="lg:col-span-2 glass-card p-6 space-y-4">
         <h3 className="text-lg font-semibold text-foreground">נשמח לעזור לך לרכז את המסמכים 📋</h3>
@@ -176,6 +182,7 @@ export function DocumentUpload() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
