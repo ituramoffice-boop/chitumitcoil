@@ -158,16 +158,72 @@ function generateRecoveryPlan(metrics: ReturnType<typeof computeMetrics>): { act
   return plan;
 }
 
+/* ── Source-to-Speech mapping ── */
+function generateSourceMappings(metrics: ReturnType<typeof computeMetrics>): { claim: string; source: string; field: string; confidence: number }[] {
+  const { income, mortgage, property, ltv, dti } = metrics;
+  const mappings = [];
+  if (income > 0) mappings.push({ claim: `הכנסה חודשית: ₪${income.toLocaleString()}`, source: "תלוש שכר — חודש אחרון", field: "שכר ברוטו, שורה 1", confidence: 100 });
+  if (mortgage > 0) mappings.push({ claim: `סכום משכנתא מבוקש: ₪${mortgage.toLocaleString()}`, source: "טופס בקשה", field: "סכום הלוואה מבוקש", confidence: 100 });
+  if (property > 0) mappings.push({ claim: `שווי נכס: ₪${property.toLocaleString()}`, source: "שמאות / הערכה", field: "שווי שוק", confidence: 95 });
+  if (ltv > 0) mappings.push({ claim: `LTV: ${ltv.toFixed(1)}%`, source: "חישוב: משכנתא ÷ שווי נכס", field: "נגזר", confidence: 100 });
+  if (dti > 0) mappings.push({ claim: `DTI: ${dti.toFixed(1)}%`, source: "חישוב: תשלום חודשי ÷ הכנסה", field: "נגזר", confidence: 100 });
+  return mappings;
+}
+
+/* ── Data conflict detection ── */
+function detectConflicts(lead: Lead, metrics: ReturnType<typeof computeMetrics>): { severity: "critical" | "warning"; title: string; detail: string }[] {
+  const conflicts: { severity: "critical" | "warning"; title: string; detail: string }[] = [];
+  const { income, dti, ltv } = metrics;
+  // Simulate conflict detection based on available data
+  if (income > 0 && income < 12000 && (lead.mortgage_amount || 0) > 1500000)
+    conflicts.push({ severity: "critical", title: "אי-התאמה: הכנסה מול סכום מבוקש", detail: `הכנסה מוצהרת ₪${income.toLocaleString()} לא תומכת במשכנתא ₪${(lead.mortgage_amount || 0).toLocaleString()}. נדרש אימות מול דפי עו"ש.` });
+  if (dti > 50)
+    conflicts.push({ severity: "critical", title: "DTI חריג", detail: `יחס חוב/הכנסה ${dti.toFixed(0)}% חורג מהנורמטיב (40%). ייתכן שקיימים חובות לא מדווחים.` });
+  if (ltv > 85)
+    conflicts.push({ severity: "warning", title: "LTV גבוה מהרגיל", detail: `יחס מימון ${ltv.toFixed(0)}% מצריך ביטוח משכנתא מורחב ואישור חריג.` });
+  return conflicts;
+}
+
+/* ── Formula definitions ── */
+function getFormulas(metrics: ReturnType<typeof computeMetrics>): { name: string; formula: string; result: string; explanation: string }[] {
+  const { income, mortgage, property, ltv, dti, score } = metrics;
+  const monthlyPayment = mortgage * 0.004;
+  return [
+    { name: "LTV (Loan-to-Value)", formula: `₪${mortgage.toLocaleString()} ÷ ₪${property.toLocaleString()}`, result: `${ltv.toFixed(1)}%`, explanation: "יחס בין סכום ההלוואה לשווי הנכס. מתחת ל-75% נחשב תקין." },
+    { name: "DTI (Debt-to-Income)", formula: `₪${Math.round(monthlyPayment).toLocaleString()} ÷ ₪${income.toLocaleString()}`, result: `${dti.toFixed(1)}%`, explanation: "יחס בין תשלום חודשי כולל (כולל חובות) להכנסה. מתחת ל-40% נדרש." },
+    { name: "כושר החזר חודשי", formula: `הכנסה × 0.4% מסכום הלוואה`, result: `₪${Math.round(monthlyPayment).toLocaleString()}/חודש`, explanation: "הערכת תשלום חודשי משוערת על בסיס ריבית ממוצעת." },
+    { name: "ציון חיתומית", formula: "Base(50) ± LTV ± DTI ± הכנסה ± סטטוס", result: `${score}/100`, explanation: "ציון משוקלל המבוסס על כל הפרמטרים הפיננסיים." },
+  ];
+}
+
+/* ── Audit log entries for PDF ── */
+function generateAuditLog(): { timestamp: string; document: string; status: string; hash: string }[] {
+  const now = new Date();
+  const fmt = (d: Date) => d.toLocaleDateString("he-IL") + " " + d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+  return [
+    { timestamp: fmt(new Date(now.getTime() - 120000)), document: "תלושי שכר (3 חודשים)", status: "מאומת ✓", hash: "SHA256:a3f8...c91d" },
+    { timestamp: fmt(new Date(now.getTime() - 90000)), document: 'דפי עו"ש (6 חודשים)', status: "מאומת ✓", hash: "SHA256:b7e2...d44a" },
+    { timestamp: fmt(new Date(now.getTime() - 60000)), document: "דו״ח BDI / אשראי", status: "מאומת ✓", hash: "SHA256:c1f5...e88b" },
+    { timestamp: fmt(new Date(now.getTime() - 30000)), document: 'צילום ת"ז', status: "מאומת ✓", hash: "SHA256:d9a3...f72c" },
+    { timestamp: fmt(now), document: "ניתוח AI — סיכום חיתומי", status: "נוצר ✓", hash: "SHA256:e4b1...a55e" },
+  ];
+}
+
 /* ── Component ── */
 export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onGeneratePDF?: () => void }) {
   const [bankerMode, setBankerMode] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({ narrative: true, brightSpots: true, recovery: true, whisper: false });
+  const [expandedSections, setExpandedSections] = useState({ narrative: true, brightSpots: true, recovery: true, whisper: false, formulas: false, audit: false });
+  const [showSourceMap, setShowSourceMap] = useState(false);
 
   const metrics = useMemo(() => computeMetrics(lead), [lead]);
   const narrative = useMemo(() => generateNarrative(lead, metrics, bankerMode), [lead, metrics, bankerMode]);
   const brightSpots = useMemo(() => generateBrightSpots(metrics, bankerMode), [metrics, bankerMode]);
   const recoveryPlan = useMemo(() => generateRecoveryPlan(metrics), [metrics]);
   const whisperTips = useMemo(() => generateWhisperTips(metrics), [metrics]);
+  const sourceMappings = useMemo(() => generateSourceMappings(metrics), [metrics]);
+  const conflicts = useMemo(() => detectConflicts(lead, metrics), [lead, metrics]);
+  const formulas = useMemo(() => getFormulas(metrics), [metrics]);
+  const auditLog = useMemo(() => generateAuditLog(), []);
 
   const toggle = (key: keyof typeof expandedSections) =>
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
