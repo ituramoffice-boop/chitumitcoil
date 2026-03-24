@@ -16,6 +16,7 @@ import {
   Target,
   AlertTriangle,
 } from "lucide-react";
+import { VIPLeadGenerator } from "@/components/VIPLeadGenerator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -667,6 +668,9 @@ const MasterAdminPage = () => {
             </AreaChart>
           </ResponsiveContainer>
         </motion.div>
+
+        {/* ── VIP Lead Generator ── */}
+        <VIPLeadGenerator />
       </div>
 
       <LiveTape />
