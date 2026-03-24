@@ -420,7 +420,7 @@ const MortgageCalculatorLanding = () => {
                         </div>
                         <Slider
                           value={[years]}
-                          onValueChange={v => setYears(v[0])}
+                          onValueChange={v => { setYears(v[0]); setLastSliderTouched("years"); }}
                           min={4}
                           max={30}
                           step={1}
