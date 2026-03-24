@@ -192,14 +192,16 @@ export default function Pitch() {
           <AnimSection>
             <div className="glass-card p-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
               {[
-                { val: "60 שנ׳", label: "זמן ייצור ליד", icon: Zap },
-                { val: "99.8%", label: "דיוק תמלול עברית", icon: Brain },
-                { val: "4→1", label: "מערכות מאוחדות", icon: Shield },
-                { val: "+340%", label: "שיפור בהמרות", icon: TrendingUp },
+                { num: 60, suffix: " שנ׳", label: "זמן ייצור ליד", icon: Zap },
+                { num: 99.8, suffix: "%", label: "דיוק תמלול עברית", icon: Brain, decimal: true },
+                { num: 4, suffix: "→1", label: "מערכות מאוחדות", icon: Shield },
+                { num: 340, suffix: "%", prefix: "+", label: "שיפור בהמרות", icon: TrendingUp },
               ].map((s, i) => (
                 <AnimSection key={i} delay={i * 0.1}>
                   <s.icon className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <div className="text-2xl md:text-3xl font-black text-foreground">{s.val}</div>
+                  <div className="text-2xl md:text-3xl font-black text-foreground">
+                    <AnimatedCounter value={s.num} suffix={s.suffix} prefix={s.prefix || ""} />
+                  </div>
                   <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
                 </AnimSection>
               ))}
