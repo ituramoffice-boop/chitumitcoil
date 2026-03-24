@@ -12,6 +12,7 @@ import {
   Briefcase,
   Settings,
   ShoppingCart,
+  TrendingUp,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { AppStoreBadges } from "@/components/AppStoreBadges";
