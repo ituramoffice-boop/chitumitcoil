@@ -588,7 +588,7 @@ export default function Pitch() {
               ].map((s, i) => (
                 <AnimSection key={i} delay={i * 0.1}>
                   <s.icon className="w-6 h-6 text-gold mx-auto mb-2" />
-                  <div className="text-2xl md:text-3xl font-black text-foreground">
+                  <div className="text-2xl md:text-3xl font-black gradient-header">
                     <Counter value={s.num} suffix={s.suffix} prefix={s.prefix || ""} />
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
