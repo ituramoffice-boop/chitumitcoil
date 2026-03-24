@@ -253,14 +253,24 @@ export default function Investors() {
               { icon: ScanSearch, title: "סורק מסמכים AI", desc: "OCR + AI שמנתח תלושי משכורת ודפי בנק. שולף הכנסות, הלוואות וחריגות בשניות.", gradient: "from-gold/15 to-gold/5", iconColor: "text-gold/80" },
               { icon: Calculator, title: "מחשבונים ממותגים", desc: "מחשבון משכנתא + שווי נכס שממותגים בשם היועץ. הגולש ממלא → ליד חם נכנס ל-CRM.", gradient: "from-gold/10 to-gold/5", iconColor: "text-gold/70" },
             ].map((f, i) => (
-              <Reveal key={i} delay={i * 0.1}>
-                <div className={`p-6 rounded-2xl bg-gradient-to-br ${f.gradient} border border-slate-700/50 backdrop-blur-sm space-y-3 h-full hover:border-gold/30 transition-colors duration-300`}>
-                  <div className="p-2.5 rounded-lg w-fit bg-slate-800/60">
+              <Reveal key={i} delay={i * 0.12} variant="card">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -4, boxShadow: "0 8px 30px -8px rgba(212, 175, 55, 0.25)" }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className={`p-6 rounded-2xl bg-gradient-to-br ${f.gradient} border border-slate-700/50 backdrop-blur-sm space-y-3 h-full hover:border-gold/30 transition-colors duration-300`}
+                >
+                  <motion.div
+                    initial={{ rotate: -10, scale: 0.8 }}
+                    whileInView={{ rotate: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.12, type: "spring", stiffness: 300 }}
+                    className="p-2.5 rounded-lg w-fit bg-slate-800/60"
+                  >
                     <f.icon className={`w-6 h-6 ${f.iconColor}`} />
-                  </div>
+                  </motion.div>
                   <h3 className="text-lg font-bold text-slate-100">{f.title}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
-                </div>
+                </motion.div>
               </Reveal>
             ))}
           </div>
