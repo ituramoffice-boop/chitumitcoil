@@ -30,9 +30,14 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  const [splashDone, setSplashDone] = useState(false);
+  const handleSplashComplete = useCallback(() => setSplashDone(true), []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
       <TooltipProvider>
         <Toaster />
         <Sonner />
