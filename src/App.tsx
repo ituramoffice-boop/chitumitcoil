@@ -33,6 +33,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import DemoHub from "./pages/DemoHub";
+import AdvisorPricing from "./pages/AdvisorPricing";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
