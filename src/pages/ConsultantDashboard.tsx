@@ -985,8 +985,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <TabsContent value="advocate" className="mt-4">
                 <AIUnderwriterAdvocate lead={selectedLead} />
               </TabsContent>
-              <TabsContent value="collab" className="mt-4">
+              <TabsContent value="collab" className="mt-4 space-y-4">
                 <CollaborativeUnderwriting lead={selectedLead} />
+                <AdvisorBenchmark lead={selectedLead} />
               </TabsContent>
               <TabsContent value="risk" className="mt-4">
                 <RiskAnalysisView lead={selectedLead} />
