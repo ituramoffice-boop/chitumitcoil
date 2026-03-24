@@ -80,6 +80,7 @@ import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow, format } from "date-fns";
 import { he } from "date-fns/locale";
 import { RevenueForecaster, PriorityBoard } from "@/components/PredictiveCRM";
+import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
