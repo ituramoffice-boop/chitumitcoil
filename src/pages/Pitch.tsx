@@ -663,11 +663,11 @@ export default function Pitch() {
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-glow/10 border border-cyan-glow/20 text-cyan-glow text-sm font-medium mb-4">
               <Play className="w-4 h-4" /> ראה את זה בפעולה
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold">
-              60 שניות — מ<span className="text-primary">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
+              60 שניות — מ<span className="gradient-header">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
             </h2>
           </AnimSection>
 
