@@ -838,9 +838,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               if (!open) { setEditingLead(null); resetForm(); }
             }}>
               <DialogTrigger asChild>
-                <Button className="hover-scale">
+                <Button className="hover-scale animate-cta-pulse gold-glow-btn bg-gold text-gold-foreground hover:bg-gold/90">
                   <Plus className="w-4 h-4 ml-2" />
-                  ליד חדש
+                  הוסף לקוח חדש
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
