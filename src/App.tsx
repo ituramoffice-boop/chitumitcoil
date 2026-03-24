@@ -16,6 +16,7 @@ import ClientDashboard from "./pages/ClientDashboard";
 import SelfCheck from "./pages/SelfCheck";
 import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
 import PropertyValueCalculator from "./pages/PropertyValueCalculator";
+import PropertyLoanFunnel from "./pages/PropertyLoanFunnel";
 import RemoteSign from "./pages/RemoteSign";
 import Pitch from "./pages/Pitch";
 import Investors from "./pages/Investors";
@@ -56,6 +57,7 @@ const App = () => {
                <Route path="/self-check" element={<SelfCheck />} />
                <Route path="/calculator" element={<MortgageCalculatorLanding />} />
                <Route path="/property-value" element={<PropertyValueCalculator />} />
+               <Route path="/property-loan" element={<PropertyLoanFunnel />} />
                <Route path="/sign/:token" element={<RemoteSign />} />
                <Route path="/pitch" element={<Pitch />} />
                <Route path="/investors" element={<Investors />} />

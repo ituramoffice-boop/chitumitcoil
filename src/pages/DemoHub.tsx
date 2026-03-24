@@ -58,6 +58,7 @@ const PUBLIC_PAGES = [
   { path: "/self-check", label: "בדיקה עצמית", icon: Calculator },
   { path: "/calculator", label: "מחשבון משכנתא", icon: Calculator },
   { path: "/property-value", label: "מחשבון שווי נכס", icon: TrendingUp },
+  { path: "/property-loan", label: "הלוואה כנגד נכס", icon: Briefcase },
   { path: "/directory", label: "מדריך יועצים", icon: Users },
   { path: "/pitch", label: "מצגת Pitch", icon: Sparkles },
   { path: "/investors", label: "עמוד משקיעים", icon: Briefcase },
