@@ -12,10 +12,12 @@ import {
   Home, Ruler, Calendar, Car, TreePine, Waves,
   Train, GraduationCap, ShoppingBag, Heart, Zap,
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
+  Download,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import IsraelHeatMap from "@/components/IsraelHeatMap";
+import jsPDF from "jspdf";
 
 // ======== ISRAELI AREA DATA (simulated market data 2026) ========
 interface AreaData {
@@ -129,6 +131,8 @@ const PropertyValueCalculator = () => {
   const [marketingConsent, setMarketingConsent] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [lastSliderTouched, setLastSliderTouched] = useState<string>("");
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -196,6 +200,93 @@ const PropertyValueCalculator = () => {
     a.name.includes(areaSearch) || a.region.includes(areaSearch)
   );
 
+  // Calculate lead score based on property value inputs
+  const calcLeadScore = () => {
+    let score = 0;
+    if (totalValue >= 3000000) score += 30;
+    else if (totalValue >= 1500000) score += 20;
+    else score += 10;
+    if (area.demandLevel === "high") score += 20;
+    else if (area.demandLevel === "medium") score += 10;
+    if (area.trend > 5) score += 15;
+    else if (area.trend > 3) score += 10;
+    if (formData.email) score += 10;
+    if (lastSliderTouched) score += 10;
+    if (marketingConsent) score += 5;
+    return Math.min(score, 100);
+  };
+
+  const getLeadCategory = () => {
+    if (totalValue >= 4000000) return "משקיע";
+    if (condition === "needs_renovation") return "משפר דיור";
+    return "רוכש ראשון";
+  };
+
+  const generatePDF = () => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    doc.setR2L(true);
+
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 45, "F");
+    doc.setFillColor(16, 185, 129);
+    doc.rect(0, 42, 210, 3, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text("SmartMortgage AI", 105, 18, { align: "center" });
+    doc.setFontSize(11);
+    doc.text("Property Valuation Report", 105, 28, { align: "center" });
+    doc.setFontSize(8);
+    doc.text(new Date().toLocaleDateString("he-IL"), 105, 36, { align: "center" });
+
+    doc.setTextColor(30, 41, 59);
+    let y = 58;
+    doc.setFontSize(14);
+    doc.text("Property Summary", 105, y, { align: "center" });
+    y += 12;
+
+    const lines = [
+      `Area: ${area.name} (${area.region})`,
+      `Type: ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label || propertyType}`,
+      `Size: ${sqm} sqm | Rooms: ${rooms}`,
+      `Condition: ${CONDITION_OPTIONS.find(c => c.key === condition)?.label || condition}`,
+      `Estimated Value: ${totalValue.toLocaleString()} ILS`,
+      `Price/sqm: ${valuePerSqm.toLocaleString()} ILS`,
+      `1-Year Forecast: ${value1y.toLocaleString()} ILS (+${area.trend}%)`,
+      `5-Year Forecast: ${value5y.toLocaleString()} ILS`,
+      `Confidence: ${confidenceScore}%`,
+    ];
+
+    doc.setFontSize(11);
+    lines.forEach(text => {
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(25, y - 5, 160, 9, 2, 2, "F");
+      doc.text(text, 105, y, { align: "center" });
+      y += 12;
+    });
+
+    y += 5;
+    if (insights.length > 0) {
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      doc.text("AI: " + insights[0].text, 105, y, { align: "center", maxWidth: 150 });
+    }
+
+    y += 20;
+    doc.setFillColor(37, 211, 102);
+    doc.roundedRect(55, y, 100, 14, 4, 4, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
+    doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
+
+    doc.setTextColor(148, 163, 184);
+    doc.setFontSize(7);
+    doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
+
+    doc.save(`SmartMortgage_PropertyReport_${formData.full_name || "Client"}.pdf`);
+  };
+
   const handleSubmit = async () => {
     if (!formData.full_name || !formData.phone) {
       toast({ title: "נא למלא שם וטלפון", variant: "destructive" });
@@ -205,6 +296,8 @@ const PropertyValueCalculator = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      const leadScore = calcLeadScore();
+      const category = getLeadCategory();
 
       const { error } = await supabase.from("leads").insert({
         consultant_id: consultantId,
@@ -215,9 +308,23 @@ const PropertyValueCalculator = () => {
         mortgage_amount: Math.round(totalValue * 0.7),
         lead_source: "organic",
         marketing_consent: marketingConsent,
-        notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי משוער: ₪${totalValue.toLocaleString()}`,
+        lead_score: leadScore,
+        notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
       } as any);
       if (error) throw error;
+
+      // CRM notification (best-effort)
+      if (session?.user?.id) {
+        supabase.from("notifications").insert({
+          user_id: session.user.id,
+          title: `🏠 ליד חדש מהערכת שווי: ${formData.full_name}`,
+          body: `₪${totalValue.toLocaleString()} • ${area.name} • ציון ${leadScore} • ${category}`,
+          type: leadScore >= 70 ? "urgent" : "info",
+          link: "/dashboard/leads",
+        } as any).then(() => {});
+      }
+
+      setIsUnlocked(true);
       setStep("success");
       setTimeout(() => setStep("report"), 3000);
     } catch (e: any) {
@@ -565,7 +672,7 @@ const PropertyValueCalculator = () => {
                           </div>
                           <Slider
                             value={[sqm]}
-                            onValueChange={v => setSqm(v[0])}
+                            onValueChange={v => { setSqm(v[0]); setLastSliderTouched("sqm"); }}
                             min={25}
                             max={300}
                             step={5}
@@ -585,7 +692,7 @@ const PropertyValueCalculator = () => {
                           </div>
                           <Slider
                             value={[rooms * 2]}
-                            onValueChange={v => setRooms(v[0] / 2)}
+                            onValueChange={v => { setRooms(v[0] / 2); setLastSliderTouched("rooms"); }}
                             min={2}
                             max={14}
                             step={1}
@@ -656,7 +763,7 @@ const PropertyValueCalculator = () => {
                           </div>
                           <Slider
                             value={[yearBuilt]}
-                            onValueChange={v => setYearBuilt(v[0])}
+                            onValueChange={v => { setYearBuilt(v[0]); setLastSliderTouched("year_built"); }}
                             min={1960}
                             max={2026}
                             step={1}
@@ -837,22 +944,40 @@ const PropertyValueCalculator = () => {
           </div>
         </section>
 
-        {/* AI Insights */}
+        {/* AI Insights — Blurred until unlocked */}
         <section className="relative z-10 py-4">
           <div className="max-w-5xl mx-auto px-6">
-            <div className="grid md:grid-cols-3 gap-3">
-              {insights.map((tip, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/15 hover:border-[hsl(38,92%,50%)]/30 transition-all duration-300 hover:scale-[1.02]" style={{ animationDelay: `${i * 0.15}s`, animation: 'fadeSlideUp 0.6s ease-out both' }}>
-                  <span className="text-lg flex-shrink-0">{tip.icon}</span>
-                  <div>
-                    <div className="flex items-center gap-1 mb-1">
-                      <Brain className="w-3 h-3 text-[hsl(38,92%,50%)]" />
-                      <span className="text-[10px] font-bold text-[hsl(38,92%,50%)] uppercase tracking-wider">AI Insight</span>
+            <div className="relative">
+              <div className={cn("grid md:grid-cols-3 gap-3 transition-all duration-500", !isUnlocked && "blur-sm select-none")}>
+                {insights.map((tip, i) => (
+                  <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/15 hover:border-[hsl(38,92%,50%)]/30 transition-all duration-300 hover:scale-[1.02]" style={{ animationDelay: `${i * 0.15}s`, animation: 'fadeSlideUp 0.6s ease-out both' }}>
+                    <span className="text-lg flex-shrink-0">{tip.icon}</span>
+                    <div>
+                      <div className="flex items-center gap-1 mb-1">
+                        <Brain className="w-3 h-3 text-[hsl(38,92%,50%)]" />
+                        <span className="text-[10px] font-bold text-[hsl(38,92%,50%)] uppercase tracking-wider">AI Insight</span>
+                      </div>
+                      <p className="text-xs text-white/60 leading-relaxed">{tip.text}</p>
                     </div>
-                    <p className="text-xs text-white/60 leading-relaxed">{tip.text}</p>
                   </div>
+                ))}
+              </div>
+              {!isUnlocked && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button onClick={scrollToForm} className="px-6 py-3 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)] to-[hsl(30,95%,45%)] text-white font-bold text-sm shadow-[0_0_30px_hsla(38,92%,50%,0.4)] hover:scale-105 transition-all flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    השאר פרטים לפתיחת תובנות AI
+                  </button>
                 </div>
-              ))}
+              )}
+              {isUnlocked && (
+                <div className="flex justify-center mt-4">
+                  <button onClick={generatePDF} className="px-5 py-2.5 rounded-xl bg-[hsl(217,91%,50%)] hover:bg-[hsl(217,91%,55%)] text-white text-xs font-bold transition-all hover:scale-105 flex items-center gap-2">
+                    <Download className="w-3.5 h-3.5" />
+                    הורד דוח הערכה PDF
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </section>
