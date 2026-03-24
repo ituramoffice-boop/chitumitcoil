@@ -33,6 +33,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import DemoHub from "./pages/DemoHub";
+import AdvisorPricing from "./pages/AdvisorPricing";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
@@ -68,7 +69,8 @@ const App = () => {
                <Route path="/dashboard" element={<Dashboard />} />
                <Route path="/dashboard/:section" element={<Dashboard />} />
                <Route path="/client-dashboard" element={<ClientDashboard />} />
-               <Route path="/demo" element={<DemoHub />} />
+                <Route path="/demo" element={<DemoHub />} />
+                <Route path="/advisor-pricing" element={<AdvisorPricing />} />
                <Route path="/accessibility" element={<Accessibility />} />
                <Route path="/reset-password" element={<ResetPassword />} />
                <Route path="/terms" element={<Terms />} />
