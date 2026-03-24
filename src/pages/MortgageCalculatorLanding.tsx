@@ -13,6 +13,7 @@ import {
   Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
   Download,
 } from "lucide-react";
+import { TrustBankLogos } from "@/components/TrustBankLogos";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
@@ -736,6 +737,11 @@ const MortgageCalculatorLanding = () => {
             </div>
           </Link>
         </div>
+      </section>
+
+      {/* Trust Markers */}
+      <section className="relative z-10 py-8">
+        <TrustBankLogos />
       </section>
 
       {/* Footer */}

@@ -14,6 +14,7 @@ import {
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
   Download,
 } from "lucide-react";
+import { TrustBankLogos } from "@/components/TrustBankLogos";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
@@ -1072,6 +1073,9 @@ const PropertyValueCalculator = () => {
               <strong className="text-white/40">גילוי נאות:</strong> הערכת השווי המוצגת כאן היא אומדן בלבד המבוסס על נתוני שוק סטטיסטיים ואינה מהווה חוות דעת שמאית רשמית. לצורך משכנתא או עסקה, יש להיעזר בשמאי מקרקעין מוסמך. המידע אינו מהווה ייעוץ פיננסי או השקעתי. Chitumit אינה אחראית לנזק כלשהו שייגרם משימוש במידע זה. הנתונים מבוססים על ממוצעים אזוריים ועשויים להשתנות.
             </p>
           </div>
+        </div>
+        <div className="relative z-10 py-8">
+          <TrustBankLogos />
         </div>
         <PublicFooter />
       </div>
