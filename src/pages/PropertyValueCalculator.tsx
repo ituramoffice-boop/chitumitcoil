@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {
-  Building2, Shield, TrendingUp, CheckCircle2, ArrowLeft,
+  Shield, TrendingUp, CheckCircle2, ArrowLeft,
   Sparkles, Phone, Mail, User, Lock, Brain, MapPin,
   Home, Ruler, Calendar, Car, TreePine, Waves,
   Train, GraduationCap, ShoppingBag, Heart, Zap,
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
   Download,
 } from "lucide-react";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
