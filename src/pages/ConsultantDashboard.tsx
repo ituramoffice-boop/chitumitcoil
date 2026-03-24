@@ -95,6 +95,7 @@ interface Lead {
   lead_source: string | null;
   last_contact: string | null;
   next_step: string | null;
+  client_user_id: string | null;
 }
 
 interface Document {
