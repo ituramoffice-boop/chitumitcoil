@@ -192,6 +192,7 @@ const PropertyLoanFunnel = () => {
         `DTI: ${dti}%`,
         `החזר חודשי משוער: ₪${monthlyPayment.toLocaleString()}`,
         hasExistingMortgage ? `יתרת משכנתא קיימת: ₪${existingMortgageBalance.toLocaleString()}` : "ללא משכנתא קיימת",
+        employmentSeniority ? `וותק תעסוקתי: ${EMPLOYMENT_SENIORITY.find(e => e.value === employmentSeniority)?.label || employmentSeniority}` : "",
         `דחיפות: ${URGENCY_OPTIONS.find(o => o.value === urgency)?.label || urgency}`,
         tags.length ? `תגיות: ${tags.join(", ")}` : "",
         `מסמכים שהועלו: ${uploadedDocs.size}/${REQUIRED_DOCS.length}`,
