@@ -291,7 +291,7 @@ export default function Investors() {
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <Reveal delay={0}>
+            <Reveal delay={0} variant="stat">
               <div className="p-6 rounded-2xl bg-slate-800/50 border border-gold/20 text-center space-y-2">
                 <div className="text-3xl md:text-4xl font-black text-gold">
                   <Counter value={12000} suffix="+" />
