@@ -227,6 +227,23 @@ const MortgageCalculatorLanding = () => {
             calcSummary: `₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%`,
           },
         }).catch(() => {}); // best-effort
+
+        // Send report email to the lead
+        if (data.email) {
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "calculator-report",
+              recipientEmail: data.email,
+              idempotencyKey: `calc-report-${insertedLead.id}`,
+              templateData: {
+                leadName: data.full_name,
+                calcType: "מחשבון משכנתא",
+                calcSummary: `₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}`,
+                leadScore,
+              },
+            },
+          }).catch(() => {}); // best-effort
+        }
       }
       
       setIsUnlocked(true);
