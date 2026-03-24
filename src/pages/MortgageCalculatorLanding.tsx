@@ -213,16 +213,17 @@ const MortgageCalculatorLanding = () => {
       
       if (insertedLead?.id) {
         setSavedLeadId(insertedLead.id);
-        if (session?.user?.id) {
-          const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
-          supabase.from("notifications").insert({
-            user_id: session.user.id,
-            title: `🔥 ליד חם חדש: ${data.full_name}${tagLabel}`,
-            body: `₪${loanAmount.toLocaleString()} ל-${years} שנה • ציון ${leadScore} • ${category}`,
-            type: leadScore >= 70 ? "urgent" : "info",
-            link: "/dashboard/leads",
-          } as any).then(() => {});
-        }
+        // Notify consultant via edge function
+        supabase.functions.invoke("notify-new-lead", {
+          body: {
+            consultantId: effectiveConsultantId,
+            leadName: data.full_name,
+            leadPhone: data.phone,
+            leadScore,
+            calcType: "מחשבון משכנתא",
+            calcSummary: `₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%`,
+          },
+        }).catch(() => {}); // best-effort
       }
       
       setIsUnlocked(true);
