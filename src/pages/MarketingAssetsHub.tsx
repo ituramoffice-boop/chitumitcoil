@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { toPng } from "html-to-image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
@@ -25,6 +26,7 @@ const SocialMediaGenerator = () => {
   const [story, setStory] = useState("1.8M ₪ אושרו ב-4 דקות");
   const [advisorName, setAdvisorName] = useState("דני כהן");
   const [copied, setCopied] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleCopy = () => {
@@ -33,6 +35,20 @@ const SocialMediaGenerator = () => {
     setCopied(true);
     toast({ title: "הועתק ללוח!" });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadImage = async () => {
+    if (!previewRef.current) return;
+    try {
+      const dataUrl = await toPng(previewRef.current, { pixelRatio: 3 });
+      const link = document.createElement("a");
+      link.download = `chitumit-post-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast({ title: "התמונה הורדה בהצלחה!" });
+    } catch {
+      toast({ title: "שגיאה בהורדה", variant: "destructive" });
+    }
   };
 
   return (
@@ -65,7 +81,7 @@ const SocialMediaGenerator = () => {
         </div>
 
         {/* Preview Card */}
-        <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[hsl(222,47%,7%)] via-[hsl(222,47%,12%)] to-[hsl(43,74%,15%)] p-6 border border-gold/20">
+        <div ref={previewRef} className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[hsl(222,47%,7%)] via-[hsl(222,47%,12%)] to-[hsl(43,74%,15%)] p-6 border border-gold/20">
           <div className="absolute inset-0 opacity-10" style={{
             backgroundImage: `radial-gradient(circle at 20% 80%, hsl(43 74% 52% / 0.3), transparent 50%),
               radial-gradient(circle at 80% 20%, hsl(234 89% 63% / 0.2), transparent 50%)`
@@ -99,7 +115,7 @@ const SocialMediaGenerator = () => {
             {copied ? <Check className="h-4 w-4 ml-2" /> : <Copy className="h-4 w-4 ml-2" />}
             {copied ? "הועתק!" : "העתק טקסט"}
           </Button>
-          <Button variant="outline" className="border-gold/20 text-gold">
+          <Button variant="outline" className="border-gold/20 text-gold" onClick={handleDownloadImage}>
             <Download className="h-4 w-4 ml-2" />
             הורד כתמונה
           </Button>
