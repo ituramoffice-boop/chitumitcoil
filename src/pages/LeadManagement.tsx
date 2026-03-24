@@ -1107,19 +1107,27 @@ const LeadManagement = () => {
                     const score = lead.lead_score;
                     const fu = needsFollowUp(lead);
                     const src = SOURCE_CONFIG[lead.lead_source || "organic"];
+                    const kanbanBlurred = isLeadBlurred(filteredLeads.indexOf(lead));
                     return (
                       <div
                         key={lead.id}
-                        draggable
-                        onDragStart={() => handleDragStart(lead)}
+                        draggable={!kanbanBlurred}
+                        onDragStart={() => !kanbanBlurred && handleDragStart(lead)}
                         className={cn(
                           "p-2.5 rounded-lg border bg-background cursor-grab active:cursor-grabbing",
                           "hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group",
                           score >= 85 ? "heat-hot" : score >= 50 ? "heat-warm" : score >= 0 ? "heat-cold" : "",
                           fu.needed && "border-destructive/30",
-                          draggedLead?.id === lead.id && "opacity-40 scale-95 rotate-1"
+                          draggedLead?.id === lead.id && "opacity-40 scale-95 rotate-1",
+                          kanbanBlurred && "relative"
                         )}
                       >
+                        {kanbanBlurred && (
+                          <div className="absolute inset-0 z-10 backdrop-blur-sm bg-background/60 rounded-lg flex flex-col items-center justify-center gap-1">
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-[10px] font-medium text-muted-foreground">שדרג ל-Pro</span>
+                          </div>
+                        )}
                         <div className="flex items-start justify-between mb-1.5">
                           <LeadHeatPopup lead={lead}>
                             <p className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors">{lead.full_name}</p>
