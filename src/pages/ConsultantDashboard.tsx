@@ -933,7 +933,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           ) : filteredLeads.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>{funnelFilter !== "all" ? "אין לידים בשלב זה." : "עדיין אין לידים. לחץ על \"ליד חדש\" כדי להתחיל."}</p>
+              <p>{funnelFilter !== "all" ? "אין לקוחות בשלב הזה כרגע." : "בוא נתחיל! לחץ על \"הוסף לקוח חדש\" ואנחנו נדאג לשאר 💪"}</p>
               {funnelFilter !== "all" && (
                 <Button variant="link" size="sm" onClick={() => setFunnelFilter("all")} className="mt-2">
                   הצג את כל הלידים
