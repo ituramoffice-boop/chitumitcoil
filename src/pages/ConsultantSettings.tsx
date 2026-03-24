@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Check, Settings, Link2, Upload, Phone, Crown } from "lucide-react";
+import { Copy, Check, Settings, Link2, Upload, Phone, Crown, Sparkles } from "lucide-react";
 import { PLAN_LIMITS } from "@/hooks/useConsultantBranding";
 
 const ConsultantSettings = () => {
@@ -89,91 +89,89 @@ const ConsultantSettings = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Settings className="w-6 h-6 text-primary" />
-        <h1 className="text-2xl font-bold">הגדרות יועץ</h1>
+        <Settings className="w-6 h-6 text-gold" />
+        <h1 className="text-2xl font-bold gradient-header">הגדרות יועץ</h1>
       </div>
 
       {/* Plan & Usage */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5" />
-            תוכנית נוכחית
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Badge variant={plan === "enterprise" ? "default" : plan === "pro" ? "secondary" : "outline"} className="text-sm px-3 py-1">
-              {plan === "enterprise" ? "Enterprise" : plan === "pro" ? "Pro" : "Free"}
-            </Badge>
-            <span className="text-sm text-muted-foreground">
-              {limit === Infinity ? "לידים ללא הגבלה" : `${leadCount} / ${limit} לידים`}
-            </span>
+      <div className="gold-border-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Crown className="w-5 h-5 text-gold" />
+          <h3 className="text-lg font-bold text-foreground">תוכנית נוכחית</h3>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge className="text-sm px-3 py-1 bg-gold/20 text-gold border-gold/30 hover:bg-gold/30">
+            {plan === "enterprise" ? "Enterprise" : plan === "pro" ? "Pro" : "Free"}
+          </Badge>
+          <span className="text-sm text-muted-foreground">
+            {limit === Infinity ? "לידים ללא הגבלה" : `${leadCount} / ${limit} לידים`}
+          </span>
+        </div>
+        {limit !== Infinity && (
+          <div className="w-full bg-secondary rounded-full h-2.5 overflow-hidden">
+            <div
+              className="bg-gradient-to-l from-gold to-gold/60 rounded-full h-2.5 transition-all"
+              style={{ width: `${Math.min(usagePercent, 100)}%` }}
+            />
           </div>
-          {limit !== Infinity && (
-            <div className="w-full bg-muted rounded-full h-2">
-              <div
-                className="bg-primary rounded-full h-2 transition-all"
-                style={{ width: `${Math.min(usagePercent, 100)}%` }}
-              />
-            </div>
-          )}
-          {usagePercent >= 80 && limit !== Infinity && (
-            <p className="text-sm text-destructive">⚠️ אתה מתקרב למגבלת הלידים. שדרג לתוכנית Pro.</p>
-          )}
-        </CardContent>
-      </Card>
+        )}
+        {usagePercent >= 80 && limit !== Infinity && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-gold/10 border border-gold/20">
+            <Sparkles className="w-4 h-4 text-gold shrink-0" />
+            <p className="text-sm text-gold">⚠️ אתה מתקרב למגבלת הלידים. שדרג לתוכנית Pro לגישה מלאה.</p>
+            <Button size="sm" className="bg-gold hover:bg-gold/90 text-background mr-auto animate-glow-pulse">
+              שדרג עכשיו
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Referral Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Link2 className="w-5 h-5" />
-            קישורי הפניה אישיים
-          </CardTitle>
-          <CardDescription>שתף את הקישורים עם לקוחות פוטנציאליים. כל ליד שייכנס ייוחס אליך.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="glass-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Link2 className="w-5 h-5 text-cyan-glow" />
+          <h3 className="text-lg font-bold text-foreground">קישורי הפניה אישיים</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">שתף את הקישורים עם לקוחות פוטנציאליים. כל ליד שייכנס ייוחס אליך.</p>
+        <div className="space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">מחשבון משכנתא</Label>
             <div className="flex gap-2">
-              <Input value={referralLink} readOnly className="text-xs" dir="ltr" />
-              <Button size="sm" variant="outline" onClick={() => copyLink(referralLink)}>
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <Input value={referralLink} readOnly className="text-xs bg-secondary/50" dir="ltr" />
+              <Button size="sm" variant="outline" onClick={() => copyLink(referralLink)} className="border-border/50">
+                {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">מחשבון שווי נכס</Label>
             <div className="flex gap-2">
-              <Input value={propertyLink} readOnly className="text-xs" dir="ltr" />
-              <Button size="sm" variant="outline" onClick={() => copyLink(propertyLink)}>
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <Input value={propertyLink} readOnly className="text-xs bg-secondary/50" dir="ltr" />
+              <Button size="sm" variant="outline" onClick={() => copyLink(propertyLink)} className="border-border/50">
+                {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Branding */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="w-5 h-5" />
-            מיתוג אישי
-          </CardTitle>
-          <CardDescription>הלוגו שלך יוצג בדף המחשבון ובדוח ה-PDF ללקוחות שהגיעו מהקישור שלך.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="glass-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Upload className="w-5 h-5 text-gold" />
+          <h3 className="text-lg font-bold text-foreground">מיתוג אישי</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">הלוגו שלך יוצג בדף המחשבון ובדוח ה-PDF ללקוחות שהגיעו מהקישור שלך.</p>
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>לוגו</Label>
             <div className="flex items-center gap-4">
               {logoUrl && (
-                <img src={logoUrl} alt="Logo" className="w-14 h-14 rounded-lg object-contain border border-border" />
+                <img src={logoUrl} alt="Logo" className="w-14 h-14 rounded-lg object-contain border border-border/50 bg-secondary/50" />
               )}
               <div>
                 <input type="file" accept="image/*" className="hidden" id="logo-upload" onChange={handleLogoUpload} />
-                <Button variant="outline" size="sm" asChild disabled={uploading}>
+                <Button variant="outline" size="sm" asChild disabled={uploading} className="border-gold/30 text-gold hover:bg-gold/10">
                   <label htmlFor="logo-upload" className="cursor-pointer">
                     {uploading ? "מעלה..." : "העלה לוגו"}
                   </label>
@@ -185,12 +183,12 @@ const ConsultantSettings = () => {
               onChange={e => setLogoUrl(e.target.value)}
               placeholder="או הדבק URL של לוגו"
               dir="ltr"
-              className="text-xs"
+              className="text-xs bg-secondary/50"
             />
           </div>
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
-              <Phone className="w-4 h-4" />
+              <Phone className="w-4 h-4 text-success" />
               טלפון WhatsApp
             </Label>
             <Input
@@ -198,14 +196,15 @@ const ConsultantSettings = () => {
               onChange={e => setWhatsappPhone(e.target.value)}
               placeholder="972501234567"
               dir="ltr"
+              className="bg-secondary/50"
             />
             <p className="text-xs text-muted-foreground">מספר בפורמט בינלאומי (ללא +). ישמש בכפתור WhatsApp ב-PDF.</p>
           </div>
-          <Button onClick={handleSave} disabled={saving} className="w-full">
+          <Button onClick={handleSave} disabled={saving} className="w-full bg-gold hover:bg-gold/90 text-background font-bold">
             {saving ? "שומר..." : "שמור הגדרות"}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
