@@ -165,6 +165,7 @@ const PropertyValueCalculator = () => {
   const animatedPerSqm = useAnimatedNumber(valuePerSqm);
   const animated1y = useAnimatedNumber(value1y);
   const animated3y = useAnimatedNumber(value3y);
+  const animated5y = useAnimatedNumber(value5y);
 
   // Confidence score
   const confidenceScore = useMemo(() => {
