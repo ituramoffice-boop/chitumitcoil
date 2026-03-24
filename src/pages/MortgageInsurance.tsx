@@ -11,6 +11,7 @@ import StarField from "@/components/StarField";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
 import { TrustBankLogos } from "@/components/TrustBankLogos";
+import IdCardScanner from "@/components/IdCardScanner";
 import {
   Shield, Heart, TrendingDown, Sparkles, CheckCircle2, AlertTriangle,
   User, Phone, Mail, Lock, Loader2, ArrowLeft, ArrowRight, Activity,
