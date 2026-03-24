@@ -227,6 +227,22 @@ const ClientDashboard = () => {
   const uploadedClassifications = myDocuments.map((d: any) => d.classification);
   const completedDocs = REQUIRED_DOCS.filter((doc) => uploadedClassifications.includes(doc.key));
   const completionPercent = Math.round((completedDocs.length / REQUIRED_DOCS.length) * 100);
+  const allDocsComplete = completedDocs.length === REQUIRED_DOCS.length;
+  const [confettiFired, setConfettiFired] = useState(false);
+
+  useEffect(() => {
+    if (allDocsComplete && !confettiFired) {
+      setConfettiFired(true);
+      const end = Date.now() + 2500;
+      const colors = ["#D4AF37", "#FFD700", "#C5A028", "#22c55e"];
+      (function frame() {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+      toast.success("🎉 כל המסמכים אומתו — התיק מוכן להגשה!");
+    }
+  }, [allDocsComplete, confettiFired]);
 
   const hasDocuments = myDocuments.length > 0;
   const hasAnalysis = myDocuments.some((d: any) => d.extracted_data?.analyzed_at);
