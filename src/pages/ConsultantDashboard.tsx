@@ -82,6 +82,7 @@ import { he } from "date-fns/locale";
 import { RevenueForecaster, PriorityBoard } from "@/components/PredictiveCRM";
 import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
+import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -984,8 +985,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <TabsContent value="advocate" className="mt-4">
                 <AIUnderwriterAdvocate lead={selectedLead} />
               </TabsContent>
-              <TabsContent value="collab" className="mt-4">
+              <TabsContent value="collab" className="mt-4 space-y-4">
                 <CollaborativeUnderwriting lead={selectedLead} />
+                <AdvisorBenchmark lead={selectedLead} />
               </TabsContent>
               <TabsContent value="risk" className="mt-4">
                 <RiskAnalysisView lead={selectedLead} />
