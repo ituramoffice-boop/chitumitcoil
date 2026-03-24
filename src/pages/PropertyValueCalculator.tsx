@@ -915,12 +915,12 @@ const PropertyValueCalculator = () => {
             </h2>
             <div className="space-y-3">
               {faqItems.map((item, i) => (
-                <details key={i} className="group">
-                  <summary className="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 cursor-pointer transition-all list-none">
+                <details key={i} className="group" style={{ animationDelay: `${i * 0.08}s`, animation: 'fadeSlideUp 0.5s ease-out both' }}>
+                  <summary className="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/[0.07] cursor-pointer transition-all duration-300 list-none">
                     <span className="font-medium text-sm text-white/80">{item.q}</span>
-                    <ChevronDown className="w-4 h-4 text-white/30 transition-transform group-open:rotate-180" />
+                    <ChevronDown className="w-4 h-4 text-white/30 transition-transform duration-300 group-open:rotate-180" />
                   </summary>
-                  <div className="px-5 pb-5 pt-2">
+                  <div className="px-5 pb-5 pt-3 animate-[fadeSlideUp_0.3s_ease-out]">
                     <p className="text-sm text-white/50 leading-relaxed">{item.a}</p>
                   </div>
                 </details>
