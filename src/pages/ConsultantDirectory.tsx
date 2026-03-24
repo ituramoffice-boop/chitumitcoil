@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 
 interface ConsultantProfile {
   id: string;
@@ -303,9 +304,7 @@ export default function ConsultantDirectory() {
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
-        <p>© 2026 חיתומית · מדריך יועצי משכנתאות</p>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

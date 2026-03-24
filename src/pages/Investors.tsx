@@ -3,6 +3,7 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import StarField from "@/components/StarField";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 import {
   TrendingUp, Users, Globe, Zap, Shield, Brain, DollarSign, Target,
   Layers, BarChart3, Sparkles, ArrowDown, Calendar, CheckCircle2,
@@ -504,11 +505,7 @@ export default function Investors() {
         </Reveal>
       </section>
 
-      <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
-        <p className="flex items-center justify-center gap-2">
-          <ChitumitLogo size={18} /> © 2026 חיתומית — <span className="text-gold/50">הבינה שמאחורי האישור</span> · Confidential Investor Materials
-        </p>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

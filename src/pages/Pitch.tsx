@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 
 /* ── Animated Section ── */
 function AnimSection({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -721,9 +722,7 @@ export default function Pitch() {
       </section>
 
       {/* ═══════ FOOTER ═══════ */}
-      <footer className="relative z-10 border-t border-border/30 py-8 px-4 text-center text-sm text-muted-foreground">
-        <p>© 2026 חיתומית — <span className="text-gold">הבינה שמאחורי האישור</span> — כל הזכויות שמורות</p>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

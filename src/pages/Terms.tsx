@@ -1,4 +1,5 @@
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { FileText, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -115,15 +116,7 @@ export default function Terms() {
         </section>
       </main>
 
-      <footer className="border-t border-border/30 py-6 px-6 text-center text-sm text-muted-foreground">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
-          <span className="text-gold">תנאי שימוש</span>
-          <span>·</span>
-          <Link to="/privacy" className="hover:text-gold transition-colors">מדיניות פרטיות</Link>
-          <span>·</span>
-          <Link to="/accessibility" className="hover:text-gold transition-colors">הצהרת נגישות</Link>
-        </div>
-      </footer>
+      <PublicFooter activePage="terms" />
     </div>
   );
 }

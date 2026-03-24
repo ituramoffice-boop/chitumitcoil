@@ -1,4 +1,5 @@
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 import { Link } from "react-router-dom";
 import { Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -138,15 +139,7 @@ export default function Privacy() {
         </section>
       </main>
 
-      <footer className="border-t border-border/30 py-6 px-6 text-center text-sm text-muted-foreground">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
-          <Link to="/terms" className="hover:text-gold transition-colors">תנאי שימוש</Link>
-          <span>·</span>
-          <span className="text-gold">מדיניות פרטיות</span>
-          <span>·</span>
-          <Link to="/accessibility" className="hover:text-gold transition-colors">הצהרת נגישות</Link>
-        </div>
-      </footer>
+      <PublicFooter activePage="privacy" />
     </div>
   );
 }
