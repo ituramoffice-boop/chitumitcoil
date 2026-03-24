@@ -452,9 +452,13 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          lead_count: number
+          logo_url: string | null
           phone: string | null
+          plan: string
           updated_at: string
           user_id: string
+          whatsapp_phone: string | null
         }
         Insert: {
           business_type?: string
@@ -462,9 +466,13 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          lead_count?: number
+          logo_url?: string | null
           phone?: string | null
+          plan?: string
           updated_at?: string
           user_id: string
+          whatsapp_phone?: string | null
         }
         Update: {
           business_type?: string
@@ -472,9 +480,13 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          lead_count?: number
+          logo_url?: string | null
           phone?: string | null
+          plan?: string
           updated_at?: string
           user_id?: string
+          whatsapp_phone?: string | null
         }
         Relationships: []
       }

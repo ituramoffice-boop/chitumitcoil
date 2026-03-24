@@ -17,6 +17,7 @@ import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
+import { useConsultantBranding, PLAN_LIMITS } from "@/hooks/useConsultantBranding";
 
 // Mortgage calculator logic
 function calculateMortgage(amount: number, years: number, rate: number) {
@@ -53,7 +54,12 @@ function useAnimatedNumber(target: number, duration = 1200) {
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
+// WhatsApp helper
+const getWhatsAppUrl = (phone?: string | null) =>
+  `https://wa.me/${phone || "972501234567"}`;
+
 const MortgageCalculatorLanding = () => {
+  const { branding } = useConsultantBranding(DEFAULT_CONSULTANT_ID);
   const [loanAmount, setLoanAmount] = useState(1000000);
   const [years, setYears] = useState(25);
   const [rate, setRate] = useState(4.5);
@@ -65,6 +71,7 @@ const MortgageCalculatorLanding = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [lastSliderTouched, setLastSliderTouched] = useState<string>("");
   const [savedLeadId, setSavedLeadId] = useState<string | null>(null);
+  const consultantId = branding?.consultantId || DEFAULT_CONSULTANT_ID;
 
   const result = calculateMortgage(loanAmount, years, rate);
   const animatedMonthly = useAnimatedNumber(result.monthly);
@@ -171,7 +178,7 @@ const MortgageCalculatorLanding = () => {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
-    doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
+    doc.link(55, y, 100, 14, { url: getWhatsAppUrl(branding?.whatsappPhone) });
 
     // Footer
     doc.setTextColor(148, 163, 184);
@@ -185,19 +192,19 @@ const MortgageCalculatorLanding = () => {
     setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      const effectiveConsultantId = consultantId;
       const leadScore = calcLeadScore(data.email, marketingConsent);
       const category = getLeadCategory(data.category);
       const tags = getLeadTags();
       
       const { data: insertedLead, error } = await supabase.from("leads").insert({
-        consultant_id: consultantId,
+        consultant_id: effectiveConsultantId,
         full_name: data.full_name,
         phone: data.phone || null,
         email: data.email || null,
         mortgage_amount: loanAmount,
         property_value: Math.round(loanAmount * 1.35),
-        lead_source: "organic",
+        lead_source: branding?.consultantId !== DEFAULT_CONSULTANT_ID ? "referral" : "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
         notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר אחרון: ${lastSliderTouched}. ציון: ${leadScore}`,
@@ -206,16 +213,17 @@ const MortgageCalculatorLanding = () => {
       
       if (insertedLead?.id) {
         setSavedLeadId(insertedLead.id);
-        if (session?.user?.id) {
-          const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
-          supabase.from("notifications").insert({
-            user_id: session.user.id,
-            title: `🔥 ליד חם חדש: ${data.full_name}${tagLabel}`,
-            body: `₪${loanAmount.toLocaleString()} ל-${years} שנה • ציון ${leadScore} • ${category}`,
-            type: leadScore >= 70 ? "urgent" : "info",
-            link: "/dashboard/leads",
-          } as any).then(() => {});
-        }
+        // Notify consultant via edge function
+        supabase.functions.invoke("notify-new-lead", {
+          body: {
+            consultantId: effectiveConsultantId,
+            leadName: data.full_name,
+            leadPhone: data.phone,
+            leadScore,
+            calcType: "מחשבון משכנתא",
+            calcSummary: `₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%`,
+          },
+        }).catch(() => {}); // best-effort
       }
       
       setIsUnlocked(true);

@@ -19,7 +19,10 @@ import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import IsraelHeatMap from "@/components/IsraelHeatMap";
 import jsPDF from "jspdf";
+import { useConsultantBranding, PLAN_LIMITS } from "@/hooks/useConsultantBranding";
 
+const getWhatsAppUrl = (phone?: string | null) =>
+  `https://wa.me/${phone || "972501234567"}`;
 // ======== ISRAELI AREA DATA (simulated market data 2026) ========
 interface AreaData {
   name: string;
@@ -110,6 +113,8 @@ function useAnimatedNumber(target: number, duration = 1200) {
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
 const PropertyValueCalculator = () => {
+  const { branding } = useConsultantBranding(DEFAULT_CONSULTANT_ID);
+  const consultantId = branding?.consultantId || DEFAULT_CONSULTANT_ID;
   // Calculator state
   const [selectedArea, setSelectedArea] = useState<string>("תל אביב – מרכז");
   const [sqm, setSqm] = useState(80);
@@ -283,7 +288,7 @@ const PropertyValueCalculator = () => {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
-    doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
+    doc.link(55, y, 100, 14, { url: getWhatsAppUrl(branding?.whatsappPhone) });
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
     doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
@@ -293,33 +298,35 @@ const PropertyValueCalculator = () => {
   const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
     setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      const effectiveConsultantId = consultantId;
       const leadScore = calcLeadScore(data.email, marketingConsent);
       const category = getLeadCategory(data.category);
       const tags = getLeadTags();
-      const { error } = await supabase.from("leads").insert({
-        consultant_id: consultantId,
+      const { data: insertedLead, error } = await supabase.from("leads").insert({
+        consultant_id: effectiveConsultantId,
         full_name: data.full_name,
         phone: data.phone || null,
         email: data.email || null,
         property_value: totalValue,
         mortgage_amount: Math.round(totalValue * 0.7),
-        lead_source: "organic",
+        lead_source: branding?.consultantId !== DEFAULT_CONSULTANT_ID ? "referral" : "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
         notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
-      } as any);
+      } as any).select("id").single();
       if (error) throw error;
-      if (session?.user?.id) {
-        const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
-        supabase.from("notifications").insert({
-          user_id: session.user.id,
-          title: `🏠 ליד חדש מהערכת שווי: ${data.full_name}${tagLabel}`,
-          body: `₪${totalValue.toLocaleString()} • ${area.name} • ציון ${leadScore} • ${category}`,
-          type: leadScore >= 70 ? "urgent" : "info",
-          link: "/dashboard/leads",
-        } as any).then(() => {});
+      if (insertedLead?.id) {
+        // Notify consultant via edge function
+        supabase.functions.invoke("notify-new-lead", {
+          body: {
+            consultantId: effectiveConsultantId,
+            leadName: data.full_name,
+            leadPhone: data.phone,
+            leadScore,
+            calcType: "מחשבון שווי נכס",
+            calcSummary: `₪${totalValue.toLocaleString()} • ${area.name} • ${sqm} מ"ר`,
+          },
+        }).catch(() => {}); // best-effort
       }
       setIsUnlocked(true);
     } catch (e: any) {

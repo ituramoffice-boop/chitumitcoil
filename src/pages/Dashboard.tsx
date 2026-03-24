@@ -19,6 +19,7 @@ import { SignatureManager } from "@/components/SignatureManager";
 import { DialerDashboard } from "@/components/DialerDashboard";
 import { SalesLeaderboard } from "@/components/SalesLeaderboard";
 import ClientManagement from "./ClientManagement";
+import ConsultantSettings from "./ConsultantSettings";
 import { supabase } from "@/integrations/supabase/client";
 
 const sectionComponents: Record<string, React.FC> = {
@@ -32,6 +33,7 @@ const sectionComponents: Record<string, React.FC> = {
   "client-management": () => <ClientManagement />,
   team: () => <TeamManagement />,
   "agency-reports": () => <AgencyReports />,
+  "consultant-settings": () => <ConsultantSettings />,
 };
 
 
