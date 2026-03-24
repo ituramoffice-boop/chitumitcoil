@@ -156,17 +156,66 @@ function AIVerifiedBadge({ show }: { show: boolean }) {
   );
 }
 
+const DEMO_PROFILE = {
+  id: "demo-profile",
+  user_id: "demo-user-000",
+  full_name: "ישראל ישראלי",
+  email: "demo@chitumit.co.il",
+  phone: "050-1234567",
+  business_type: "solo",
+  plan: "pro",
+  lead_count: 0,
+  logo_url: null,
+  whatsapp_phone: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+const DEMO_LEAD = {
+  id: "demo-lead-1",
+  full_name: "ישראל ישראלי",
+  phone: "050-1234567",
+  email: "demo@chitumit.co.il",
+  status: "in_progress" as const,
+  notes: "תיק בתהליך",
+  mortgage_amount: 1200000,
+  property_value: 2000000,
+  monthly_income: 22000,
+  created_at: new Date().toISOString(),
+  consultant_id: "demo-consultant",
+  client_user_id: "demo-user-000",
+  last_contact: new Date().toISOString(),
+  next_step: "השלמת מסמכים",
+  lead_source: "organic",
+  lead_score: 75,
+  assigned_to: null,
+  is_marketplace: false,
+  marketing_consent: true,
+  sign_token: null,
+  signature_url: null,
+  signed_at: null,
+  updated_at: new Date().toISOString(),
+};
+
+const DEMO_DOCUMENTS = [
+  { id: "demo-doc-1", file_name: "תלוש_שכר_ינואר.pdf", file_path: "/demo", file_type: "pdf", file_size: 45000, classification: "תלושי שכר", uploaded_by: "demo-user-000", lead_id: "demo-lead-1", consultant_id: null, extracted_data: { analyzed_at: new Date().toISOString() }, risk_flags: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "demo-doc-2", file_name: "דף_עוש_לאומי.pdf", file_path: "/demo", file_type: "pdf", file_size: 62000, classification: 'דפי עו"ש', uploaded_by: "demo-user-000", lead_id: "demo-lead-1", consultant_id: null, extracted_data: { analyzed_at: new Date().toISOString() }, risk_flags: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "demo-doc-3", file_name: "דוח_BDI_2024.pdf", file_path: "/demo", file_type: "pdf", file_size: 38000, classification: 'דו"ח BDI', uploaded_by: "demo-user-000", lead_id: "demo-lead-1", consultant_id: null, extracted_data: { analyzed_at: new Date().toISOString() }, risk_flags: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: "demo-doc-4", file_name: "תעודת_זהות.pdf", file_path: "/demo", file_type: "pdf", file_size: 25000, classification: 'צילום ת"ז', uploaded_by: "demo-user-000", lead_id: "demo-lead-1", consultant_id: null, extracted_data: { analyzed_at: new Date().toISOString() }, risk_flags: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
 const ClientDashboard = () => {
   const { user, signOut } = useAuth();
+  const { isDemoMode } = useDemo();
   const queryClient = useQueryClient();
   const [chatOpen, setChatOpen] = useState(false);
   const [newMsg, setNewMsg] = useState("");
-  const [paymentIncrease, setPaymentIncrease] = useState(0); // 0-5000 extra per month
+  const [paymentIncrease, setPaymentIncrease] = useState(0);
   const [scanningDocId, setScanningDocId] = useState<string | null>(null);
   const [verifiedDocs, setVerifiedDocs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isDemoMode) return;
     const channel = supabase
       .channel("client-sync")
       .on("postgres_changes", { event: "*", schema: "public", table: "leads", filter: `client_user_id=eq.${user.id}` }, () => {
@@ -177,11 +226,12 @@ const ClientDashboard = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, queryClient]);
+  }, [user, queryClient, isDemoMode]);
 
   const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["profile", user?.id],
+    queryKey: ["profile", user?.id, isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) return DEMO_PROFILE;
       const { data, error } = await supabase.from("profiles").select("*").eq("user_id", user!.id).single();
       if (error) throw error;
       return data;
@@ -190,8 +240,9 @@ const ClientDashboard = () => {
   });
 
   const { data: myLead } = useQuery({
-    queryKey: ["my-lead", user?.id],
+    queryKey: ["my-lead", user?.id, isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) return DEMO_LEAD;
       const { data, error } = await supabase.from("leads").select("*").eq("client_user_id", user!.id).single();
       if (error) return null;
       return data;
@@ -200,8 +251,9 @@ const ClientDashboard = () => {
   });
 
   const { data: myDocuments = [] } = useQuery({
-    queryKey: ["my-documents", user?.id],
+    queryKey: ["my-documents", user?.id, isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) return DEMO_DOCUMENTS;
       const { data, error } = await supabase.from("documents").select("*").eq("uploaded_by", user!.id).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
