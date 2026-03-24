@@ -17,9 +17,12 @@ import {
   Lightbulb,
   ArrowUpRight,
   Star,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Lead {
   id: string;
