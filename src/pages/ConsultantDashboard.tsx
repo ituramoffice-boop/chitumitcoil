@@ -170,6 +170,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sendingMagicLink, setSendingMagicLink] = useState<string | null>(null);
   const [funnelFilter, setFunnelFilter] = useState<LeadStatus | "all">("all");
+  const [presentationLead, setPresentationLead] = useState<Lead | null>(null);
   const [alertTab, setAlertTab] = useState<AlertCategory>("expiring");
   const [formData, setFormData] = useState({
     full_name: "",
@@ -990,6 +991,15 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <div className="space-y-3 mb-4">
               <CloseDealTrigger lead={selectedLead} />
               <FeeEstimator lead={selectedLead} />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-gold/20 text-gold hover:bg-gold/10"
+                onClick={() => setPresentationLead(selectedLead)}
+              >
+                <Crown className="w-3.5 h-3.5 ml-1.5" />
+                מצב מצגת ללקוח
+              </Button>
             </div>
 
             <Tabs defaultValue="advocate" dir="rtl">
