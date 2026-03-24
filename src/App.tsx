@@ -36,6 +36,7 @@ const App = () => (
               <Route path="/property-value" element={<PropertyValueCalculator />} />
               <Route path="/sign/:token" element={<RemoteSign />} />
               <Route path="/pitch" element={<Pitch />} />
+              <Route path="/investors" element={<Investors />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:section" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
