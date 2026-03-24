@@ -21,7 +21,9 @@ import { SalesLeaderboard } from "@/components/SalesLeaderboard";
 import ClientManagement from "./ClientManagement";
 import ConsultantSettings from "./ConsultantSettings";
 import MarketTrends from "@/components/MarketTrends";
+import { LeadMarketplace } from "@/components/LeadMarketplace";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 const sectionComponents: Record<string, React.FC> = {
   upload: SmartBuckets,
@@ -36,6 +38,7 @@ const sectionComponents: Record<string, React.FC> = {
   "agency-reports": () => <AgencyReports />,
   "consultant-settings": () => <ConsultantSettings />,
   "market-trends": () => <MarketTrends />,
+  marketplace: () => <LeadMarketplace />,
 };
 
 
