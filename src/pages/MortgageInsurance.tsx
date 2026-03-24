@@ -107,15 +107,13 @@ const MortgageInsurance = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanComplete, setScanComplete] = useState(false);
 
-  // Calculations
-  const marketRate = getMarketRate(age, isSmoker, loanTerm);
-  const chitumitRate = getChitumitRate(age, isSmoker, loanTerm);
-  const marketMonthly = Math.round(mortgageAmount * marketRate / 12);
-  const chitumitMonthly = Math.round(mortgageAmount * chitumitRate / 12);
+  // Calculations — monthly premium in ₪
+  const marketMonthly = getMonthlyPremium(mortgageAmount, age, isSmoker, loanTerm);
+  const chitumitMonthly = getChitumitPremium(mortgageAmount, age, isSmoker, loanTerm);
   const monthlySavings = marketMonthly - chitumitMonthly;
   const totalSavings = monthlySavings * loanTerm * 12;
   const riskProfile = getRiskProfile(age, isSmoker);
-  const scoreBoost = monthlySavings > 500 ? 5 : monthlySavings > 200 ? 4 : 3;
+  const scoreBoost = monthlySavings > 50 ? 5 : monthlySavings > 20 ? 4 : 3;
 
   const animMarket = useAnimatedNumber(marketMonthly);
   const animChitumit = useAnimatedNumber(chitumitMonthly);
