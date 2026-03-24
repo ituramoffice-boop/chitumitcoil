@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
