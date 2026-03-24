@@ -101,6 +101,36 @@ const DashboardOverview = () => {
         </div>
       )}
 
+      {/* Quick Links to Calculators */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          onClick={() => navigate("/calculator")}
+          className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 hover:shadow-md transition-all group flex items-center gap-4"
+        >
+          <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
+            <DollarSign className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">מחשבון משכנתא</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">חישוב החזר חודשי, ריבית והשוואת מסלולים</p>
+          </div>
+          <ExternalLink className="w-4 h-4 text-muted-foreground mr-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+        <div
+          onClick={() => navigate("/property-value")}
+          className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 hover:shadow-md transition-all group flex items-center gap-4"
+        >
+          <div className="p-3 rounded-xl bg-[hsl(160,84%,39%)]/10 group-hover:bg-[hsl(160,84%,39%)]/20 transition-colors shrink-0">
+            <TrendingUp className="w-5 h-5 text-[hsl(160,84%,39%)]" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">מחשבון שווי נכס</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">הערכת שווי מיידית לפי אזור, גודל ומגמות שוק</p>
+          </div>
+          <ExternalLink className="w-4 h-4 text-muted-foreground mr-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      </div>
+
       {/* Financial Summary + Recent Clients */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card p-6 space-y-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all" onClick={() => navigate("/dashboard/reports")}>
