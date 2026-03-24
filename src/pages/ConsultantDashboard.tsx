@@ -976,12 +976,16 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <Tabs defaultValue="advocate" dir="rtl">
               <TabsList>
                 <TabsTrigger value="advocate">AI חיתום</TabsTrigger>
+                <TabsTrigger value="collab">מודיעין קולקטיבי</TabsTrigger>
                 <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
                 <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
                 <TabsTrigger value="details">פרטים</TabsTrigger>
               </TabsList>
               <TabsContent value="advocate" className="mt-4">
                 <AIUnderwriterAdvocate lead={selectedLead} />
+              </TabsContent>
+              <TabsContent value="collab" className="mt-4">
+                <CollaborativeUnderwriting lead={selectedLead} />
               </TabsContent>
               <TabsContent value="risk" className="mt-4">
                 <RiskAnalysisView lead={selectedLead} />
