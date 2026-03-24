@@ -6,7 +6,7 @@ import {
   Phone, FileSignature, ScanSearch, Calculator, Zap, Shield, Brain,
   TrendingUp, CheckCircle2, XCircle, Sparkles, Clock, DollarSign,
   HeadphonesIcon, FileX, Users, ArrowDown, MessageCircle, BarChart3,
-  Smartphone, Globe, ChevronLeft
+  Smartphone, Globe, ChevronLeft, Play, Star, Quote
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
