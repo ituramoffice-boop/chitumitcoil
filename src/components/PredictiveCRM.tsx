@@ -238,13 +238,211 @@ export function PriorityBoard({
     toast.success(`${ids.size} תיקים מוכנים נבחרו`);
   };
 
-  const handleGenerateMasterFile = () => {
-    toast.success(`מייצר קובץ הגשה ל-${selectedBulk.size} תיקים...`, {
-      description: "הקובץ ייווצר ויישלח למייל תוך דקות",
+  const handleGenerateMasterFile = useCallback(() => {
+    const selected = enrichedLeads.filter(l => selectedBulk.has(l.id));
+    if (selected.length === 0) return;
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+    // Load Heebo font fallback — use built-in helvetica with manual RTL reversal
+    const rtl = (text: string) => text.split("").reverse().join("");
+
+    // ─── Cover Page ───
+    doc.setFillColor(15, 23, 42); // dark navy
+    doc.rect(0, 0, 297, 210, "F");
+
+    // Gold accent line
+    doc.setDrawColor(212, 175, 55);
+    doc.setLineWidth(1.5);
+    doc.line(20, 30, 277, 30);
+
+    doc.setTextColor(212, 175, 55);
+    doc.setFontSize(28);
+    doc.text("Chitumit", 148.5, 55, { align: "center" });
+
+    doc.setFontSize(14);
+    doc.setTextColor(200, 200, 200);
+    doc.text(rtl("קובץ הגשה מרכזי לבנק"), 148.5, 70, { align: "center" });
+
+    doc.setFontSize(11);
+    doc.setTextColor(150, 150, 150);
+    const dateStr = new Date().toLocaleDateString("he-IL");
+    doc.text(`${rtl("תאריך הפקה:")} ${dateStr}`, 148.5, 85, { align: "center" });
+    doc.text(`${selected.length} ${rtl("תיקים")}`, 148.5, 93, { align: "center" });
+
+    // Total pipeline value
+    const totalVolume = selected.reduce((s, l) => s + (Number(l.mortgage_amount) || 0), 0);
+    doc.setFontSize(18);
+    doc.setTextColor(16, 185, 129);
+    doc.text(`${rtl("נפח הלוואות כולל:")} ${totalVolume.toLocaleString()} NIS`, 148.5, 115, { align: "center" });
+
+    doc.setDrawColor(212, 175, 55);
+    doc.line(20, 180, 277, 180);
+
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(rtl("מסמך זה הופק אוטומטית ע\"י מערכת חיתומית — כל הזכויות שמורות"), 148.5, 195, { align: "center" });
+
+    // ─── Summary Table Page ───
+    doc.addPage("a4", "landscape");
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 297, 210, "F");
+
+    doc.setTextColor(212, 175, 55);
+    doc.setFontSize(16);
+    doc.text(rtl("סיכום תיקים להגשה"), 277, 20, { align: "right" });
+
+    // Table header
+    const headers = ["#", "Client Name", "Mortgage (NIS)", "Property (NIS)", "Income (NIS)", "LTV%", "DTI%", "Status", "Probability"];
+    const colWidths = [10, 45, 35, 35, 35, 25, 25, 30, 30];
+    let startX = 15;
+    const headerY = 35;
+
+    doc.setFillColor(30, 41, 59);
+    doc.rect(startX, headerY - 5, 270, 10, "F");
+    doc.setFontSize(8);
+    doc.setTextColor(200, 200, 200);
+    let cx = startX;
+    headers.forEach((h, i) => {
+      doc.text(h, cx + colWidths[i] / 2, headerY + 1, { align: "center" });
+      cx += colWidths[i];
+    });
+
+    // Table rows
+    selected.forEach((lead, idx) => {
+      const y = headerY + 12 + idx * 10;
+      if (y > 190) {
+        doc.addPage("a4", "landscape");
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, 297, 210, "F");
+      }
+
+      const rowY = y > 190 ? 25 + ((idx * 10) % 170) : y;
+
+      // Zebra stripe
+      if (idx % 2 === 0) {
+        doc.setFillColor(20, 30, 50);
+        doc.rect(startX, rowY - 5, 270, 10, "F");
+      }
+
+      const mortgage = Number(lead.mortgage_amount) || 0;
+      const property = Number(lead.property_value) || 0;
+      const income = Number(lead.monthly_income) || 0;
+      const ltv = property > 0 ? ((mortgage / property) * 100).toFixed(1) : "N/A";
+      const dti = income > 0 ? ((mortgage / (income * 12)) * 100).toFixed(1) : "N/A";
+
+      const probLabel = lead.closingProbability === "high" ? "HIGH" : lead.closingProbability === "medium" ? "MED" : "LOW";
+
+      const row = [
+        String(idx + 1),
+        lead.full_name,
+        mortgage.toLocaleString(),
+        property.toLocaleString(),
+        income.toLocaleString(),
+        String(ltv),
+        String(dti),
+        lead.status,
+        probLabel,
+      ];
+
+      doc.setFontSize(8);
+
+      // Prob color
+      cx = startX;
+      row.forEach((cell, ci) => {
+        if (ci === 8) {
+          if (probLabel === "HIGH") doc.setTextColor(16, 185, 129);
+          else if (probLabel === "MED") doc.setTextColor(245, 158, 11);
+          else doc.setTextColor(96, 165, 250);
+        } else {
+          doc.setTextColor(180, 180, 180);
+        }
+        doc.text(cell, cx + colWidths[ci] / 2, rowY + 1, { align: "center" });
+        cx += colWidths[ci];
+      });
+    });
+
+    // ─── Individual Profiles ───
+    selected.forEach((lead, idx) => {
+      doc.addPage("a4", "portrait");
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 297, "F");
+
+      // Gold accent
+      doc.setDrawColor(212, 175, 55);
+      doc.setLineWidth(0.8);
+      doc.line(15, 20, 195, 20);
+
+      doc.setTextColor(212, 175, 55);
+      doc.setFontSize(14);
+      doc.text(`${rtl("כרטיס לקוח")} #${idx + 1}`, 195, 15, { align: "right" });
+
+      // Client name
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
+      doc.text(lead.full_name, 195, 35, { align: "right" });
+
+      // Data fields
+      const mortgage = Number(lead.mortgage_amount) || 0;
+      const property = Number(lead.property_value) || 0;
+      const income = Number(lead.monthly_income) || 0;
+      const ltv = property > 0 ? ((mortgage / property) * 100).toFixed(1) + "%" : "N/A";
+      const dti = income > 0 ? ((mortgage / (income * 12)) * 100).toFixed(1) + "%" : "N/A";
+
+      const fields = [
+        [rtl("סכום משכנתא"), `${mortgage.toLocaleString()} NIS`],
+        [rtl("שווי נכס"), `${property.toLocaleString()} NIS`],
+        [rtl("הכנסה חודשית"), `${income.toLocaleString()} NIS`],
+        ["LTV", ltv],
+        ["DTI", dti],
+        [rtl("סטטוס"), lead.status],
+        [rtl("סיכוי סגירה"), lead.closingProbability === "high" ? "HIGH" : lead.closingProbability === "medium" ? "MEDIUM" : "LOW"],
+        [rtl("בריאות מסמכים"), lead.docHealth === "green" ? rtl("מוכן לבנק") : lead.docHealth === "yellow" ? rtl("חסר מידע") : rtl("חריגה")],
+      ];
+
+      let fy = 55;
+      fields.forEach(([label, value], fi) => {
+        if (fi % 2 === 0) {
+          doc.setFillColor(20, 30, 50);
+          doc.rect(15, fy - 5, 180, 12, "F");
+        }
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text(label, 190, fy + 2, { align: "right" });
+        doc.setTextColor(255, 255, 255);
+        doc.text(value, 80, fy + 2, { align: "center" });
+        fy += 12;
+      });
+
+      // AI Insight
+      fy += 10;
+      doc.setFillColor(6, 182, 212, 0.1);
+      doc.setFillColor(20, 40, 60);
+      doc.roundedRect(15, fy - 5, 180, 20, 3, 3, "F");
+      doc.setFontSize(8);
+      doc.setTextColor(6, 182, 212);
+      doc.text("AI Insight:", 190, fy + 2, { align: "right" });
+      doc.setTextColor(180, 200, 210);
+      doc.text(lead.aiInsight, 190, fy + 10, { align: "right", maxWidth: 170 });
+
+      // Footer
+      doc.setDrawColor(212, 175, 55);
+      doc.line(15, 277, 195, 277);
+      doc.setFontSize(7);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Chitumit - Bank Submission File", 105, 285, { align: "center" });
+    });
+
+    // Save
+    const fileName = `chitumit_bank_submission_${new Date().toISOString().slice(0, 10)}.pdf`;
+    doc.save(fileName);
+
+    toast.success(`קובץ PDF הופק בהצלחה עם ${selected.length} תיקים`, {
+      description: fileName,
       duration: 5000,
     });
     setSelectedBulk(new Set());
-  };
+  }, [enrichedLeads, selectedBulk]);
 
   const toggleBulk = (id: string) => {
     setSelectedBulk(prev => {
