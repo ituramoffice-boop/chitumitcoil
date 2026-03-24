@@ -820,7 +820,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-foreground">ניהול לידים</h2>
+              <h2 className="text-lg font-semibold text-foreground">הלקוחות שלך</h2>
               {funnelFilter !== "all" && (
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                   {FUNNEL_STAGES.find((s) => s.key === funnelFilter)?.label}
