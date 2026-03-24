@@ -204,7 +204,7 @@ const MortgageCalculatorLanding = () => {
         email: data.email || null,
         mortgage_amount: loanAmount,
         property_value: Math.round(loanAmount * 1.35),
-        lead_source: "organic",
+        lead_source: branding?.consultantId !== DEFAULT_CONSULTANT_ID ? "referral" : "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
         notes: `מחשבון הלוואה: ₪${loanAmount.toLocaleString()} ל-${years} שנה, ריבית ${rate}%. החזר חודשי: ₪${result.monthly.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר אחרון: ${lastSliderTouched}. ציון: ${leadScore}`,
