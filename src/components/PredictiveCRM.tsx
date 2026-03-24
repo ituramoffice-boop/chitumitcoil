@@ -663,13 +663,37 @@ export function PriorityBoard({
         doc.text(`• ${spot}`, 185, fy + 10 + si * 7, { align: "right", maxWidth: 165 });
       });
 
-      // Chitumit AI Verified seal
+      // Professional Service Value indicator
       fy += 35;
-      doc.setFillColor(30, 40, 55);
-      doc.roundedRect(60, fy - 3, 90, 12, 2, 2, "F");
-      doc.setFontSize(8);
+      const mortgage = Number(lead.mortgage_amount) || 0;
+      doc.setFillColor(20, 30, 48);
+      doc.roundedRect(15, fy - 5, 180, 22, 3, 3, "F");
+      doc.setDrawColor(212, 175, 55);
+      doc.setLineWidth(0.2);
+      doc.roundedRect(15, fy - 5, 180, 22, 3, 3, "S");
+      doc.setFontSize(7);
       doc.setTextColor(212, 175, 55);
-      doc.text("Chitumit AI Verified", 105, fy + 5, { align: "center" });
+      doc.text("PROFESSIONAL SERVICE VALUE", 105, fy + 1, { align: "center" });
+      doc.setFontSize(8);
+      doc.setTextColor(200, 200, 200);
+      const svcText = mortgage >= 2000000
+        ? rtl("תיק מורכב בדרגה גבוהה — ניתוח חיתום מקיף, נרטיב בנקאי מותאם, ותמיכה עד לאישור מלא")
+        : rtl("ניתוח חיתום מקצועי — סקירת נתוני אשראי, בניית נרטיב בנקאי, ותוכנית פעולה ממוקדת");
+      doc.text(svcText, 105, fy + 10, { align: "center", maxWidth: 160 });
+
+      // Chitumit AI Verified seal (enhanced)
+      fy += 28;
+      doc.setFillColor(25, 35, 50);
+      doc.roundedRect(45, fy - 5, 120, 18, 3, 3, "F");
+      doc.setDrawColor(212, 175, 55);
+      doc.setLineWidth(0.6);
+      doc.roundedRect(45, fy - 5, 120, 18, 3, 3, "S");
+      doc.setFontSize(10);
+      doc.setTextColor(212, 175, 55);
+      doc.text("Chitumit AI Verified", 105, fy + 4, { align: "center" });
+      doc.setFontSize(6);
+      doc.setTextColor(150, 150, 150);
+      doc.text(new Date().toLocaleDateString("he-IL"), 105, fy + 10, { align: "center" });
 
       doc.setDrawColor(212, 175, 55);
       doc.line(15, 277, 195, 277);
