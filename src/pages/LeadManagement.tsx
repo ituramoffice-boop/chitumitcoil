@@ -41,6 +41,9 @@ import { PowerDialer } from "@/components/PowerDialer";
 import { CallHistory } from "@/components/CallHistory";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
+import { PLAN_LIMITS } from "@/hooks/useConsultantBranding";
+import { Link } from "react-router-dom";
+import { Crown, Lock } from "lucide-react";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
