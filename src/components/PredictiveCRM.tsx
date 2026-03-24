@@ -565,17 +565,34 @@ export function PriorityBoard({
       });
     });
 
-    // ─── Individual Profiles ───
+    // ─── Individual Profiles (Executive Dossier) ───
     selected.forEach((lead, idx) => {
       doc.addPage("a4", "portrait");
       doc.setFillColor(15, 23, 42);
       doc.rect(0, 0, 210, 297, "F");
+
+      // Premium gold border
       doc.setDrawColor(212, 175, 55);
-      doc.setLineWidth(0.8);
+      doc.setLineWidth(1.2);
+      doc.line(15, 18, 195, 18);
+      doc.setLineWidth(0.3);
       doc.line(15, 20, 195, 20);
+
+      // Executive Dossier badge
+      doc.setFillColor(25, 35, 55);
+      doc.roundedRect(55, 5, 100, 10, 2, 2, "F");
+      doc.setDrawColor(212, 175, 55);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(55, 5, 100, 10, 2, 2, "S");
+      doc.setFontSize(7);
+      doc.setTextColor(212, 175, 55);
+      doc.text("EXECUTIVE DOSSIER — CONFIDENTIAL", 105, 12, { align: "center" });
+
       doc.setTextColor(212, 175, 55);
       doc.setFontSize(14);
-      doc.text(`${rtl("כרטיס לקוח")} #${idx + 1}`, 195, 15, { align: "right" });
+      doc.text(`${rtl("כרטיס לקוח")} #${idx + 1}`, 195, 30, { align: "right" });
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
       doc.setFontSize(20);
       doc.setTextColor(255, 255, 255);
       doc.text(lead.full_name, 195, 35, { align: "right" });
