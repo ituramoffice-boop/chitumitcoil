@@ -43,6 +43,7 @@ import GetStarted from "./pages/GetStarted";
 import MasterAdminDemo from "./pages/MasterAdminDemo";
 import MarketingAssetsHub from "./pages/MarketingAssetsHub";
 import JoinTheElite from "./pages/JoinTheElite";
+import WarRoom from "./pages/WarRoom";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
