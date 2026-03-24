@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -496,15 +497,13 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="w-6 h-6 text-primary" />
-            </div>
+            <ChitumitLogo size={36} />
             <div>
-              <h1 className="text-xl font-bold text-foreground">SmartMortgage AI</h1>
-              <p className="text-xs text-muted-foreground">פאנל יועץ</p>
+              <h1 className="text-xl font-bold text-gold">חיתומית</h1>
+              <p className="text-[10px] text-muted-foreground">הבינה שמאחורי האישור</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -535,10 +534,10 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
       <main className="container mx-auto px-6 py-8 space-y-6">
         {/* AI Summary Banner */}
         {summary.parts.length > 0 && (
-          <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-l from-primary/5 via-primary/10 to-primary/5 p-4 animate-fade-in">
+          <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-l from-cyan-glow/5 via-primary/10 to-cyan-glow/5 p-4 animate-fade-in glow-primary">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-primary/20 shrink-0">
-                <Sparkles className="w-5 h-5 text-primary" />
+              <div className="p-2 rounded-full bg-gradient-to-br from-cyan-glow/20 to-primary/20 shrink-0">
+                <Sparkles className="w-5 h-5 text-cyan-glow" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-foreground">
@@ -1124,19 +1123,24 @@ function StatCard({ icon: Icon, title, value, variant }: {
   variant?: "primary" | "warning" | "success";
 }) {
   const colors = {
-    primary: "text-primary",
-    warning: "text-warning",
+    primary: "text-cyan-glow",
+    warning: "text-gold",
     success: "text-success",
   };
+  const glows = {
+    primary: "glow-cyan",
+    warning: "glow-gold",
+    success: "",
+  };
   return (
-    <div className="glass-card p-5 hover-scale cursor-default transition-all duration-200 hover:shadow-md">
+    <div className={cn("glass-card p-5 hover-scale cursor-default transition-all duration-200 hover:shadow-md", variant && glows[variant])}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-2xl font-bold gradient-header">{value}</p>
         </div>
-        <div className="p-2 rounded-lg bg-secondary">
-          <Icon className={cn("w-5 h-5", variant ? colors[variant] : "text-muted-foreground")} />
+        <div className="p-2 rounded-lg bg-secondary/80">
+          <Icon className={cn("w-5 h-5", variant ? colors[variant] : "text-gold")} />
         </div>
       </div>
     </div>
