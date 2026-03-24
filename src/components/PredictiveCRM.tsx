@@ -26,6 +26,8 @@ import {
   ThermometerSun,
   Mail,
   Loader2,
+  Clock,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -141,44 +143,217 @@ const DOC_HEALTH_CONFIG = {
 };
 
 export function RevenueForecaster({ leads }: { leads: Lead[] }) {
-  const pipelineValue = useMemo(() => {
-    const activeLeads = leads.filter(l => !["closed", "rejected"].includes(l.status));
-    const totalLoanVolume = activeLeads.reduce((sum, l) => sum + (Number(l.mortgage_amount) || 0), 0);
-    const estimatedCommission = totalLoanVolume * 0.005; // 0.5% avg commission
-    return { totalLoanVolume, estimatedCommission, activeCount: activeLeads.length };
-  }, [leads]);
+  const [commissionPct, setCommissionPct] = useState(1);
+
+  const metrics = useMemo(() => {
+    const active = leads.filter(l => !["closed", "rejected"].includes(l.status));
+    const totalPipeline = active.reduce((s, l) => s + (Number(l.mortgage_amount) || 0), 0);
+    const commission = totalPipeline * (commissionPct / 100);
+
+    // Funnel stages
+    const stages = [
+      { key: "new", label: "ליד חדש", statuses: ["new"], color: "from-blue-500 to-blue-400" },
+      { key: "docs", label: "אימות מסמכים", statuses: ["contacted", "in_progress"], color: "from-amber-500 to-amber-400" },
+      { key: "bank", label: "מוכן לבנק", statuses: ["submitted"], color: "from-primary to-primary" },
+      { key: "approved", label: "מאושר", statuses: ["approved"], color: "from-emerald-500 to-emerald-400" },
+    ];
+    const funnel = stages.map(st => ({
+      ...st,
+      count: active.filter(l => st.statuses.includes(l.status)).length,
+      volume: active.filter(l => st.statuses.includes(l.status)).reduce((s, l) => s + (Number(l.mortgage_amount) || 0), 0),
+    }));
+
+    // Time-to-money
+    const closedLeads = leads.filter(l => l.status === "approved" || l.status === "closed");
+    let avgDays = 14;
+    if (closedLeads.length > 0) {
+      const totalDays = closedLeads.reduce((s, l) => {
+        const created = new Date(l.created_at).getTime();
+        const lastContact = l.last_contact ? new Date(l.last_contact).getTime() : Date.now();
+        return s + Math.round((lastContact - created) / 86400000);
+      }, 0);
+      avgDays = Math.max(1, Math.round(totalDays / closedLeads.length));
+    }
+
+    // VIP leads (1.5M+)
+    const vips = active.filter(l => (Number(l.mortgage_amount) || 0) >= 1500000);
+
+    // Simulated month-over-month revenue data
+    const now = new Date();
+    const monthlyData = Array.from({ length: 6 }, (_, i) => {
+      const month = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const monthLeads = leads.filter(l => {
+        const d = new Date(l.created_at);
+        return d.getMonth() === month.getMonth() && d.getFullYear() === month.getFullYear();
+      });
+      const vol = monthLeads.reduce((s, l) => s + (Number(l.mortgage_amount) || 0), 0);
+      return {
+        label: month.toLocaleDateString("he-IL", { month: "short" }),
+        volume: vol,
+        commission: vol * (commissionPct / 100),
+      };
+    });
+
+    return { totalPipeline, commission, active, funnel, avgDays, vips, monthlyData };
+  }, [leads, commissionPct]);
+
+  const maxFunnel = Math.max(1, ...metrics.funnel.map(f => f.count));
+  const maxChart = Math.max(1, ...metrics.monthlyData.map(d => d.commission));
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-l from-card via-card to-secondary/30 p-6 backdrop-blur-xl"
+      className="space-y-4"
     >
-      {/* Neon accent line */}
-      <div className="absolute top-0 right-0 left-0 h-[2px] bg-gradient-to-l from-transparent via-cyan-400/60 to-transparent" />
+      {/* ── Main HUD Card ── */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-l from-card via-card to-secondary/30 backdrop-blur-xl">
+        {/* Top neon line */}
+        <div className="absolute top-0 right-0 left-0 h-[2px] bg-gradient-to-l from-transparent via-emerald-400/60 to-transparent" />
+        
+        <div className="p-6 pb-4">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                <DollarSign className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Money Engine HUD</h2>
+                <p className="text-xs text-muted-foreground">{metrics.active.length} תיקים פעילים בצינור</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>עמלה:</span>
+              <select
+                value={commissionPct}
+                onChange={e => setCommissionPct(Number(e.target.value))}
+                className="bg-secondary/60 border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+              >
+                {[0.5, 0.75, 1, 1.25, 1.5, 2].map(v => (
+                  <option key={v} value={v}>{v}%</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-      <div className="flex items-center gap-3 mb-5">
-        <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-          <BarChart3 className="w-5 h-5 text-cyan-400" />
+          {/* Big numbers */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 rounded-xl bg-secondary/40 border border-border/30">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">נפח צינור כולל</p>
+              <p className="text-xl md:text-2xl font-black font-heebo bg-gradient-to-l from-cyan-400 to-blue-400 bg-clip-text text-transparent" style={{ fontVariantNumeric: "tabular-nums" }}>
+                ₪{metrics.totalPipeline.toLocaleString()}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.08)]">
+              <p className="text-[10px] text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" /> עמלה משוערת
+              </p>
+              <p className="text-xl md:text-2xl font-black font-heebo text-emerald-400" style={{ fontVariantNumeric: "tabular-nums" }}>
+                ₪{Math.round(metrics.commission).toLocaleString()}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-secondary/40 border border-border/30">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Time-to-Money
+              </p>
+              <p className="text-xl md:text-2xl font-black font-heebo text-foreground">{metrics.avgDays} ימים</p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">ממוצע סגירה לצינור הנוכחי</p>
+            </div>
+            <div className={cn(
+              "p-4 rounded-xl border",
+              metrics.vips.length > 0
+                ? "bg-accent/5 border-accent/25 shadow-[0_0_20px_rgba(234,179,8,0.1)]"
+                : "bg-secondary/40 border-border/30"
+            )}>
+              <p className="text-[10px] text-accent uppercase tracking-wider mb-1 flex items-center gap-1">
+                <Crown className="w-3 h-3" /> VIP Opportunities
+              </p>
+              <p className={cn("text-xl md:text-2xl font-black font-heebo", metrics.vips.length > 0 ? "text-accent" : "text-foreground")}>
+                {metrics.vips.length}
+              </p>
+              {metrics.vips.length > 0 && (
+                <p className="text-[9px] text-accent/70 mt-0.5">הלוואות מעל ₪1.5M</p>
+              )}
+            </div>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">תחזית הכנסות</h2>
-          <p className="text-xs text-muted-foreground">{pipelineValue.activeCount} תיקים פעילים בצינור</p>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">נפח הלוואות בצינור</p>
-          <p className="text-2xl font-black bg-gradient-to-l from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-            ₪{pipelineValue.totalLoanVolume.toLocaleString()}
-          </p>
+        {/* ── Pipeline Funnel ── */}
+        <div className="px-6 pb-5 border-t border-border/20 pt-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Pipeline Funnel</p>
+          <div className="space-y-2.5">
+            {metrics.funnel.map((stage, i) => (
+              <div key={stage.key} className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground w-24 text-left shrink-0">{stage.label}</span>
+                <div className="flex-1 h-7 bg-secondary/30 rounded-lg overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.max(4, (stage.count / maxFunnel) * 100)}%` }}
+                    transition={{ duration: 0.8, delay: i * 0.1, ease: "easeOut" }}
+                    className={cn("h-full rounded-lg bg-gradient-to-l", stage.color)}
+                  />
+                  <span className="absolute inset-0 flex items-center pr-3 text-[11px] font-bold text-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    {stage.count} · ₪{stage.volume.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">עמלה משוערת</p>
-          <p className="text-2xl font-black bg-gradient-to-l from-emerald-400 to-green-300 bg-clip-text text-transparent">
-            ₪{Math.round(pipelineValue.estimatedCommission).toLocaleString()}
-          </p>
+
+        {/* ── VIP Alerts ── */}
+        {metrics.vips.length > 0 && (
+          <div className="px-6 pb-5 border-t border-border/20 pt-4">
+            <p className="text-xs font-semibold text-accent mb-2 uppercase tracking-wider flex items-center gap-1">
+              <Zap className="w-3 h-3" /> High-Value Alerts
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {metrics.vips.map(v => (
+                <motion.div
+                  key={v.id}
+                  animate={{ boxShadow: ["0 0 0px rgba(234,179,8,0)", "0 0 12px rgba(234,179,8,0.3)", "0 0 0px rgba(234,179,8,0)"] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/25 text-xs"
+                >
+                  <Crown className="w-3 h-3 text-accent" />
+                  <span className="font-semibold text-foreground">{v.full_name}</span>
+                  <span className="text-accent font-heebo" style={{ fontVariantNumeric: "tabular-nums" }}>₪{(Number(v.mortgage_amount) || 0).toLocaleString()}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Revenue Growth Chart ── */}
+        <div className="px-6 pb-6 border-t border-border/20 pt-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Revenue Growth (עמלות)</p>
+          <div className="flex items-end gap-2 h-28">
+            {metrics.monthlyData.map((d, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-[9px] font-heebo text-emerald-400" style={{ fontVariantNumeric: "tabular-nums" }}>
+                  {d.commission > 0 ? `₪${Math.round(d.commission / 1000)}K` : ""}
+                </span>
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: `${Math.max(4, (d.commission / maxChart) * 80)}%` }}
+                  transition={{ duration: 0.6, delay: i * 0.08 }}
+                  className={cn(
+                    "w-full rounded-t-md",
+                    i === metrics.monthlyData.length - 1
+                      ? "bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                      : "bg-emerald-500/20"
+                  )}
+                />
+                <span className="text-[9px] text-muted-foreground">{d.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+            <p className="text-xs text-emerald-400 flex items-center gap-1.5">
+              <Brain className="w-3.5 h-3.5" />
+              <span>AI Insight: זמן סגירה ממוצע לצינור הנוכחי: <strong>{metrics.avgDays} ימים</strong> — מומלץ לדחוף תיקים במצב &quot;אימות&quot; קדימה</span>
+            </p>
+          </div>
         </div>
       </div>
     </motion.div>
