@@ -571,8 +571,8 @@ const PropertyValueCalculator = () => {
                             className="[&_[role=slider]]:bg-[hsl(160,84%,39%)] [&_[role=slider]]:border-0 [&_[role=slider]]:w-5 [&_[role=slider]]:h-5 [&_[role=slider]]:shadow-[0_0_15px_hsl(160,84%,39%,0.5)] [&_.range]:bg-gradient-to-l [&_.range]:from-[hsl(160,84%,45%)] [&_.range]:to-[hsl(217,91%,50%)]"
                           />
                           <div className="flex justify-between text-[10px] text-white/30">
-                            <span>25 מ"ר</span>
                             <span>300 מ"ר</span>
+                            <span>25 מ"ר</span>
                           </div>
                         </div>
 
@@ -591,8 +591,8 @@ const PropertyValueCalculator = () => {
                             className="[&_[role=slider]]:bg-[hsl(160,84%,39%)] [&_[role=slider]]:border-0 [&_[role=slider]]:w-5 [&_[role=slider]]:h-5 [&_[role=slider]]:shadow-[0_0_15px_hsl(160,84%,39%,0.5)] [&_.range]:bg-gradient-to-l [&_.range]:from-[hsl(160,84%,45%)] [&_.range]:to-[hsl(217,91%,50%)]"
                           />
                           <div className="flex justify-between text-[10px] text-white/30">
-                            <span>1</span>
                             <span>7</span>
+                            <span>1</span>
                           </div>
                         </div>
 
@@ -662,8 +662,8 @@ const PropertyValueCalculator = () => {
                             className="[&_[role=slider]]:bg-[hsl(160,84%,39%)] [&_[role=slider]]:border-0 [&_[role=slider]]:w-5 [&_[role=slider]]:h-5 [&_[role=slider]]:shadow-[0_0_15px_hsl(160,84%,39%,0.5)] [&_.range]:bg-gradient-to-l [&_.range]:from-[hsl(160,84%,45%)] [&_.range]:to-[hsl(217,91%,50%)]"
                           />
                           <div className="flex justify-between text-[10px] text-white/30">
-                            <span>1960</span>
                             <span>2026</span>
+                            <span>1960</span>
                           </div>
                         </div>
 
