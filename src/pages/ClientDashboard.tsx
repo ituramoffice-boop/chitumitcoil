@@ -553,6 +553,11 @@ const ClientDashboard = () => {
             </div>
           </motion.div>
 
+          {/* ── Credit Score Analyzer ────────── */}
+          <motion.div variants={fadeUp}>
+            <CreditScoreAnalyzer />
+          </motion.div>
+
           {/* ── My uploaded documents with AI Scan ─── */}
           {myDocuments.length > 0 && (
             <motion.div variants={fadeUp} className="glass-card p-6 space-y-4">
