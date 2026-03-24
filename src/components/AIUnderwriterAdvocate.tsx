@@ -625,6 +625,66 @@ export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onG
         </AnimatePresence>
       </div>
 
+      {/* ── Banker's Confidence Stamp — Audit Log ── */}
+      <div className="rounded-xl border border-gold/20 bg-gradient-to-br from-card to-gold/3 overflow-hidden">
+        <button
+          onClick={() => toggle("audit")}
+          className="w-full flex items-center justify-between p-4 hover:bg-gold/5 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-gold" />
+            <span className="font-semibold text-sm text-foreground">יומן ביקורת — Audit Trail</span>
+            <Badge variant="outline" className="text-[9px] border-gold/30 text-gold">Bank-Grade</Badge>
+          </div>
+          {expandedSections.audit ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <AnimatePresence>
+          {expandedSections.audit && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 space-y-2">
+                <p className="text-[10px] text-muted-foreground mb-2">
+                  רשימת המסמכים שנותחו — ייכלל בתחתית ה-PDF להגשה לבנק כהוכחה שהדוח מבוסס ראיות
+                </p>
+                <div className="rounded-lg border border-border/20 overflow-hidden">
+                  <div className="grid grid-cols-4 gap-px bg-border/10 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <div className="bg-secondary/40 p-2 flex items-center gap-1"><Clock className="w-3 h-3" /> זמן</div>
+                    <div className="bg-secondary/40 p-2">מסמך</div>
+                    <div className="bg-secondary/40 p-2">סטטוס</div>
+                    <div className="bg-secondary/40 p-2">חתימה דיגיטלית</div>
+                  </div>
+                  {auditLog.map((entry, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: i * 0.06 }}
+                      className="grid grid-cols-4 gap-px text-[10px] border-t border-border/10"
+                    >
+                      <div className="p-2 text-muted-foreground font-mono">{entry.timestamp}</div>
+                      <div className="p-2 text-foreground font-medium">{entry.document}</div>
+                      <div className="p-2 text-emerald-500 font-medium">{entry.status}</div>
+                      <div className="p-2 text-muted-foreground/60 font-mono text-[9px]">{entry.hash}</div>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 mt-2 p-2 rounded-lg bg-gold/5 border border-gold/10">
+                  <Eye className="w-3.5 h-3.5 text-gold shrink-0" />
+                  <span className="text-[10px] text-muted-foreground">
+                    דוח זה מבוסס על ניתוח {auditLog.length} מסמכים מאומתים. כל הנתונים עברו הצלבה אוטומטית. זהו דוח מבוסס ראיות ולא סיפור.
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Generate Bank Submission button */}
       {onGeneratePDF && (
         <Button
