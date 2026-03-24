@@ -152,19 +152,21 @@ function generateRecoveryPlan(metrics: ReturnType<typeof computeMetrics>): { act
 }
 
 /* ── Component ── */
-export function AIUnderwriterAdvocate({ lead }: { lead: Lead }) {
+export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onGeneratePDF?: () => void }) {
   const [bankerMode, setBankerMode] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({ narrative: true, brightSpots: true, recovery: true });
+  const [expandedSections, setExpandedSections] = useState({ narrative: true, brightSpots: true, recovery: true, whisper: false });
 
   const metrics = useMemo(() => computeMetrics(lead), [lead]);
   const narrative = useMemo(() => generateNarrative(lead, metrics, bankerMode), [lead, metrics, bankerMode]);
   const brightSpots = useMemo(() => generateBrightSpots(metrics, bankerMode), [metrics, bankerMode]);
   const recoveryPlan = useMemo(() => generateRecoveryPlan(metrics), [metrics]);
+  const whisperTips = useMemo(() => generateWhisperTips(metrics), [metrics]);
 
   const toggle = (key: keyof typeof expandedSections) =>
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
 
   return (
+    <TooltipProvider>
     <div className="space-y-4">
       {/* Header + Banker Toggle */}
       <div className="flex items-center justify-between flex-wrap gap-3">
