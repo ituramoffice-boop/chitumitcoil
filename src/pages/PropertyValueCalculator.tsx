@@ -323,7 +323,7 @@ const PropertyValueCalculator = () => {
         {/* Hero */}
         <section className="relative z-10 pt-12 pb-6 md:pt-20 md:pb-10">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-10">
+            <div className="text-center max-w-3xl mx-auto mb-10 anim-fade-up">
               <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-l from-[hsl(160,84%,39%)]/15 to-[hsl(217,91%,50%)]/15 border border-[hsl(160,84%,39%)]/30 text-xs text-[hsl(160,84%,70%)] mb-6 shadow-[0_0_20px_hsl(160,84%,39%,0.15)]">
                 <Brain className="w-3.5 h-3.5 text-[hsl(160,84%,55%)] animate-pulse" />
                 <span className="bg-gradient-to-l from-[hsl(160,84%,65%)] to-[hsl(217,91%,70%)] bg-clip-text text-transparent font-semibold">נתוני שוק בזמן אמת</span>
