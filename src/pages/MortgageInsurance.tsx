@@ -176,7 +176,9 @@ const MortgageInsurance = () => {
         25 // insurance lead = high intent
       );
 
+      const leadId = crypto.randomUUID();
       const { error } = await supabase.from("leads").insert({
+        id: leadId,
         consultant_id: DEFAULT_CONSULTANT_ID,
         full_name: fullName,
         phone: phone || null,
@@ -191,6 +193,7 @@ const MortgageInsurance = () => {
 
       if (error) throw error;
 
+      // Notify consultant
       supabase.functions.invoke("notify-new-lead", {
         body: {
           consultantId: DEFAULT_CONSULTANT_ID,
@@ -201,6 +204,48 @@ const MortgageInsurance = () => {
           calcSummary: `חיסכון ₪${totalSavings.toLocaleString()} | ${riskProfile.tag}`,
         },
       }).catch(() => {});
+
+      // Send email to lead (if email provided)
+      if (email) {
+        supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "insurance-quote",
+            recipientEmail: email,
+            idempotencyKey: `insurance-quote-${leadId}`,
+            templateData: {
+              leadName: fullName,
+              mortgageAmount: `₪${mortgageAmount.toLocaleString()}`,
+              loanTerm: String(loanTerm),
+              age: String(age),
+              isSmoker: isSmoker ? "כן" : "לא",
+              marketPremium: `₪${marketMonthly}`,
+              bestPremium: `₪${chitumitMonthly}`,
+              monthlySavings: `₪${monthlySavings}`,
+              yearlySavings: `₪${(monthlySavings * 12).toLocaleString()}`,
+              fiveYearSavings: `₪${(monthlySavings * 60).toLocaleString()}`,
+              totalSavings: `₪${totalSavings.toLocaleString()}`,
+              riskProfile: riskProfile.label,
+              scoreBoost: String(scoreBoost),
+            },
+          },
+        }).catch(() => {});
+      }
+
+      // Open WhatsApp with pre-filled message
+      const whatsappMsg = encodeURIComponent(
+        `שלום ${fullName} 👋\n\n` +
+        `תודה שהשתמשת במערכת השוואת ביטוח המשכנתא של חיתומית!\n\n` +
+        `📊 סיכום ההצעה שלך:\n` +
+        `• סכום משכנתא: ₪${mortgageAmount.toLocaleString()}\n` +
+        `• פרמיה ממוצעת בשוק: ₪${marketMonthly}/חודש\n` +
+        `• המחיר הטוב ביותר דרכנו: ₪${chitumitMonthly}/חודש\n` +
+        `• חיסכון חודשי: ₪${monthlySavings}\n` +
+        `• חיסכון כולל: ₪${totalSavings.toLocaleString()}\n\n` +
+        `💡 ניתחנו את הנתונים שלך — נוכל לחסוך לך כ-₪${totalSavings.toLocaleString()} לאורך חיי המשכנתא.\n` +
+        `רוצה שאנעל את ההצעה? 🔒`
+      );
+      const cleanPhone = phone.replace(/[-\s]/g, "").replace(/^0/, "972");
+      window.open(`https://wa.me/${cleanPhone}?text=${whatsappMsg}`, "_blank");
 
       setCompleted(true);
       toast.success("🎉 ההצעה נשלחה! ניצור קשר בהקדם.");
