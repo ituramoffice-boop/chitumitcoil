@@ -330,6 +330,23 @@ const PropertyValueCalculator = () => {
             calcSummary: `₪${totalValue.toLocaleString()} • ${area.name} • ${sqm} מ"ר`,
           },
         }).catch(() => {}); // best-effort
+
+        // Send report email to the lead
+        if (data.email) {
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "calculator-report",
+              recipientEmail: data.email,
+              idempotencyKey: `calc-report-${insertedLead.id}`,
+              templateData: {
+                leadName: data.full_name,
+                calcType: "מחשבון שווי נכס",
+                calcSummary: `שווי מוערך: ₪${totalValue.toLocaleString()} • ${area.name} • ${sqm} מ"ר • ${rooms} חדרים`,
+                leadScore,
+              },
+            },
+          }).catch(() => {}); // best-effort
+        }
       }
       setIsUnlocked(true);
     } catch (e: any) {
