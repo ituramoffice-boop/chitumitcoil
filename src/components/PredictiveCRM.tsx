@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Brain,
@@ -253,10 +254,43 @@ export function PriorityBoard({
     toast.success(`${ids.size} תיקים מוכנים נבחרו`);
   };
 
+  // Render Chitumit logo SVG to PNG data URL for PDF embedding
+  const getLogoDataUrl = useCallback((): Promise<string> => {
+    return new Promise((resolve) => {
+      const svgStr = `<svg width="128" height="128" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 4L8 16V34C8 48.36 18.64 58.4 32 62C45.36 58.4 56 48.36 56 34V16L32 4Z" fill="#0F172A" stroke="#D4AF37" stroke-width="1.5"/>
+        <path d="M32 8L12 18.5V34C12 46.2 21.2 55.2 32 58.2C42.8 55.2 52 46.2 52 34V18.5L32 8Z" fill="#D4AF37" opacity="0.15"/>
+        <g transform="translate(16, 18)"><path d="M4 0V20" stroke="#D4AF37" stroke-width="3.5" stroke-linecap="round"/><path d="M4 0H24" stroke="#D4AF37" stroke-width="3.5" stroke-linecap="round"/><path d="M24 0V10L16 20L28 6" stroke="#D4AF37" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+      </svg>`;
+      const canvas = document.createElement("canvas");
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext("2d")!;
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, 128, 128);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = () => resolve("");
+      img.src = "data:image/svg+xml;base64," + btoa(svgStr);
+    });
+  }, []);
+
   // Build PDF doc from selected leads (reusable for download & email)
-  const buildPdfDoc = useCallback((selected: LeadWithAI[]) => {
+  const buildPdfDoc = useCallback(async (selected: LeadWithAI[], consultantProfileUrl?: string) => {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const rtl = (text: string) => text.split("").reverse().join("");
+
+    // Generate logo and QR code in parallel
+    const profileUrl = consultantProfileUrl || `${window.location.origin}/consultant-profile`;
+    const [logoDataUrl, qrDataUrl] = await Promise.all([
+      getLogoDataUrl(),
+      QRCode.toDataURL(profileUrl, {
+        width: 200,
+        margin: 1,
+        color: { dark: "#D4AF37", light: "#0F172A" },
+      }).catch(() => ""),
+    ]);
 
     // ─── Cover Page ───
     doc.setFillColor(15, 23, 42);
@@ -264,21 +298,36 @@ export function PriorityBoard({
     doc.setDrawColor(212, 175, 55);
     doc.setLineWidth(1.5);
     doc.line(20, 30, 277, 30);
+
+    // Logo image
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, "PNG", 128.5, 36, 20, 20);
+    }
+
     doc.setTextColor(212, 175, 55);
     doc.setFontSize(28);
-    doc.text("Chitumit", 148.5, 55, { align: "center" });
+    doc.text("Chitumit", 148.5, 72, { align: "center" });
     doc.setFontSize(14);
     doc.setTextColor(200, 200, 200);
-    doc.text(rtl("קובץ הגשה מרכזי לבנק"), 148.5, 70, { align: "center" });
+    doc.text(rtl("קובץ הגשה מרכזי לבנק"), 148.5, 84, { align: "center" });
     doc.setFontSize(11);
     doc.setTextColor(150, 150, 150);
     const dateStr = new Date().toLocaleDateString("he-IL");
-    doc.text(`${rtl("תאריך הפקה:")} ${dateStr}`, 148.5, 85, { align: "center" });
-    doc.text(`${selected.length} ${rtl("תיקים")}`, 148.5, 93, { align: "center" });
+    doc.text(`${rtl("תאריך הפקה:")} ${dateStr}`, 148.5, 97, { align: "center" });
+    doc.text(`${selected.length} ${rtl("תיקים")}`, 148.5, 105, { align: "center" });
     const totalVolume = selected.reduce((s, l) => s + (Number(l.mortgage_amount) || 0), 0);
     doc.setFontSize(18);
     doc.setTextColor(16, 185, 129);
-    doc.text(`${rtl("נפח הלוואות כולל:")} ${totalVolume.toLocaleString()} NIS`, 148.5, 115, { align: "center" });
+    doc.text(`${rtl("נפח הלוואות כולל:")} ${totalVolume.toLocaleString()} NIS`, 148.5, 122, { align: "center" });
+
+    // QR Code with label
+    if (qrDataUrl) {
+      doc.addImage(qrDataUrl, "PNG", 20, 140, 30, 30);
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text(rtl("סרוק לפרופיל היועץ"), 35, 175, { align: "center" });
+    }
+
     doc.setDrawColor(212, 175, 55);
     doc.line(20, 180, 277, 180);
     doc.setFontSize(8);
@@ -396,11 +445,11 @@ export function PriorityBoard({
     return { doc, totalVolume };
   }, []);
 
-  const handleGenerateMasterFile = useCallback(() => {
+  const handleGenerateMasterFile = useCallback(async () => {
     const selected = enrichedLeads.filter(l => selectedBulk.has(l.id));
     if (selected.length === 0) return;
 
-    const { doc } = buildPdfDoc(selected);
+    const { doc } = await buildPdfDoc(selected);
     const fileName = `chitumit_bank_submission_${new Date().toISOString().slice(0, 10)}.pdf`;
     doc.save(fileName);
 
@@ -424,7 +473,7 @@ export function PriorityBoard({
 
     try {
       // Build PDF
-      const { doc, totalVolume } = buildPdfDoc(selected);
+      const { doc, totalVolume } = await buildPdfDoc(selected);
       const pdfBlob = doc.output("blob");
       const fileName = `bank_submission_${new Date().toISOString().slice(0, 10)}_${crypto.randomUUID().slice(0, 8)}.pdf`;
 
