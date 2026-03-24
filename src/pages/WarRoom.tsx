@@ -133,6 +133,7 @@ const ComparisonEngine = () => {
 const ViralShareCards = () => {
   const [advisorName, setAdvisorName] = useState("דני כהן");
   const [copied, setCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -141,6 +142,20 @@ const ViralShareCards = () => {
     setCopied(true);
     toast({ title: "הועתק! מוכן לשיתוף" });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadCard = async () => {
+    if (!cardRef.current) return;
+    try {
+      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
+      const link = document.createElement("a");
+      link.download = `chitumit-share-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast({ title: "הכרטיס הורד בהצלחה!" });
+    } catch {
+      toast({ title: "שגיאה בהורדה", variant: "destructive" });
+    }
   };
 
   return (
