@@ -94,15 +94,41 @@ export default function IsraelHeatMap({ areas, selectedArea, onSelectArea }: Pro
         <div className="lg:col-span-3 relative aspect-[3/4] md:aspect-[4/5] rounded-2xl bg-[hsl(222,47%,6%)] border border-white/10 overflow-hidden">
           {/* Israel silhouette SVG with geographic features */}
           <svg viewBox="0 0 200 500" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
-            {/* Country outline */}
+            {/* Country outline — bolder */}
             <path
               d="M95 10 L105 8 L115 15 L120 25 L118 35 L125 42 L130 38 L132 30 L138 25 L140 32 L135 45 L128 55 L122 52 L115 58 L110 55 L108 60 L112 68 L108 75 L105 72 L100 78 L98 85 L102 90 L100 95 L95 92 L90 98 L88 105 L92 110 L90 118 L85 115 L82 120 L85 128 L83 135 L80 130 L78 138 L82 145 L80 155 L78 160 L82 168 L85 175 L83 185 L80 190 L78 200 L82 210 L85 220 L88 230 L90 240 L88 250 L85 260 L82 270 L80 280 L78 290 L75 310 L72 330 L70 350 L68 370 L70 390 L75 410 L80 430 L85 445 L90 455 L95 460 L100 465 L105 470 L108 475 L105 480 L100 485 L95 488 L90 490 L85 485 L80 475 L75 460 L70 445 L65 430 L60 410 L58 390 L55 370 L52 350 L50 330 L48 310 L50 290 L52 270 L55 250 L58 235 L60 220 L62 210 L60 200 L58 190 L55 180 L58 170 L62 160 L65 150 L68 140 L70 130 L72 120 L70 110 L68 100 L72 90 L75 82 L78 75 L80 68 L82 60 L85 50 L88 40 L90 30 L92 20 Z"
               fill="hsl(160,84%,39%)"
-              fillOpacity="0.08"
+              fillOpacity="0.1"
               stroke="hsl(160,84%,50%)"
-              strokeWidth="0.8"
-              strokeOpacity="0.25"
+              strokeWidth="1.8"
+              strokeOpacity="0.4"
             />
+            {/* Border glow — outer */}
+            <path
+              d="M95 10 L105 8 L115 15 L120 25 L118 35 L125 42 L130 38 L132 30 L138 25 L140 32 L135 45 L128 55 L122 52 L115 58 L110 55 L108 60 L112 68 L108 75 L105 72 L100 78 L98 85 L102 90 L100 95 L95 92 L90 98 L88 105 L92 110 L90 118 L85 115 L82 120 L85 128 L83 135 L80 130 L78 138 L82 145 L80 155 L78 160 L82 168 L85 175 L83 185 L80 190 L78 200 L82 210 L85 220 L88 230 L90 240 L88 250 L85 260 L82 270 L80 280 L78 290 L75 310 L72 330 L70 350 L68 370 L70 390 L75 410 L80 430 L85 445 L90 455 L95 460 L100 465 L105 470 L108 475 L105 480 L100 485 L95 488 L90 490 L85 485 L80 475 L75 460 L70 445 L65 430 L60 410 L58 390 L55 370 L52 350 L50 330 L48 310 L50 290 L52 270 L55 250 L58 235 L60 220 L62 210 L60 200 L58 190 L55 180 L58 170 L62 160 L65 150 L68 140 L70 130 L72 120 L70 110 L68 100 L72 90 L75 82 L78 75 L80 68 L82 60 L85 50 L88 40 L90 30 L92 20 Z"
+              fill="none"
+              stroke="hsl(160,84%,50%)"
+              strokeWidth="4"
+              strokeOpacity="0.08"
+              filter="url(#borderGlow)"
+            />
+            <defs>
+              <filter id="borderGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+              </filter>
+            </defs>
+            {/* Lebanon border (north) */}
+            <line x1="60" y1="8" x2="142" y2="8" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" />
+            <text x="100" y="6" textAnchor="middle" fontSize="4" fill="white" fillOpacity="0.12" fontFamily="Heebo">לבנון</text>
+            {/* Syria border (northeast) */}
+            <line x1="140" y1="10" x2="150" y2="70" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" />
+            <text x="152" y="40" fontSize="4" fill="white" fillOpacity="0.12" fontFamily="Heebo" transform="rotate(75,152,40)">סוריה</text>
+            {/* Jordan border (east) */}
+            <path d="M140 70 L145 120 L140 180 L135 240 L130 300 L120 380 L110 460 L100 490" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" fill="none" />
+            <text x="148" y="200" fontSize="4.5" fill="white" fillOpacity="0.12" fontFamily="Heebo" transform="rotate(85,148,200)">ירדן</text>
+            {/* Egypt border (southwest) */}
+            <path d="M48 310 L40 380 L35 430 L40 470 L90 490" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" fill="none" />
+            <text x="42" y="440" fontSize="4.5" fill="white" fillOpacity="0.12" fontFamily="Heebo" transform="rotate(-70,42,440)">מצרים</text>
             {/* Sea of Galilee / כנרת */}
             <ellipse cx="130" cy="55" rx="8" ry="12" fill="hsl(210,80%,40%)" fillOpacity="0.25" stroke="hsl(210,80%,50%)" strokeWidth="0.5" strokeOpacity="0.3" />
             <text x="130" y="58" textAnchor="middle" fontSize="5" fill="hsl(210,80%,60%)" fillOpacity="0.5" fontFamily="Heebo">כנרת</text>
@@ -146,10 +172,13 @@ export default function IsraelHeatMap({ areas, selectedArea, onSelectArea }: Pro
           <div className="absolute top-[2%] right-[15%] flex items-center gap-1">
             <span className="text-[9px] text-white/20 font-medium">🏔️ רמת הגולן</span>
           </div>
-          {/* Flag */}
-          <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/5">
-            <span className="text-sm">🇮🇱</span>
-            <span className="text-[9px] text-white/30 font-medium">ישראל</span>
+          {/* Flag — larger */}
+          <div className="absolute top-4 left-4 z-30 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+            <span className="text-2xl">🇮🇱</span>
+            <div className="flex flex-col">
+              <span className="text-xs text-white/50 font-bold leading-tight">מדינת ישראל</span>
+              <span className="text-[9px] text-white/25">State of Israel</span>
+            </div>
           </div>
 
           {/* Region bubbles */}
