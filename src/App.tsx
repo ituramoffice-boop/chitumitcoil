@@ -14,6 +14,7 @@ import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
 import PropertyValueCalculator from "./pages/PropertyValueCalculator";
 import RemoteSign from "./pages/RemoteSign";
 import Pitch from "./pages/Pitch";
+import Investors from "./pages/Investors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
