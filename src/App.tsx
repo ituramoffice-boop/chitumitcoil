@@ -38,6 +38,7 @@ import AdvisorPlans from "./pages/AdvisorPlans";
 import MasterAdmin from "./pages/MasterAdmin";
 import CEOReport from "./pages/CEOReport";
 import AdminMobile from "./pages/AdminMobile";
+import Milestone2000 from "./pages/Milestone2000";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,7 @@ const App = () => {
                   <Route path="/master-admin" element={<MasterAdmin />} />
                   <Route path="/ceo-report" element={<CEOReport />} />
                   <Route path="/admin-mobile" element={<AdminMobile />} />
+                  <Route path="/milestone-2000" element={<Milestone2000 />} />
                <Route path="/accessibility" element={<Accessibility />} />
                <Route path="/reset-password" element={<ResetPassword />} />
                <Route path="/terms" element={<Terms />} />
