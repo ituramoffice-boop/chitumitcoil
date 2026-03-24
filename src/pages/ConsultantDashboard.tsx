@@ -1001,6 +1001,8 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                 <Crown className="w-3.5 h-3.5 ml-1.5" />
                 מצב מצגת ללקוח
               </Button>
+              <ComplianceGuardrail lead={selectedLead} />
+              <AuditLog lead={selectedLead} />
             </div>
 
             <Tabs defaultValue="advocate" dir="rtl">
