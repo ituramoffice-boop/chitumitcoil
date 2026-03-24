@@ -42,6 +42,57 @@ const SelfCheck = () => {
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  const emailSentRef = useRef(false);
+
+  // Send self-check report email when moving to results
+  const sendSelfCheckEmail = useCallback(async () => {
+    if (emailSentRef.current) return;
+    emailSentRef.current = true;
+
+    const currentUser = user;
+    const userEmail = currentUser?.email || email;
+    if (!userEmail) return;
+
+    // Replicate the key calculations from SelfCheckResults
+    const MOCK_INCOME = 22000;
+    const MOCK_PROPERTY = 2200000;
+    const MOCK_MORTGAGE = 1600000;
+    const interestRate = 4.2;
+    const loanTermYears = 25;
+    const existingDebt = 2500;
+    const maxLoan = Math.round(MOCK_INCOME * 220);
+    const ltv = (MOCK_MORTGAGE / MOCK_PROPERTY) * 100;
+    const r = interestRate / 100 / 12;
+    const n = loanTermYears * 12;
+    const monthlyPayment = (MOCK_MORTGAGE * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    const totalDebtPayment = monthlyPayment + existingDebt;
+    const dti = (totalDebtPayment / MOCK_INCOME) * 100;
+    const riskScore = Math.max(0, Math.min(100, 100 - (dti > 40 ? 30 : dti > 30 ? 15 : 0) - (ltv > 75 ? 25 : ltv > 60 ? 10 : 0)));
+
+    const idempotencyKey = `self-check-${currentUser?.id || userEmail}-${Date.now()}`;
+
+    try {
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "self-check-report",
+          recipientEmail: userEmail,
+          idempotencyKey,
+          templateData: {
+            leadName: fullName || currentUser?.user_metadata?.full_name || undefined,
+            purpose: purpose || "new",
+            maxLoan: `₪${maxLoan.toLocaleString()}`,
+            dti: `${dti.toFixed(1)}%`,
+            ltv: `${ltv.toFixed(1)}%`,
+            riskScore: Math.round(riskScore),
+            monthlyPayment: `₪${Math.round(monthlyPayment).toLocaleString()}`,
+          },
+        },
+      });
+      toast.success("📧 דוח התוצאות נשלח למייל שלך!");
+    } catch (err) {
+      console.error("Failed to send self-check email", err);
+    }
+  }, [user, email, fullName, purpose]);
 
   useEffect(() => {
     if (resendTimer <= 0) return;
