@@ -476,17 +476,39 @@ export default function Pitch() {
         </div>
       </section>
 
-      {/* ═══════ SOCIAL PROOF / QUOTE ═══════ */}
+      {/* ═══════ LIVE DEMO — Animated Screen Recording ═══════ */}
+      <section className="relative z-10 py-24 px-4">
+        <div className="max-w-4xl mx-auto">
+          <AnimSection className="text-center mb-12">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
+              <Play className="w-4 h-4" /> ראה את זה בפעולה
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold">
+              60 שניות — מ<span className="text-primary">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
+            </h2>
+          </AnimSection>
+
+          <AnimSection delay={0.15}>
+            <LiveDemoMockup />
+          </AnimSection>
+        </div>
+      </section>
+
+      {/* ═══════ TESTIMONIALS CAROUSEL ═══════ */}
       <section className="relative z-10 py-20 px-4">
-        <AnimSection className="max-w-3xl mx-auto">
-          <div className="glass-card p-8 md:p-12 text-center space-y-4 relative">
-            <div className="text-4xl">💬</div>
-            <blockquote className="text-xl md:text-2xl font-bold text-foreground leading-relaxed">
-              "הייתי משלם ₪2,200 בחודש על 4 מערכות שונות. עכשיו הכל במקום אחד, וה-AI חוסך לי שעתיים ביום."
-            </blockquote>
-            <div className="text-sm text-muted-foreground">
-              — יועץ משכנתאות, תל אביב
-            </div>
+        <div className="max-w-5xl mx-auto">
+          <AnimSection className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-extrabold">מה אומרים <span className="text-primary">יועצים שכבר עברו</span></h2>
+          </AnimSection>
+          <TestimonialsCarousel />
+        </div>
+
+        {/* Trust badges */}
+        <AnimSection delay={0.3} className="mt-12">
+          <div className="flex flex-wrap items-center justify-center gap-8 opacity-50">
+            {["🔒 SSL מאובטח", "🏦 תואם רגולציה", "☁️ גיבוי אוטומטי", "📱 מותאם למובייל"].map((badge, i) => (
+              <span key={i} className="text-xs text-muted-foreground font-medium">{badge}</span>
+            ))}
           </div>
         </AnimSection>
       </section>
