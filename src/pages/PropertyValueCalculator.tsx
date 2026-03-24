@@ -857,6 +857,24 @@ const PropertyValueCalculator = () => {
           </div>
         </section>
 
+        {/* Heat Map */}
+        <section className="relative z-10 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-8 anim-fade-up-3">
+              <h2 className="text-2xl md:text-3xl font-black mb-3">
+                <span className="text-white">מפת חום </span>
+                <span className="bg-gradient-to-l from-[hsl(0,84%,55%)] via-[hsl(38,92%,50%)] to-[hsl(160,84%,50%)] bg-clip-text text-transparent">מחירי נדל"ן</span>
+              </h2>
+              <p className="text-sm text-white/40">לחץ על אזור לצפייה בפירוט מחירים ומגמות • נתוני מרץ 2026</p>
+            </div>
+            <IsraelHeatMap
+              areas={AREAS}
+              selectedArea={selectedArea}
+              onSelectArea={setSelectedArea}
+            />
+          </div>
+        </section>
+
         {/* Lead Form */}
         {step !== "calc" && (
           <section ref={formRef} className="relative z-10 py-12">
