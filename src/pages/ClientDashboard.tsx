@@ -32,6 +32,7 @@ import {
   Home,
 } from "lucide-react";
 import SmartIngestion from "@/components/SmartIngestion";
+import { CreditScoreAnalyzer } from "@/components/CreditScoreAnalyzer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
