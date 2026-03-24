@@ -197,6 +197,10 @@ const MortgageCalculatorLanding = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <Link to="/property-value" className="hidden md:flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors">
+              <Home className="w-3.5 h-3.5" />
+              <span>מחשבון שווי נכס</span>
+            </Link>
             <div className="hidden md:flex items-center gap-1 text-xs text-white/50">
               <Lock className="w-3 h-3" />
               <span>מאובטח SSL</span>
@@ -966,6 +970,28 @@ const MortgageCalculatorLanding = () => {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Cross-link CTA to Property Value Calculator */}
+      <section className="relative z-10 py-8 mb-4">
+        <div className="max-w-4xl mx-auto px-6">
+          <Link to="/property-value">
+            <div className="p-6 rounded-2xl bg-gradient-to-l from-[hsl(160,84%,39%)]/10 to-transparent border border-[hsl(160,84%,39%)]/20 hover:border-[hsl(160,84%,39%)]/40 transition-all cursor-pointer group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-[hsl(160,84%,39%)]/10 group-hover:bg-[hsl(160,84%,39%)]/20 transition-colors">
+                    <Home className="w-6 h-6 text-[hsl(160,84%,39%)]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white group-hover:text-[hsl(160,84%,39%)] transition-colors">רוצה לדעת כמה שווה הנכס שלך?</h3>
+                    <p className="text-sm text-white/50 mt-1">מחשבון שווי נכס חכם עם AI – הערכה מיידית לפי אזור, גודל ומגמות שוק</p>
+                  </div>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-white/30 group-hover:text-[hsl(160,84%,39%)] group-hover:-translate-x-1 transition-all" />
+              </div>
+            </div>
+          </Link>
         </div>
       </section>
 
