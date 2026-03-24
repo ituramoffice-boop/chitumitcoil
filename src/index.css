@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Assistant:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -40,18 +40,19 @@
     --input: 220 13% 91%;
     --ring: 234 89% 56%;
 
-    --gold: 43 96% 56%;
+    --gold: 43 74% 52%;
     --gold-foreground: 222 47% 11%;
+    --navy: 222 47% 11%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 234 89% 56%;
+    --sidebar-background: 222 47% 6%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-primary: 43 74% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 96% 56%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-accent: 43 74% 52%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 33% 16%;
     --sidebar-ring: 234 89% 56%;
   }
 
@@ -74,7 +75,7 @@
     --muted: 217 33% 12%;
     --muted-foreground: 215 20% 55%;
 
-    --accent: 43 96% 56%;
+    --accent: 43 74% 52%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 50%;
@@ -90,14 +91,15 @@
     --input: 217 33% 16%;
     --ring: 234 89% 63%;
 
-    --gold: 43 96% 56%;
+    --gold: 43 74% 52%;
     --gold-foreground: 0 0% 100%;
+    --navy: 222 47% 5%;
 
     --sidebar-background: 222 47% 4%;
     --sidebar-foreground: 210 40% 92%;
-    --sidebar-primary: 234 89% 63%;
+    --sidebar-primary: 43 74% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 96% 56%;
+    --sidebar-accent: 43 74% 52%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 217 33% 14%;
     --sidebar-ring: 234 89% 63%;
@@ -114,7 +116,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-heebo antialiased;
+    @apply bg-background text-foreground font-assistant antialiased;
   }
 }
 
