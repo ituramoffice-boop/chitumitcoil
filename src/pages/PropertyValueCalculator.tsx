@@ -14,6 +14,7 @@ import {
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
   Download,
 } from "lucide-react";
+import { TrustBankLogos } from "@/components/TrustBankLogos";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
