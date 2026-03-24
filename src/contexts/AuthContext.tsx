@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { useDemo } from "@/contexts/DemoContext";
 
 type AppRole = "consultant" | "client" | "admin";
 
@@ -22,7 +23,17 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const DEMO_USER: User = {
+  id: "demo-user-000",
+  email: "demo@chitumit.co.il",
+  app_metadata: {},
+  user_metadata: { full_name: "משתמש דמו" },
+  aud: "authenticated",
+  created_at: new Date().toISOString(),
+} as User;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { isDemoMode, demoRole } = useDemo();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
@@ -90,8 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
   };
 
+  // Demo mode overrides
+  const effectiveUser = isDemoMode ? DEMO_USER : user;
+  const effectiveRole = isDemoMode ? (demoRole as AppRole) : role;
+  const effectiveLoading = isDemoMode ? false : loading;
+
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, signOut }}>
+    <AuthContext.Provider value={{ user: effectiveUser, session, role: effectiveRole, loading: effectiveLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
