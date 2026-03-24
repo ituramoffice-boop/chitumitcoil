@@ -16,7 +16,7 @@ import {
   ArrowLeft, ArrowRight, Building2, Home, Banknote, ShieldCheck, Lock,
   User, Phone, Mail, CheckCircle2, Sparkles, Brain, Upload, FileText,
   CreditCard, Landmark, TrendingUp, AlertTriangle, Target, Clock,
-  ChevronDown, Star, Loader2, KeyRound,
+  ChevronDown, Star, Loader2, KeyRound, Briefcase,
 } from "lucide-react";
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
@@ -65,6 +65,15 @@ const PROPERTY_TYPES = [
   { value: "land", label: "מגרש" },
   { value: "commercial", label: "נכס מסחרי" },
   { value: "office", label: "משרד" },
+];
+
+const EMPLOYMENT_SENIORITY = [
+  { value: "less_than_1", label: "פחות משנה", emoji: "🌱" },
+  { value: "1_to_3", label: "1-3 שנים", emoji: "📊" },
+  { value: "3_to_5", label: "3-5 שנים", emoji: "💼" },
+  { value: "5_to_10", label: "5-10 שנים", emoji: "⭐" },
+  { value: "10_plus", label: "מעל 10 שנים", emoji: "🏆" },
+  { value: "self_employed", label: "עצמאי/ת", emoji: "🧑‍💻" },
 ];
 
 const REQUIRED_DOCS = [
@@ -128,6 +137,7 @@ const PropertyLoanFunnel = () => {
   const [email, setEmail] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState<Set<string>>(new Set());
+  const [employmentSeniority, setEmploymentSeniority] = useState("");
 
   // Calculations
   const ltv = propertyValue > 0 ? Math.round(((loanAmount + existingMortgageBalance) / propertyValue) * 100) : 0;
@@ -182,6 +192,7 @@ const PropertyLoanFunnel = () => {
         `DTI: ${dti}%`,
         `החזר חודשי משוער: ₪${monthlyPayment.toLocaleString()}`,
         hasExistingMortgage ? `יתרת משכנתא קיימת: ₪${existingMortgageBalance.toLocaleString()}` : "ללא משכנתא קיימת",
+        employmentSeniority ? `וותק תעסוקתי: ${EMPLOYMENT_SENIORITY.find(e => e.value === employmentSeniority)?.label || employmentSeniority}` : "",
         `דחיפות: ${URGENCY_OPTIONS.find(o => o.value === urgency)?.label || urgency}`,
         tags.length ? `תגיות: ${tags.join(", ")}` : "",
         `מסמכים שהועלו: ${uploadedDocs.size}/${REQUIRED_DOCS.length}`,
@@ -194,7 +205,8 @@ const PropertyLoanFunnel = () => {
         (email ? 10 : 0) +
         (marketingConsent ? 5 : 0) +
         (uploadedDocs.size * 5) +
-        (urgency === "immediate" ? 10 : urgency === "month" ? 5 : 0)
+        (urgency === "immediate" ? 10 : urgency === "month" ? 5 : 0) +
+        (["5_to_10", "10_plus"].includes(employmentSeniority) ? 5 : employmentSeniority === "less_than_1" ? -5 : 0)
       );
 
       const { error } = await supabase.from("leads").insert({
@@ -505,6 +517,43 @@ const PropertyLoanFunnel = () => {
                       </div>
                       <Slider value={[monthlyIncome]} onValueChange={([v]) => setMonthlyIncome(v)} min={5000} max={100000} step={1000} />
                       <div className="flex justify-between text-[10px] text-white/30"><span>₪5K</span><span>₪100K</span></div>
+                    </div>
+
+                    {/* Employment Seniority */}
+                    <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gold/70" />
+                        <span className="text-sm text-white/60">וותק תעסוקתי במקום העבודה הנוכחי</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {EMPLOYMENT_SENIORITY.map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setEmploymentSeniority(opt.value)}
+                            className={cn(
+                              "py-3 px-2 rounded-lg text-xs font-medium transition-all border text-center",
+                              employmentSeniority === opt.value
+                                ? "border-gold bg-gold/10 text-gold"
+                                : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
+                            )}
+                          >
+                            <span className="block text-base mb-0.5">{opt.emoji}</span>
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      {employmentSeniority === "less_than_1" && (
+                        <p className="text-[11px] text-amber-400/70 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          וותק קצר עלול להשפיע על תנאי ההלוואה — יועץ ילווה אותך בתהליך
+                        </p>
+                      )}
+                      {employmentSeniority === "self_employed" && (
+                        <p className="text-[11px] text-white/40 flex items-center gap-1">
+                          <Briefcase className="w-3 h-3" />
+                          עצמאים נדרשים להמציא שומות מס ודוחות רווח והפסד
+                        </p>
+                      )}
                     </div>
 
                     <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 space-y-4">
