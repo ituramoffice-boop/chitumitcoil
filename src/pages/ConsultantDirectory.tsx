@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { PublicFooter } from "@/components/PublicFooter";
 
 interface ConsultantProfile {
   id: string;
