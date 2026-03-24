@@ -11,6 +11,7 @@ import StarField from "@/components/StarField";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
 import { TrustBankLogos } from "@/components/TrustBankLogos";
+import IdCardScanner from "@/components/IdCardScanner";
 import {
   Shield, Heart, TrendingDown, Sparkles, CheckCircle2, AlertTriangle,
   User, Phone, Mail, Lock, Loader2, ArrowLeft, ArrowRight, Activity,
@@ -669,6 +670,13 @@ function CaptureStep({ fullName, setFullName, phone, setPhone, email, setEmail, 
           ניתחנו את הנתונים שלך — נוכל לחסוך לך כ-<span className="text-emerald-400 font-bold">₪{totalSavings.toLocaleString()}</span> לאורך חיי המשכנתא. רוצה לנעול את ההצעה?
         </p>
       </div>
+
+      {/* ID Card Scanner */}
+      <IdCardScanner
+        onComplete={(data) => {
+          if (data.fullName && !fullName) setFullName(data.fullName);
+        }}
+      />
 
       <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-cyan-500/20 p-6 space-y-4">
         <div className="space-y-2">
