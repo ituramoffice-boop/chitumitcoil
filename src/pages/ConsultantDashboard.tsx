@@ -847,22 +847,14 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           </div>
         </div>
 
-        {/* Leads Table */}
+        {/* Predictive CRM Pipeline */}
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-foreground">הלקוחות שלך</h2>
-              {funnelFilter !== "all" && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                  {FUNNEL_STAGES.find((s) => s.key === funnelFilter)?.label}
-                  <button
-                    onClick={() => setFunnelFilter("all")}
-                    className="mr-1.5 hover:text-foreground"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
+              <h2 className="text-lg font-semibold text-foreground">ניהול לקוחות חכם</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
+                AI-Powered
+              </span>
             </div>
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
@@ -961,222 +953,71 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : filteredLeads.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>{funnelFilter !== "all" ? "אין לקוחות בשלב הזה כרגע." : "בוא נתחיל! לחץ על \"הוסף לקוח חדש\" ואנחנו נדאג לשאר 💪"}</p>
-              {funnelFilter !== "all" && (
-                <Button variant="link" size="sm" onClick={() => setFunnelFilter("all")} className="mt-2">
-                  הצג את כל הלידים
-                </Button>
-              )}
-            </div>
           ) : (
-            <div className="space-y-3">
-              {filteredLeads.map((lead) => {
-                const sc = STATUS_CONFIG[lead.status];
-                const isSelected = selectedLead?.id === lead.id;
-                const leadMissingDoc = criticalAlerts.find(
-                  (a) => a.lead.id === lead.id && a.category === "missing_docs"
-                )?.missingDoc;
-
-                // Compute readiness score (0-100)
-                const leadDocs = documents.filter((d) => d.lead_id === lead.id);
-                let readiness = 0;
-                if (lead.full_name) readiness += 10;
-                if (lead.phone) readiness += 10;
-                if (lead.email) readiness += 5;
-                if (lead.mortgage_amount) readiness += 10;
-                if (lead.property_value) readiness += 10;
-                if (lead.monthly_income) readiness += 10;
-                const classifications = leadDocs.map((d) => d.classification?.toLowerCase() || "");
-                if (classifications.some((c) => c.includes("ת\"ז") || c.includes("tz") || c.includes("id"))) readiness += 15;
-                if (classifications.some((c) => c.includes("bank") || c.includes("עו"))) readiness += 15;
-                if (classifications.some((c) => c.includes("pay") || c.includes("תלוש") || c.includes("salary"))) readiness += 15;
-                readiness = Math.min(100, readiness);
-
-                return (
-                  <div key={lead.id} className="animate-fade-in">
-                    <div
-                      className={cn(
-                        "flex items-center gap-4 p-4 rounded-lg border transition-all duration-200 cursor-pointer hover:shadow-md",
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-sm"
-                          : "border-border hover:bg-secondary/50 hover:-translate-y-0.5"
-                      )}
-                      onClick={() => setSelectedLead(isSelected ? null : lead)}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="font-semibold text-foreground">{lead.full_name}</span>
-                          {lead.lead_source === "advisor_sync" && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1 font-medium">
-                              <Link2 className="w-2.5 h-2.5" />
-                              סונכרן מ-Global DB
-                            </span>
-                          )}
-                          <span className={cn(
-                            "text-[11px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1",
-                            sc.color, sc.bg,
-                            sc.pulse && "animate-pulse"
-                          )}>
-                            {sc.pulse && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />}
-                            {sc.label}
-                          </span>
-                          {lead.next_step && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-accent-foreground border border-border">
-                              ← {lead.next_step}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                          {lead.phone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              <DataMasker value={lead.phone} type="phone" />
-                            </span>
-                          )}
-                          {lead.email && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              <DataMasker value={lead.email} type="email" />
-                            </span>
-                          )}
-                          {lead.mortgage_amount && (
-                            <span className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />₪{Number(lead.mortgage_amount).toLocaleString()}
-                            </span>
-                          )}
-                          {lead.last_contact && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {formatDistanceToNow(new Date(lead.last_contact), { locale: he, addSuffix: true })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {/* Readiness Score */}
-                      <div className="hidden md:block">
-                        <ReadinessScore score={readiness} />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {lead.phone && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            title="WhatsApp"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openWhatsApp(lead.phone!, lead.full_name, leadMissingDoc);
-                            }}
-                          >
-                            <MessageCircle className="w-4 h-4 text-success" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          title="הפקת קישור גישה"
-                          disabled={sendingMagicLink === lead.id || !lead.email}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSendMagicLink(lead);
-                          }}
-                        >
-                          {sendingMagicLink === lead.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                          ) : (
-                            <Send className="w-4 h-4 text-primary" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedLead(lead);
-                          }}
-                        >
-                          <ShieldAlert className="w-4 h-4 text-primary" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(lead); }}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (confirm("למחוק את הליד?")) deleteMutation.mutate(lead.id);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Risk Analysis Panel */}
-                    {isSelected && (
-                      <div className="mt-3 mr-4 border-r-2 border-primary/20 pr-4 animate-fade-in">
-                        <Tabs defaultValue="risk" dir="rtl">
-                          <TabsList>
-                            <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
-                            <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
-                            <TabsTrigger value="details">פרטים</TabsTrigger>
-                          </TabsList>
-                          <TabsContent value="risk" className="mt-4">
-                            <RiskAnalysisView lead={lead} />
-                          </TabsContent>
-                          <TabsContent value="timeline" className="mt-4">
-                            <div className="glass-card p-5">
-                              <CaseTimeline leadId={lead.id} />
-                            </div>
-                          </TabsContent>
-                          <TabsContent value="details" className="mt-4">
-                            <div className="glass-card p-5 space-y-3">
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div>
-                                  <p className="text-xs text-muted-foreground">שווי נכס</p>
-                                  <p className="font-bold text-foreground">
-                                    {lead.property_value ? `₪${Number(lead.property_value).toLocaleString()}` : "לא צוין"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-muted-foreground">סכום משכנתא</p>
-                                  <p className="font-bold text-foreground">
-                                    {lead.mortgage_amount ? `₪${Number(lead.mortgage_amount).toLocaleString()}` : "לא צוין"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-muted-foreground">הכנסה חודשית</p>
-                                  <p className="font-bold text-foreground">
-                                    {lead.monthly_income ? `₪${Number(lead.monthly_income).toLocaleString()}` : "לא צוין"}
-                                  </p>
-                                </div>
-                              </div>
-                              {lead.notes && (
-                                <div>
-                                  <p className="text-xs text-muted-foreground mb-1">הערות</p>
-                                  <p className="text-sm text-foreground">{lead.notes}</p>
-                                </div>
-                              )}
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <PriorityBoard
+              leads={leads}
+              documents={documents}
+              onSelectLead={(lead) => setSelectedLead(lead)}
+              selectedLeadId={selectedLead?.id || null}
+              onWhatsApp={openWhatsApp}
+            />
           )}
         </div>
 
-        {/* Workspace Settings */}
+        {/* Selected Lead Detail */}
+        {selectedLead && (
+          <div className="glass-card p-5 animate-fade-in">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-foreground">{selectedLead.full_name} — ניתוח מעמיק</h3>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)}>סגור</Button>
+            </div>
+            <Tabs defaultValue="risk" dir="rtl">
+              <TabsList>
+                <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
+                <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
+                <TabsTrigger value="details">פרטים</TabsTrigger>
+              </TabsList>
+              <TabsContent value="risk" className="mt-4">
+                <RiskAnalysisView lead={selectedLead} />
+              </TabsContent>
+              <TabsContent value="timeline" className="mt-4">
+                <div className="glass-card p-5">
+                  <CaseTimeline leadId={selectedLead.id} />
+                </div>
+              </TabsContent>
+              <TabsContent value="details" className="mt-4">
+                <div className="glass-card p-5 space-y-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">שווי נכס</p>
+                      <p className="font-bold text-foreground">
+                        {selectedLead.property_value ? `₪${Number(selectedLead.property_value).toLocaleString()}` : "לא צוין"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">סכום משכנתא</p>
+                      <p className="font-bold text-foreground">
+                        {selectedLead.mortgage_amount ? `₪${Number(selectedLead.mortgage_amount).toLocaleString()}` : "לא צוין"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">הכנסה חודשית</p>
+                      <p className="font-bold text-foreground">
+                        {selectedLead.monthly_income ? `₪${Number(selectedLead.monthly_income).toLocaleString()}` : "לא צוין"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedLead.notes && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">הערות</p>
+                      <p className="text-sm text-foreground">{selectedLead.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
         <div className="glass-card p-5">
           <WorkspaceSettings />
         </div>
