@@ -197,7 +197,11 @@ const ViralShareCards = () => {
         <div className="flex gap-2">
           <Button onClick={handleShare} className="flex-1 bg-gold hover:bg-gold/90 text-gold-foreground">
             {copied ? <Check className="h-4 w-4 ml-2" /> : <Copy className="h-4 w-4 ml-2" />}
-            {copied ? "הועתק!" : "שתף בוואטסאפ / אינסטגרם"}
+            {copied ? "הועתק!" : "העתק טקסט"}
+          </Button>
+          <Button variant="outline" className="border-gold/20 text-gold" onClick={handleDownloadCard}>
+            <Download className="h-4 w-4 ml-2" />
+            הורד כתמונה
           </Button>
         </div>
       </CardContent>
