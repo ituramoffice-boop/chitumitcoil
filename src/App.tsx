@@ -57,6 +57,7 @@ const App = () => {
                <Route path="/self-check" element={<SelfCheck />} />
                <Route path="/calculator" element={<MortgageCalculatorLanding />} />
                <Route path="/property-value" element={<PropertyValueCalculator />} />
+               <Route path="/property-loan" element={<PropertyLoanFunnel />} />
                <Route path="/sign/:token" element={<RemoteSign />} />
                <Route path="/pitch" element={<Pitch />} />
                <Route path="/investors" element={<Investors />} />
