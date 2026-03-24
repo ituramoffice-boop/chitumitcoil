@@ -1,19 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles, Users, User } from "lucide-react";
+import { ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles, Users, User, ChevronDown } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { useState, useRef, useEffect } from "react";
 
 const Index = () => {
   const { user, role } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // If already logged in, show appropriate CTA
-  const handleDashboard = () => {
-    navigate("/dashboard");
-  };
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,35 +37,67 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {user ? (
+
+            {/* Single "האזור שלי" button with dropdown */}
+            <div className="relative" ref={menuRef}>
               <Button
-                onClick={handleDashboard}
-                className="bg-gold text-gold-foreground hover:bg-gold/90"
+                onClick={() => {
+                  if (user) {
+                    navigate("/dashboard");
+                  } else {
+                    setMenuOpen(!menuOpen);
+                  }
+                }}
+                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5"
               >
-                לדשבורד
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                האזור שלי
+                {!user && <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`} />}
+                {user && <ArrowLeft className="w-3.5 h-3.5" />}
               </Button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/auth?role=client")}
-                  className="border-gold/30 text-gold hover:bg-gold/10 hover:text-gold"
-                >
-                  <User className="w-4 h-4 ml-1" />
-                  כניסת לקוחות
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/auth?role=consultant")}
-                  className="bg-gold text-gold-foreground hover:bg-gold/90"
-                >
-                  <Users className="w-4 h-4 ml-1" />
-                  כניסה ליועצים
-                </Button>
-              </div>
-            )}
+
+              {menuOpen && !user && (
+                <div className="absolute left-0 top-full mt-2 w-56 rounded-xl border border-gold/20 bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-fade-in">
+                  <button
+                    onClick={() => { navigate("/auth?role=consultant"); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gold/10 transition-colors text-right"
+                  >
+                    <div className="p-2 rounded-lg bg-gold/10">
+                      <Users className="w-4 h-4 text-gold" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">פורטל יועצים</p>
+                      <p className="text-[10px] text-muted-foreground">CRM, ניתוח תיקים, לידים</p>
+                    </div>
+                  </button>
+                  <div className="border-t border-border/50" />
+                  <button
+                    onClick={() => { navigate("/auth?role=client"); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-primary/10 transition-colors text-right"
+                  >
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">אזור אישי</p>
+                      <p className="text-[10px] text-muted-foreground">מעקב תיק, מסמכים, סטטוס</p>
+                    </div>
+                  </button>
+                  <div className="border-t border-border/50" />
+                  <button
+                    onClick={() => { navigate("/self-check"); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-accent/10 transition-colors text-right"
+                  >
+                    <div className="p-2 rounded-lg bg-accent/10">
+                      <Sparkles className="w-4 h-4 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">בדיקה עצמאית</p>
+                      <p className="text-[10px] text-muted-foreground">בדיקת היתכנות חינם ללא הרשמה</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -77,56 +117,18 @@ const Index = () => {
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             מערכת AI מתקדמת לזיהוי סיכונים, אימות נתונים והצלבת מסמכים — כל מה שיועץ משכנתאות צריך במקום אחד.
           </p>
-
-          {/* Two entry points */}
-          {!user && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto pt-4">
-              <button
-                onClick={() => navigate("/auth?role=consultant")}
-                className="group p-6 rounded-2xl border-2 border-gold/20 bg-gold/5 hover:border-gold/40 hover:bg-gold/10 transition-all duration-300 text-center space-y-3"
-              >
-                <div className="p-3 rounded-xl bg-gold/10 w-fit mx-auto group-hover:scale-110 transition-transform">
-                  <Users className="w-8 h-8 text-gold" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">יועצי משכנתאות</h3>
-                <p className="text-xs text-muted-foreground">ניהול לידים, ניתוח תיקים, CRM מתקדם</p>
-                <span className="inline-flex items-center gap-1 text-sm text-gold font-medium">
-                  כניסה / הרשמה
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </span>
-              </button>
-
-              <button
-                onClick={() => navigate("/auth?role=client")}
-                className="group p-6 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10 transition-all duration-300 text-center space-y-3"
-              >
-                <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto group-hover:scale-110 transition-transform">
-                  <User className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">לקוחות</h3>
-                <p className="text-xs text-muted-foreground">מעקב תיק, העלאת מסמכים, סטטוס בזמן אמת</p>
-                <span className="inline-flex items-center gap-1 text-sm text-primary font-medium">
-                  כניסה / הרשמה
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </span>
-              </button>
-            </div>
-          )}
-
-          {user && (
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button
-                size="lg"
-                onClick={handleDashboard}
-                className="bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
-              >
-                המשך לדשבורד
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              </Button>
-            </div>
-          )}
-
-          <div className="pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              size="lg"
+              onClick={() => {
+                if (user) navigate("/dashboard");
+                else setMenuOpen(true);
+              }}
+              className="bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
+            >
+              האזור שלי
+              <ArrowLeft className="w-4 h-4 mr-2" />
+            </Button>
             <Button size="lg" variant="outline" onClick={() => navigate("/self-check")} className="group hover:border-gold/50 hover:shadow-lg hover:shadow-gold/10 transition-all">
               <Sparkles className="w-4 h-4 ml-2 text-gold group-hover:animate-pulse" />
               בדיקת היתכנות עצמאית
