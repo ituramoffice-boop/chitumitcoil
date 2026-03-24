@@ -27,20 +27,25 @@ const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 /* Smokers pay 2-3x, age 30 vs 45 can be 2-3x difference */
 function getMonthlyPremium(mortgageAmount: number, age: number, isSmoker: boolean, termYears: number): number {
   // Base rate per ₪100K of mortgage (bank/market average)
-  const ageBase = age < 30 ? 3.2 : age < 35 ? 4.0 : age < 40 ? 5.5 : age < 45 ? 7.5 : age < 50 ? 10.5 : age < 55 ? 14 : age < 60 ? 19 : 26;
-  const smokerMultiplier = isSmoker ? 2.4 : 1;
+  // Ages 60+ carry significantly higher premiums due to actuarial risk
+  const ageBase = age < 30 ? 3.2 : age < 35 ? 4.0 : age < 40 ? 5.5 : age < 45 ? 7.5 : age < 50 ? 10.5 : age < 55 ? 14 : age < 60 ? 19 : age < 63 ? 28 : age < 65 ? 35 : 44;
+  const smokerMultiplier = isSmoker ? (age >= 60 ? 2.8 : 2.4) : 1; // higher smoker penalty for 60+
   const termFactor = termYears > 25 ? 1.12 : termYears > 20 ? 1.06 : 1;
   const units = mortgageAmount / 100000;
   return Math.round(ageBase * smokerMultiplier * termFactor * units);
 }
 
 function getChitumitPremium(mortgageAmount: number, age: number, isSmoker: boolean, termYears: number): number {
-  return Math.round(getMonthlyPremium(mortgageAmount, age, isSmoker, termYears) * 0.6); // 40% savings via private market
+  // Savings margin is slightly lower for 60+ due to higher base risk
+  const discountFactor = age >= 60 ? 0.65 : 0.6;
+  return Math.round(getMonthlyPremium(mortgageAmount, age, isSmoker, termYears) * discountFactor);
 }
 
 function getRiskProfile(age: number, isSmoker: boolean): { label: string; tag: string; color: string } {
   if (!isSmoker && age < 40) return { label: "סיכון נמוך / מודע בריאות", tag: "Low-Risk/Health Conscious", color: "text-emerald-400" };
   if (!isSmoker && age < 55) return { label: "סיכון בינוני / פוליסה מאוזנת", tag: "Moderate-Risk/Balanced", color: "text-cyan-400" };
+  if (!isSmoker && age >= 60) return { label: "פרופיל בכיר / פרמיה מוגברת", tag: "Senior Profile/Elevated Premium", color: "text-orange-400" };
+  if (isSmoker && age >= 60) return { label: "סיכון גבוה / דורש בדיקה רפואית", tag: "High-Risk/Medical Review Required", color: "text-red-400" };
   if (isSmoker) return { label: "פוליסה בעלת ערך גבוה", tag: "High-Value Policy", color: "text-amber-400" };
   return { label: "פרופיל פרימיום", tag: "Premium Profile", color: "text-purple-400" };
 }
