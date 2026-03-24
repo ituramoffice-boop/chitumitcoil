@@ -1018,6 +1018,10 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                           )}
                         </div>
                       </div>
+                      {/* Readiness Score */}
+                      <div className="hidden md:block">
+                        <ReadinessScore score={readiness} />
+                      </div>
                       <div className="flex items-center gap-1">
                         {lead.phone && (
                           <Button
