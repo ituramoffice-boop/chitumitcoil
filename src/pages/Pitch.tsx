@@ -70,6 +70,189 @@ function PainCard({ icon: Icon, title, desc, delay }: { icon: any; title: string
   );
 }
 
+/* ── Testimonials Carousel ── */
+const testimonials = [
+  {
+    quote: "הייתי משלם ₪2,200 בחודש על 4 מערכות שונות. עכשיו הכל במקום אחד, וה-AI חוסך לי שעתיים ביום.",
+    name: "אבי לוי",
+    title: "יועץ משכנתאות, תל אביב",
+    stars: 5,
+    metric: "חיסכון: ₪2,200/חודש",
+  },
+  {
+    quote: "מאז שהתחלתי להשתמש במחשבון הממותג, אני מקבל 3-4 לידים חמים בשבוע בלי להוציא שקל על פרסום.",
+    name: "רונית כהן",
+    title: "יועצת משכנתאות, חיפה",
+    stars: 5,
+    metric: "+15 לידים בחודש",
+  },
+  {
+    quote: "החתימה הדיגיטלית שינתה לי את החיים. הלקוח חותם מהנייד תוך דקה — בלי לבוא למשרד.",
+    name: "משה דוד",
+    title: "יועץ בכיר, ירושלים",
+    stars: 5,
+    metric: "90% פחות ניירת",
+  },
+  {
+    quote: "הסורק הבין תלוש של עובד עם 3 מעסיקים ושכר משתנה. אני לא מאמין שזה אוטומטי.",
+    name: "יעל שמש",
+    title: "יועצת משכנתאות, רמת גן",
+    stars: 5,
+    metric: "חיסכון: 2 שעות/ליד",
+  },
+];
+
+function TestimonialsCarousel() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrent((c) => (c + 1) % testimonials.length), 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.4 }}
+            className="glass-card p-8 md:p-10"
+          >
+            <div className="flex flex-col md:flex-row gap-6 items-center">
+              <div className="flex-1 space-y-4">
+                <div className="flex gap-0.5">
+                  {Array.from({ length: testimonials[current].stars }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-warning text-warning" />
+                  ))}
+                </div>
+                <Quote className="w-8 h-8 text-primary/20" />
+                <blockquote className="text-lg md:text-xl font-bold text-foreground leading-relaxed">
+                  {testimonials[current].quote}
+                </blockquote>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    {testimonials[current].name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-bold text-foreground text-sm">{testimonials[current].name}</div>
+                    <div className="text-xs text-muted-foreground">{testimonials[current].title}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0">
+                <div className="px-4 py-2 rounded-lg bg-success/10 border border-success/20 text-success text-sm font-bold text-center">
+                  {testimonials[current].metric}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Dots */}
+      <div className="flex justify-center gap-2 mt-6">
+        {testimonials.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary w-6" : "bg-muted-foreground/30"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Live Demo Mockup (animated screen) ── */
+function LiveDemoMockup() {
+  const steps = [
+    { label: "גולש נכנס למחשבון", detail: "הלקוח מזיז סליידרים ובוחר סכום משכנתא", color: "text-foreground" },
+    { label: "AI מנתח את הנתונים", detail: "חישוב ריבית, החזר חודשי ודירוג סיכון", color: "text-primary" },
+    { label: "ראיון AI קצר", detail: "שם, טלפון, סוג נכס — ב-3 שלבים", color: "text-primary" },
+    { label: "ליד חם נכנס ל-CRM!", detail: "עם ציון AI, פרטי חישוב והתראה ליועץ", color: "text-success" },
+  ];
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setActiveStep((s) => (s + 1) % steps.length), 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="glass-card overflow-hidden rounded-2xl">
+      {/* Fake browser chrome */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-secondary/50 border-b border-border/40">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-destructive/40" />
+          <div className="w-3 h-3 rounded-full bg-warning/40" />
+          <div className="w-3 h-3 rounded-full bg-success/40" />
+        </div>
+        <div className="flex-1 mx-4">
+          <div className="bg-background/60 rounded-md px-3 py-1 text-[11px] text-muted-foreground text-center">
+            smart-mortgage.ai/calc?ref=avilevy
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-8 min-h-[280px] flex flex-col items-center justify-center gap-6">
+        {/* Progress bar */}
+        <div className="w-full max-w-md flex items-center gap-1">
+          {steps.map((_, i) => (
+            <div key={i} className="flex-1 h-1.5 rounded-full overflow-hidden bg-secondary">
+              <motion.div
+                className="h-full rounded-full bg-primary"
+                initial={{ width: "0%" }}
+                animate={{ width: i <= activeStep ? "100%" : "0%" }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Active step */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeStep}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35 }}
+            className="text-center space-y-2"
+          >
+            <div className="text-sm text-muted-foreground">שלב {activeStep + 1} מתוך {steps.length}</div>
+            <div className={`text-xl md:text-2xl font-bold ${steps[activeStep].color}`}>
+              {steps[activeStep].label}
+            </div>
+            <div className="text-sm text-muted-foreground">{steps[activeStep].detail}</div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Animated notification at last step */}
+        {activeStep === steps.length - 1 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success/10 border border-success/20"
+          >
+            <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-success" />
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-bold text-success">🔥 ליד חדש: דני כהן</div>
+              <div className="text-xs text-muted-foreground">משכנתא ₪1.2M · ציון AI: 87 · נכס ראשון</div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Feature Demo Card ── */
 function DemoCard({ icon: Icon, badge, title, desc, mockup, delay }: {
   icon: any; badge: string; title: string; desc: string; mockup: React.ReactNode; delay: number;
