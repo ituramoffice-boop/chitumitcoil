@@ -26,6 +26,7 @@ const SocialMediaGenerator = () => {
   const [story, setStory] = useState("1.8M ₪ אושרו ב-4 דקות");
   const [advisorName, setAdvisorName] = useState("דני כהן");
   const [copied, setCopied] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleCopy = () => {
@@ -34,6 +35,20 @@ const SocialMediaGenerator = () => {
     setCopied(true);
     toast({ title: "הועתק ללוח!" });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadImage = async () => {
+    if (!previewRef.current) return;
+    try {
+      const dataUrl = await toPng(previewRef.current, { pixelRatio: 3 });
+      const link = document.createElement("a");
+      link.download = `chitumit-post-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast({ title: "התמונה הורדה בהצלחה!" });
+    } catch {
+      toast({ title: "שגיאה בהורדה", variant: "destructive" });
+    }
   };
 
   return (
