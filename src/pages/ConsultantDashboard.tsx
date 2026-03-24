@@ -225,6 +225,26 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
   const lastSyncTime = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
 
+  // Profile: plan & lead_count
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("plan, lead_count")
+        .eq("user_id", user!.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const FREE_LEAD_LIMIT = 10;
+  const isFree = !profile || profile.plan === "free";
+  const usedLeads = leads.length;
+  const usagePercent = isFree ? Math.min(100, (usedLeads / FREE_LEAD_LIMIT) * 100) : 0;
+  const isAtLimit = isFree && usedLeads >= FREE_LEAD_LIMIT;
+
   // Realtime: auto-refresh leads & documents on any change
   useEffect(() => {
     const channel = supabase
