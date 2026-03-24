@@ -4,9 +4,10 @@ import { cn } from "@/lib/utils";
 interface VerifiedSealProps {
   size?: "sm" | "md" | "lg";
   className?: string;
+  label?: string;
 }
 
-export function VerifiedSeal({ size = "md", className }: VerifiedSealProps) {
+export function VerifiedSeal({ size = "md", className, label }: VerifiedSealProps) {
   const sizes = {
     sm: { wrapper: "w-16 h-16", icon: "w-5 h-5", text: "text-[7px]", ring: "border-2" },
     md: { wrapper: "w-24 h-24", icon: "w-7 h-7", text: "text-[9px]", ring: "border-[3px]" },
@@ -29,7 +30,7 @@ export function VerifiedSeal({ size = "md", className }: VerifiedSealProps) {
         </span>
       </div>
       <span className={cn(s.text, "text-muted-foreground text-center leading-tight")}>
-        Chitumit AI Screening
+        {label || "חותמת איכות חיתומית"}
       </span>
     </div>
   );

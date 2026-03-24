@@ -71,6 +71,8 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { WorkspaceSettings } from "@/components/WorkspaceSettings";
 import { CaseTimeline } from "@/components/CaseTimeline";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { SmartSummaryWidget } from "@/components/SmartSummaryWidget";
+import { ReadinessScore } from "@/components/ReadinessScore";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow, format } from "date-fns";
@@ -194,8 +196,8 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   const openWhatsApp = (phone: string, name: string, missingDoc?: string) => {
     const cleanPhone = phone.replace(/\D/g, "");
     const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
-    const docText = missingDoc || "מסמך חסר";
-    const message = `היי ${name}, ראיתי שהעלית חלק מהמסמכים ל-SmartMortgage. חסר לנו רק את ${docText} כדי להתקדם לאישור מהבנק. אפשר לשלוח כאן או להעלות למערכת. 📄`;
+    const docText = missingDoc || "מסמך אחד נוסף";
+    const message = `היי ${name} 😊\nרציתי לעדכן שאנחנו כמעט מוכנים להגיש את הבקשה!\nחסר לנו רק ${docText} — תוכל/י להעלות אותו כאן בקלות:\n📎 https://chitumitcoil.lovable.app/auth\n\nאם צריך עזרה לאתר את המסמך, אני כאן בשבילך!`;
     window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
@@ -559,24 +561,17 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
       </header>
 
       <main className="container mx-auto px-6 lg:px-10 py-10 space-y-8">
-        {/* AI Summary Banner */}
-        {summary.parts.length > 0 && (
-          <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-l from-cyan-glow/5 via-primary/10 to-cyan-glow/5 p-4 animate-fade-in glow-primary">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-gradient-to-br from-cyan-glow/20 to-primary/20 shrink-0">
-                <Sparkles className="w-5 h-5 text-cyan-glow" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">
-                  {summary.greeting}! <span className="font-normal text-muted-foreground">
-                    יש לך {summary.parts.join(" ו-")}.
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
-          </div>
-        )}
+        {/* AI Co-Pilot Smart Summary */}
+        <SmartSummaryWidget
+          greeting={summary.greeting}
+          newDocsCollected={documents.filter(d => {
+            const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
+            return age < 1;
+          }).length}
+          pendingLeads={stats.new}
+          expiringCount={alertCounts.expiring}
+          missingDocsCount={alertCounts.missing_docs}
+        />
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -825,7 +820,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-foreground">ניהול לידים</h2>
+              <h2 className="text-lg font-semibold text-foreground">הלקוחות שלך</h2>
               {funnelFilter !== "all" && (
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                   {FUNNEL_STAGES.find((s) => s.key === funnelFilter)?.label}
@@ -843,9 +838,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               if (!open) { setEditingLead(null); resetForm(); }
             }}>
               <DialogTrigger asChild>
-                <Button className="hover-scale">
+                <Button className="hover-scale animate-cta-pulse gold-glow-btn bg-gold text-gold-foreground hover:bg-gold/90">
                   <Plus className="w-4 h-4 ml-2" />
-                  ליד חדש
+                  הוסף לקוח חדש
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
@@ -938,7 +933,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           ) : filteredLeads.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>{funnelFilter !== "all" ? "אין לידים בשלב זה." : "עדיין אין לידים. לחץ על \"ליד חדש\" כדי להתחיל."}</p>
+              <p>{funnelFilter !== "all" ? "אין לקוחות בשלב הזה כרגע." : "בוא נתחיל! לחץ על \"הוסף לקוח חדש\" ואנחנו נדאג לשאר 💪"}</p>
               {funnelFilter !== "all" && (
                 <Button variant="link" size="sm" onClick={() => setFunnelFilter("all")} className="mt-2">
                   הצג את כל הלידים
@@ -953,6 +948,21 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                 const leadMissingDoc = criticalAlerts.find(
                   (a) => a.lead.id === lead.id && a.category === "missing_docs"
                 )?.missingDoc;
+
+                // Compute readiness score (0-100)
+                const leadDocs = documents.filter((d) => d.lead_id === lead.id);
+                let readiness = 0;
+                if (lead.full_name) readiness += 10;
+                if (lead.phone) readiness += 10;
+                if (lead.email) readiness += 5;
+                if (lead.mortgage_amount) readiness += 10;
+                if (lead.property_value) readiness += 10;
+                if (lead.monthly_income) readiness += 10;
+                const classifications = leadDocs.map((d) => d.classification?.toLowerCase() || "");
+                if (classifications.some((c) => c.includes("ת\"ז") || c.includes("tz") || c.includes("id"))) readiness += 15;
+                if (classifications.some((c) => c.includes("bank") || c.includes("עו"))) readiness += 15;
+                if (classifications.some((c) => c.includes("pay") || c.includes("תלוש") || c.includes("salary"))) readiness += 15;
+                readiness = Math.min(100, readiness);
 
                 return (
                   <div key={lead.id} className="animate-fade-in">
@@ -1007,6 +1017,10 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                             </span>
                           )}
                         </div>
+                      </div>
+                      {/* Readiness Score */}
+                      <div className="hidden md:block">
+                        <ReadinessScore score={readiness} />
                       </div>
                       <div className="flex items-center gap-1">
                         {lead.phone && (
