@@ -386,7 +386,27 @@ export function CreditScoreAnalyzer() {
         </div>
       </div>
 
-      {/* ── AI Recommendations ──────────────── */}
+      {/* ── AI Strategy Insights ──────────────── */}
+      <AnimatePresence>
+        {analyzed && (
+          <AIStrategyInsights
+            onReanalyze={() => {
+              setScanning(true);
+              setAnalyzed(false);
+              setScore(null);
+              setTimeout(() => {
+                setScore(623);
+                setTimeout(() => {
+                  setScanning(false);
+                  setAnalyzed(true);
+                }, 1500);
+              }, 2500);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── AI Recommendations Grid ────────────── */}
       <AnimatePresence>
         {analyzed && (
           <motion.div
@@ -439,35 +459,6 @@ export function CreditScoreAnalyzer() {
                 );
               })}
             </div>
-
-            {/* Action recommendation */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/[0.06] to-primary/[0.06] border border-cyan-500/20"
-            >
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-cyan-500/10 shrink-0">
-                  <ArrowUpRight className="w-4 h-4 text-cyan-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">המלצת שיפור מיידית</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    סגור הלוואת צריכה אחת (₪850/חודש) והורד ניצול אשראי מ-72% ל-45%. 
-                    צפוי לשפר את הדירוג ב-55+ נקודות ולהעלות סיכויי אישור משכנתא ל-87%.
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge className="text-[10px] bg-success/10 text-success border-success/30">
-                      +55 נקודות דירוג
-                    </Badge>
-                    <Badge className="text-[10px] bg-cyan-500/10 text-cyan-400 border-cyan-500/30">
-                      87% סיכויי אישור
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
