@@ -163,7 +163,7 @@ export default function ConsultantDirectory() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
             className="text-gold/40 text-xs font-medium tracking-widest uppercase"
           >
-            הבינה שמאחורי האישור
+            תהיה מאושר.
           </motion.p>
 
           {/* Stats Cards */}

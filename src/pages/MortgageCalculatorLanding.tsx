@@ -337,7 +337,7 @@ const MortgageCalculatorLanding = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">חיתומית</h1>
-              <p className="text-[10px] text-gold/40 tracking-wider">הבינה שמאחורי האישור</p>
+              <p className="text-[10px] text-gold/40 tracking-wider">תהיה מאושר.</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

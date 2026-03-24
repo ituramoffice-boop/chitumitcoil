@@ -564,7 +564,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <ChitumitLogo size={36} />
             <div>
               <h1 className="text-xl font-bold text-gold">חיתומית</h1>
-              <p className="text-[10px] text-muted-foreground">הבינה שמאחורי האישור</p>
+              <p className="text-[10px] text-muted-foreground">תהיה מאושר.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

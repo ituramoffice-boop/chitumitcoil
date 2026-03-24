@@ -450,7 +450,7 @@ export default function Pitch() {
             transition={{ duration: 0.7 }}
           >
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium">
-              <ChitumitLogo size={20} /> חיתומית — הבינה שמאחורי האישור
+              <ChitumitLogo size={20} /> חיתומית — תהיה מאושר.
             </span>
           </motion.div>
 
