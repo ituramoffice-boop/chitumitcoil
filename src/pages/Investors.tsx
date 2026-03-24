@@ -443,11 +443,15 @@ export default function Investors() {
               "מדריך יועצים ציבורי עם מערכת ביקורות מאומתות",
               "שוק לידים — מנגנון מונטיזציה נוסף ליועצי Pro",
             ].map((item, i) => (
-              <Reveal key={i} delay={i * 0.08}>
-                <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-gold/5 border border-gold/15">
+              <Reveal key={i} delay={i * 0.08} variant="traction">
+                <motion.div
+                  whileHover={{ x: -6, backgroundColor: "rgba(212, 175, 55, 0.08)" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="flex items-center gap-3 px-5 py-3 rounded-xl bg-gold/5 border border-gold/15"
+                >
                   <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
                   <span className="text-sm text-slate-300">{item}</span>
-                </div>
+                </motion.div>
               </Reveal>
             ))}
           </div>
