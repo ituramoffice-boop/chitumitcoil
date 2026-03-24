@@ -527,11 +527,11 @@ export default function Pitch() {
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-5xl mx-auto">
           <AnimSection className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-success/10 border border-success/20 text-success text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium mb-4">
               <CheckCircle2 className="w-4 h-4" /> הפתרון
             </span>
             <h2 className="text-3xl md:text-5xl font-extrabold mb-4">
-              <span className="text-primary">מערכת אחת</span> שמחליפה את כולן
+              <span className="gradient-header">מערכת אחת</span> שמחליפה את כולן
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               תראה בעצמך איך כל פיצ'ר עובד — לא סתם מילים, הנה ה-Demo:
