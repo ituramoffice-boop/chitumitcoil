@@ -520,9 +520,22 @@ const ClientDashboard = () => {
                 <FileText className="w-5 h-5 text-cyan-400" />
                 מרכז המסמכים
               </h3>
-              <Badge variant="outline" className="text-xs border-border/60 text-muted-foreground">
-                {completedDocs.length}/{REQUIRED_DOCS.length} הושלמו
-              </Badge>
+              {allDocsComplete ? (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Badge className="bg-gradient-to-r from-yellow-600 to-yellow-500 text-white border-0 text-xs px-3 py-1 shadow-lg shadow-yellow-500/25">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                    התיק מוכן להגשה ✨
+                  </Badge>
+                </motion.div>
+              ) : (
+                <Badge variant="outline" className="text-xs border-border/60 text-muted-foreground">
+                  {completedDocs.length}/{REQUIRED_DOCS.length} הושלמו
+                </Badge>
+              )}
             </div>
 
             <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
