@@ -608,6 +608,70 @@ export function PriorityBoard({
           ))}
         </div>
       )}
+
+      {/* Email to Bank Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="sm:max-w-md bg-card border-border/50" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground flex items-center gap-2">
+              <Mail className="w-5 h-5 text-accent" />
+              שליחת קובץ הגשה למייל הבנק
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="bank-email" className="text-muted-foreground text-sm">
+                כתובת מייל של הבנק
+              </Label>
+              <Input
+                id="bank-email"
+                type="email"
+                placeholder="mortgage@bank.co.il"
+                value={bankEmail}
+                onChange={(e) => setBankEmail(e.target.value)}
+                className="bg-secondary/50 border-border/30 text-foreground"
+                dir="ltr"
+              />
+            </div>
+            <div className="rounded-lg bg-secondary/30 border border-border/20 p-3 space-y-1">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{selectedBulk.size}</span> תיקים נבחרו להגשה
+              </p>
+              <p className="text-xs text-muted-foreground">
+                המייל יכלול קישור להורדת קובץ PDF (תקף ל-7 ימים)
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEmailDialog(false)}
+              disabled={isSendingEmail}
+            >
+              ביטול
+            </Button>
+            <Button
+              size="sm"
+              className="bg-gradient-to-l from-accent to-yellow-600 hover:from-accent/90 hover:to-yellow-500 text-accent-foreground"
+              onClick={handleSendToBank}
+              disabled={isSendingEmail || !bankEmail}
+            >
+              {isSendingEmail ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 ml-1 animate-spin" />
+                  שולח...
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5 ml-1" />
+                  שלח לבנק
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
