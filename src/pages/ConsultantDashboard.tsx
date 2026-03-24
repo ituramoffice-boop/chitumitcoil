@@ -971,7 +971,15 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <PriorityBoard
               leads={leads}
               documents={documents}
-              onSelectLead={(lead) => setSelectedLead(lead as any as Lead)}
+              onSelectLead={(lead) => {
+                const nextLead = lead as any as Lead | null;
+                setSelectedLead(nextLead);
+                if (nextLead) {
+                  requestAnimationFrame(() => {
+                    window.scrollBy({ top: 520, behavior: "smooth" });
+                  });
+                }
+              }}
               selectedLeadId={selectedLead?.id || null}
               onWhatsApp={openWhatsApp}
             />
