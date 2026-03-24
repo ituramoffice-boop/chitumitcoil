@@ -59,6 +59,7 @@ const getWhatsAppUrl = (phone?: string | null) =>
   `https://wa.me/${phone || "972501234567"}`;
 
 const MortgageCalculatorLanding = () => {
+  const { branding } = useConsultantBranding(DEFAULT_CONSULTANT_ID);
   const [loanAmount, setLoanAmount] = useState(1000000);
   const [years, setYears] = useState(25);
   const [rate, setRate] = useState(4.5);
@@ -70,6 +71,7 @@ const MortgageCalculatorLanding = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [lastSliderTouched, setLastSliderTouched] = useState<string>("");
   const [savedLeadId, setSavedLeadId] = useState<string | null>(null);
+  const consultantId = branding?.consultantId || DEFAULT_CONSULTANT_ID;
 
   const result = calculateMortgage(loanAmount, years, rate);
   const animatedMonthly = useAnimatedNumber(result.monthly);
