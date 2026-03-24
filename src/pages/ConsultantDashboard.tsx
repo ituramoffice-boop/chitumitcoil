@@ -72,6 +72,7 @@ import { WorkspaceSettings } from "@/components/WorkspaceSettings";
 import { CaseTimeline } from "@/components/CaseTimeline";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow, format } from "date-fns";
 import { he } from "date-fns/locale";
 
