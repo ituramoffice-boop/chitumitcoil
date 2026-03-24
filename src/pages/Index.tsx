@@ -48,7 +48,7 @@ const Index = () => {
                     setMenuOpen(!menuOpen);
                   }
                 }}
-                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5"
+                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5 gold-glow-btn"
               >
                 האזור שלי
                 {!user && <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`} />}
