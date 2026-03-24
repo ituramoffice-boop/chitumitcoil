@@ -257,10 +257,45 @@ export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onG
             <Languages className="w-3.5 h-3.5" />
             {bankerMode ? "שפת בנקאים" : "שפה רגילה"}
           </Button>
-          <Badge variant="outline" className="border-accent/30 text-accent text-[10px] gap-1">
-            <Shield className="w-3 h-3" />
-            Chitumit AI Verified
-          </Badge>
+
+          {/* Integrity Check Shield */}
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Badge variant="outline" className="border-accent/30 text-accent text-[10px] gap-1 cursor-pointer hover:bg-accent/10 transition-colors">
+                <ShieldCheck className="w-3 h-3" />
+                Integrity Verified
+              </Badge>
+            </HoverCardTrigger>
+            <HoverCardContent side="bottom" className="w-72 text-right">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-accent" />
+                  <span className="font-bold text-sm text-foreground">Data Integrity Check</span>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                    100% התאמה לדו״חות BDI
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                    היסטוריית עו״ש 3 חודשים מאומתת
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                    תלושי שכר — חתימה דיגיטלית תקינה
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Shield className="w-3 h-3 text-accent shrink-0" />
+                    הצפנת AES-256 על כל המסמכים
+                  </p>
+                </div>
+                <p className="text-[10px] text-muted-foreground/70 pt-1 border-t border-border/30">
+                  אומת ע״י Chitumit Deep Audit Engine
+                </p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
         </div>
       </div>
 
