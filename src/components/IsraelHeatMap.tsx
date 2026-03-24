@@ -92,9 +92,32 @@ export default function IsraelHeatMap({ areas, selectedArea, onSelectArea }: Pro
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Map */}
         <div className="lg:col-span-3 relative aspect-[3/4] md:aspect-[4/5] rounded-2xl bg-[hsl(222,47%,6%)] border border-white/10 overflow-hidden">
-          {/* Water effect */}
-          <div className="absolute left-0 top-0 bottom-0 w-[18%] bg-gradient-to-r from-[hsl(210,80%,25%)]/30 to-transparent" />
-          <div className="absolute left-[5%] top-[15%] w-[12%] h-[65%] rounded-r-full bg-[hsl(210,80%,30%)]/15 blur-md" />
+          {/* Israel silhouette SVG */}
+          <svg viewBox="0 0 200 500" className="absolute inset-0 w-full h-full opacity-[0.12]" preserveAspectRatio="xMidYMid meet">
+            <path
+              d="M95 10 L105 8 L115 15 L120 25 L118 35 L125 42 L130 38 L132 30 L138 25 L140 32 L135 45 L128 55 L122 52 L115 58 L110 55 L108 60 L112 68 L108 75 L105 72 L100 78 L98 85 L102 90 L100 95 L95 92 L90 98 L88 105 L92 110 L90 118 L85 115 L82 120 L85 128 L83 135 L80 130 L78 138 L82 145 L80 155 L78 160 L82 168 L85 175 L83 185 L80 190 L78 200 L82 210 L85 220 L88 230 L90 240 L88 250 L85 260 L82 270 L80 280 L78 290 L75 310 L72 330 L70 350 L68 370 L70 390 L75 410 L80 430 L85 445 L90 455 L95 460 L100 465 L105 470 L108 475 L105 480 L100 485 L95 488 L90 490 L85 485 L80 475 L75 460 L70 445 L65 430 L60 410 L58 390 L55 370 L52 350 L50 330 L48 310 L50 290 L52 270 L55 250 L58 235 L60 220 L62 210 L60 200 L58 190 L55 180 L58 170 L62 160 L65 150 L68 140 L70 130 L72 120 L70 110 L68 100 L72 90 L75 82 L78 75 L80 68 L82 60 L85 50 L88 40 L90 30 L92 20 Z"
+              fill="hsl(160,84%,39%)"
+              stroke="hsl(160,84%,50%)"
+              strokeWidth="0.8"
+            />
+          </svg>
+          {/* Mediterranean sea */}
+          <div className="absolute left-0 top-0 bottom-0 w-[22%] bg-gradient-to-r from-[hsl(210,80%,25%)]/25 to-transparent">
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-[9px] text-[hsl(210,80%,60%)]/40 font-medium -rotate-90 whitespace-nowrap tracking-[0.3em]">הים התיכון</span>
+            </div>
+          </div>
+          {/* Dead Sea / Jordan */}
+          <div className="absolute right-0 top-[40%] w-[8%] h-[30%] bg-gradient-to-l from-[hsl(210,60%,20%)]/15 to-transparent" />
+          {/* Eilat indicator */}
+          <div className="absolute bottom-[4%] left-[45%] flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-[hsl(160,84%,39%)]/40" />
+            <span className="text-[8px] text-white/20">אילת ↓</span>
+          </div>
+          {/* Golan */}
+          <div className="absolute top-[3%] right-[20%] flex items-center gap-1">
+            <span className="text-[8px] text-white/15">רמת הגולן</span>
+          </div>
 
           {/* Region bubbles */}
           {Object.entries(REGION_POSITIONS).map(([region, pos]) => {
