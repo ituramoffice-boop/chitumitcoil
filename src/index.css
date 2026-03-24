@@ -281,4 +281,33 @@
     0%, 100% { box-shadow: 0 0 0 0 hsl(43 74% 52% / 0.4); }
     50% { box-shadow: 0 0 0 8px hsl(43 74% 52% / 0); }
   }
+
+  /* Button click micro-interaction */
+  button:active:not(:disabled) {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+
+  /* Card hover lift */
+  .glass-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px hsl(var(--primary) / 0.08);
+  }
+
+  /* Empty state styling */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-12 text-center;
+  }
+  .empty-state-icon {
+    @apply w-16 h-16 rounded-2xl bg-secondary/60 flex items-center justify-center mb-4;
+  }
+  .empty-state-title {
+    @apply text-sm font-semibold text-muted-foreground mb-1;
+  }
+  .empty-state-desc {
+    @apply text-xs text-muted-foreground/60 max-w-xs;
+  }
 }
