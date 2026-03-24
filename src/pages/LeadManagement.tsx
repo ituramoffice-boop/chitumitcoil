@@ -271,6 +271,30 @@ const NEXT_STEP_OPTIONS = [
 const LeadManagement = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Fetch user plan for paywall
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile-plan", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("plan, lead_count")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data as { plan: string; lead_count: number } | null;
+    },
+    enabled: !!user,
+  });
+
+  const userPlan = userProfile?.plan || "free";
+  const leadLimit = PLAN_LIMITS[userPlan] || 10;
+  const isAtLimit = userPlan === "free" && (userProfile?.lead_count || 0) >= leadLimit;
+
+  // Helper: should this lead index be blurred?
+  const isLeadBlurred = (index: number) => {
+    if (userPlan !== "free") return false;
+    return index >= leadLimit;
+  };
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("created_at");
