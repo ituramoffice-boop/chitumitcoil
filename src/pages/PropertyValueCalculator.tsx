@@ -267,9 +267,15 @@ const PropertyValueCalculator = () => {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <style>{`
         @keyframes loading { from { width: 0%; } to { width: 100%; } }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px hsl(160,84%,39%,0.2); } 50% { box-shadow: 0 0 40px hsl(160,84%,39%,0.4); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .anim-fade-up { animation: fadeSlideUp 0.7s ease-out both; }
+        .anim-fade-up-1 { animation: fadeSlideUp 0.7s ease-out 0.1s both; }
+        .anim-fade-up-2 { animation: fadeSlideUp 0.7s ease-out 0.2s both; }
+        .anim-fade-up-3 { animation: fadeSlideUp 0.7s ease-out 0.3s both; }
+        .anim-scale-in { animation: scaleIn 0.6s ease-out both; }
       `}</style>
 
       <div className="min-h-screen bg-[hsl(222,47%,4%)] text-white overflow-hidden" dir="rtl">
