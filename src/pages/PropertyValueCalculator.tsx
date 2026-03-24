@@ -298,33 +298,35 @@ const PropertyValueCalculator = () => {
   const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
     setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      const effectiveConsultantId = consultantId;
       const leadScore = calcLeadScore(data.email, marketingConsent);
       const category = getLeadCategory(data.category);
       const tags = getLeadTags();
-      const { error } = await supabase.from("leads").insert({
-        consultant_id: consultantId,
+      const { data: insertedLead, error } = await supabase.from("leads").insert({
+        consultant_id: effectiveConsultantId,
         full_name: data.full_name,
         phone: data.phone || null,
         email: data.email || null,
         property_value: totalValue,
         mortgage_amount: Math.round(totalValue * 0.7),
-        lead_source: "organic",
+        lead_source: branding?.consultantId !== DEFAULT_CONSULTANT_ID ? "referral" : "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
         notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
-      } as any);
+      } as any).select("id").single();
       if (error) throw error;
-      if (session?.user?.id) {
-        const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
-        supabase.from("notifications").insert({
-          user_id: session.user.id,
-          title: `🏠 ליד חדש מהערכת שווי: ${data.full_name}${tagLabel}`,
-          body: `₪${totalValue.toLocaleString()} • ${area.name} • ציון ${leadScore} • ${category}`,
-          type: leadScore >= 70 ? "urgent" : "info",
-          link: "/dashboard/leads",
-        } as any).then(() => {});
+      if (insertedLead?.id) {
+        // Notify consultant via edge function
+        supabase.functions.invoke("notify-new-lead", {
+          body: {
+            consultantId: effectiveConsultantId,
+            leadName: data.full_name,
+            leadPhone: data.phone,
+            leadScore,
+            calcType: "מחשבון שווי נכס",
+            calcSummary: `₪${totalValue.toLocaleString()} • ${area.name} • ${sqm} מ"ר`,
+          },
+        }).catch(() => {}); // best-effort
       }
       setIsUnlocked(true);
     } catch (e: any) {
