@@ -665,7 +665,7 @@ export function PriorityBoard({
 
       // Professional Service Value indicator
       fy += 35;
-      const mortgage = Number(lead.mortgage_amount) || 0;
+      const mortgageAmt = Number(lead.mortgage_amount) || 0;
       doc.setFillColor(20, 30, 48);
       doc.roundedRect(15, fy - 5, 180, 22, 3, 3, "F");
       doc.setDrawColor(212, 175, 55);
