@@ -199,6 +199,9 @@ export function PriorityBoard({
 }) {
   const [selectedBulk, setSelectedBulk] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<"board" | "list">("board");
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [bankEmail, setBankEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const enrichedLeads: LeadWithAI[] = useMemo(() => {
     return leads
