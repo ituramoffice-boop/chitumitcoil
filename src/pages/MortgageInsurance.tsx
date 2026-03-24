@@ -18,6 +18,11 @@ import {
   Cigarette, Calendar, DollarSign, Target, BadgeCheck, Zap, Users,
   ChevronDown, BarChart3,
 } from "lucide-react";
+import harelLogo from "@/assets/insurance-logos/harel.png";
+import phoenixLogo from "@/assets/insurance-logos/phoenix.png";
+import migdalLogo from "@/assets/insurance-logos/migdal.png";
+import menoraLogo from "@/assets/insurance-logos/menora.png";
+import clalLogo from "@/assets/insurance-logos/clal.png";
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
@@ -780,11 +785,11 @@ function CaptureStep({ fullName, setFullName, phone, setPhone, email, setEmail, 
 /* ═══ Insurance Companies Comparison Table ═══ */
 function InsuranceCompaniesTable({ marketPremium }: { marketPremium: number }) {
   const companies = [
-    { name: "הראל ביטוח", factor: 1.08, color: "text-blue-400" },
-    { name: "הפניקס ביטוח", factor: 1.02, color: "text-orange-400" },
-    { name: "מגדל ביטוח", factor: 0.97, color: "text-red-400" },
-    { name: "מנורה מבטחים", factor: 1.05, color: "text-purple-400" },
-    { name: "כלל ביטוח", factor: 0.99, color: "text-sky-400" },
+    { name: "הראל ביטוח", factor: 1.08, color: "text-blue-400", logo: harelLogo },
+    { name: "הפניקס ביטוח", factor: 1.02, color: "text-orange-400", logo: phoenixLogo },
+    { name: "מגדל ביטוח", factor: 0.97, color: "text-red-400", logo: migdalLogo },
+    { name: "מנורה מבטחים", factor: 1.05, color: "text-purple-400", logo: menoraLogo },
+    { name: "כלל ביטוח", factor: 0.99, color: "text-sky-400", logo: clalLogo },
   ];
 
   return (
@@ -821,7 +826,12 @@ function InsuranceCompaniesTable({ marketPremium }: { marketPremium: number }) {
                   className="border-b border-white/5 hover:bg-white/5 transition-colors"
                 >
                   <td className="py-3 px-3">
-                    <span className={cn("font-medium text-xs", c.color)}>{c.name}</span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-white/90 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <img src={c.logo} alt={c.name} width={20} height={20} loading="lazy" className="object-contain" />
+                      </div>
+                      <span className={cn("font-medium text-xs", c.color)}>{c.name}</span>
+                    </div>
                   </td>
                   <td className="py-3 px-3 text-center">
                     <span className="text-white/80 font-bold text-xs">₪{premium.toLocaleString()}</span>
