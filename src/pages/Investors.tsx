@@ -14,16 +14,39 @@ import {
 } from "recharts";
 
 /* ── Section wrapper with scroll reveal ── */
-function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+function Reveal({ children, className = "", delay = 0, variant = "default" }: { children: React.ReactNode; className?: string; delay?: number; variant?: "default" | "card" | "stat" | "traction" }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const variants = {
+    default: {
+      hidden: { opacity: 0, y: 40 },
+      visible: { opacity: 1, y: 0 },
+    },
+    card: {
+      hidden: { opacity: 0, y: 50, scale: 0.92, rotateX: 8 },
+      visible: { opacity: 1, y: 0, scale: 1, rotateX: 0 },
+    },
+    stat: {
+      hidden: { opacity: 0, scale: 0.8, y: 30 },
+      visible: { opacity: 1, scale: 1, y: 0 },
+    },
+    traction: {
+      hidden: { opacity: 0, x: 60 },
+      visible: { opacity: 1, x: 0 },
+    },
+  };
+
+  const v = variants[variant];
+
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay, ease: "easeOut" }}
+      initial={v.hidden}
+      animate={inView ? v.visible : {}}
+      transition={{ duration: 0.7, delay, ease: [0.25, 0.46, 0.45, 0.94], type: variant === "stat" ? "spring" : "tween", ...(variant === "stat" ? { stiffness: 200, damping: 20 } : {}) }}
       className={className}
+      style={{ perspective: variant === "card" ? 800 : undefined }}
     >
       {children}
     </motion.div>
