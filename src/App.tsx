@@ -25,6 +25,7 @@ import Accessibility from "./pages/Accessibility";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import { AccessibilityBadge } from "@/components/AccessibilityBadge";
+import Unsubscribe from "./pages/Unsubscribe";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
@@ -61,6 +62,7 @@ const App = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AccessibilityBadge />

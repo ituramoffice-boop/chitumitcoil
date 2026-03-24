@@ -67,48 +67,35 @@ serve(async (req) => {
       link: "/dashboard/clients",
     });
 
-    // Send email notification via Lovable AI
+    // Send email notification via transactional email system
     if (profile.email) {
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      if (LOVABLE_API_KEY) {
-        try {
-          const emailBody = `
-שלום ${profile.full_name || "יועץ"},
-
-ליד חדש נכנס למערכת דרך הקישור האישי שלך:
-
-📋 שם: ${leadName}
-📞 טלפון: ${leadPhone || "לא צוין"}
-📊 ציון ליד: ${leadScore || 0}
-🏠 מקור: ${calcType || "מחשבון"}
-${calcSummary ? `📝 פרטים: ${calcSummary}` : ""}
-
-היכנס לדשבורד לצפייה בפרטים המלאים.
-
-בהצלחה,
-SmartMortgage AI
-          `.trim();
-
-          const response = await fetch(
-            `${supabaseUrl}/functions/v1/send-transactional-email`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${supabaseKey}`,
+      try {
+        const response = await fetch(
+          `${supabaseUrl}/functions/v1/send-transactional-email`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({
+              templateName: "new-lead-notification",
+              recipientEmail: profile.email,
+              idempotencyKey: `lead-notify-${consultantId}-${Date.now()}`,
+              templateData: {
+                consultantName: profile.full_name || "יועץ",
+                leadName,
+                leadPhone: leadPhone || undefined,
+                leadScore: leadScore || 0,
+                calcType: calcType || "מחשבון",
+                calcSummary: calcSummary || undefined,
               },
-              body: JSON.stringify({
-                to: profile.email,
-                subject: `🔥 ליד חדש: ${leadName} - SmartMortgage AI`,
-                text: emailBody,
-              }),
-            }
-          );
-          // Best-effort email - don't fail if email service isn't set up
-          console.log("Email notification attempt:", response.status);
-        } catch (emailErr) {
-          console.log("Email notification failed (non-critical):", emailErr);
-        }
+            }),
+          }
+        );
+        console.log("Email notification enqueued:", response.status);
+      } catch (emailErr) {
+        console.log("Email notification failed (non-critical):", emailErr);
       }
     }
 
