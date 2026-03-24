@@ -531,7 +531,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8 space-y-6">
+      <main className="container mx-auto px-6 lg:px-10 py-10 space-y-8">
         {/* AI Summary Banner */}
         {summary.parts.length > 0 && (
           <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-l from-cyan-glow/5 via-primary/10 to-cyan-glow/5 p-4 animate-fade-in glow-primary">
