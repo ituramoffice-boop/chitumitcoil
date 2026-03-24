@@ -604,7 +604,7 @@ export default function Pitch() {
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-extrabold">
-              <span className="text-destructive line-through">הדרך הישנה</span> vs <span className="text-primary">הדרך החכמה</span>
+              <span className="text-destructive line-through">הדרך הישנה</span> vs <span className="gradient-header">הדרך החכמה</span>
             </h2>
           </AnimSection>
 
