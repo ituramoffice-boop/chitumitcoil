@@ -23,6 +23,8 @@ import Accessibility from "./pages/Accessibility";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import { AccessibilityBadge } from "@/components/AccessibilityBadge";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +57,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AccessibilityBadge />
+            <MobileBottomNav />
+            <PWAInstallPrompt />
             </WorkspaceProvider>
           </AuthProvider>
         </BrowserRouter>

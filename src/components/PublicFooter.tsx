@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { MessageCircle } from "lucide-react";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
 
 interface PublicFooterProps {
   className?: string;
@@ -52,6 +53,9 @@ export function PublicFooter({ className = "", activePage }: PublicFooterProps) 
             <Link to="/accessibility" className="hover:text-gold transition-colors">הצהרת נגישות</Link>
           )}
         </div>
+
+        {/* App Store Badges */}
+        <AppStoreBadges />
       </div>
     </footer>
   );

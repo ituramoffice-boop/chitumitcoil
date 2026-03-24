@@ -14,6 +14,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocation } from "react-router-dom";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -99,6 +100,13 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* App Store Badges in sidebar */}
+        {!collapsed && (
+          <div className="px-4 py-3 border-t border-sidebar-border">
+            <AppStoreBadges compact />
+          </div>
+        )}
       </SidebarContent>
     </Sidebar>
   );
