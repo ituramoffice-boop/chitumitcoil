@@ -281,6 +281,47 @@ export type Database = {
           },
         ]
       }
+      consultant_reviews: {
+        Row: {
+          comment: string | null
+          consultant_id: string
+          created_at: string
+          id: string
+          is_verified: boolean | null
+          lead_id: string
+          rating: number
+          reviewer_name: string
+        }
+        Insert: {
+          comment?: string | null
+          consultant_id: string
+          created_at?: string
+          id?: string
+          is_verified?: boolean | null
+          lead_id: string
+          rating: number
+          reviewer_name: string
+        }
+        Update: {
+          comment?: string | null
+          consultant_id?: string
+          created_at?: string
+          id?: string
+          is_verified?: boolean | null
+          lead_id?: string
+          rating?: number
+          reviewer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultant_reviews_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           classification: string | null
@@ -346,6 +387,7 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          is_marketplace: boolean | null
           last_contact: string | null
           lead_score: number | null
           lead_source: string | null
@@ -370,6 +412,7 @@ export type Database = {
           email?: string | null
           full_name: string
           id?: string
+          is_marketplace?: boolean | null
           last_contact?: string | null
           lead_score?: number | null
           lead_source?: string | null
@@ -394,6 +437,7 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          is_marketplace?: boolean | null
           last_contact?: string | null
           lead_score?: number | null
           lead_source?: string | null
