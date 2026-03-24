@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import Accessibility from "./pages/Accessibility";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import { AccessibilityBadge } from "@/components/AccessibilityBadge";
 
 const queryClient = new QueryClient();
 
