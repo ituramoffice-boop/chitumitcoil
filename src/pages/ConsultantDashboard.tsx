@@ -697,6 +697,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           </div>
         </div>
 
+        {/* Profit Intelligence */}
+        <PerformanceStats leads={leads} />
+
         {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Critical Alerts - 3 categories */}
