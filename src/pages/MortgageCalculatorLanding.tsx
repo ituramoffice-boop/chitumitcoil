@@ -198,7 +198,7 @@ const MortgageCalculatorLanding = () => {
       const tags = getLeadTags();
       
       const { data: insertedLead, error } = await supabase.from("leads").insert({
-        consultant_id: consultantId,
+        consultant_id: effectiveConsultantId,
         full_name: data.full_name,
         phone: data.phone || null,
         email: data.email || null,
