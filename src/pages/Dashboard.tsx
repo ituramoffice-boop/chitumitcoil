@@ -21,7 +21,7 @@ import { SalesLeaderboard } from "@/components/SalesLeaderboard";
 import ClientManagement from "./ClientManagement";
 import ConsultantSettings from "./ConsultantSettings";
 import MarketTrends from "@/components/MarketTrends";
-import { LeadMarketplace } from "@/components/LeadMarketplace";
+import LeadMarketplace from "@/components/LeadMarketplace";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
