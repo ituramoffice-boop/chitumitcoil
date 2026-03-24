@@ -949,6 +949,21 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                   (a) => a.lead.id === lead.id && a.category === "missing_docs"
                 )?.missingDoc;
 
+                // Compute readiness score (0-100)
+                const leadDocs = documents.filter((d) => d.lead_id === lead.id);
+                let readiness = 0;
+                if (lead.full_name) readiness += 10;
+                if (lead.phone) readiness += 10;
+                if (lead.email) readiness += 5;
+                if (lead.mortgage_amount) readiness += 10;
+                if (lead.property_value) readiness += 10;
+                if (lead.monthly_income) readiness += 10;
+                const classifications = leadDocs.map((d) => d.classification?.toLowerCase() || "");
+                if (classifications.some((c) => c.includes("ת\"ז") || c.includes("tz") || c.includes("id"))) readiness += 15;
+                if (classifications.some((c) => c.includes("bank") || c.includes("עו"))) readiness += 15;
+                if (classifications.some((c) => c.includes("pay") || c.includes("תלוש") || c.includes("salary"))) readiness += 15;
+                readiness = Math.min(100, readiness);
+
                 return (
                   <div key={lead.id} className="animate-fade-in">
                     <div
