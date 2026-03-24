@@ -92,92 +92,98 @@ export default function IsraelHeatMap({ areas, selectedArea, onSelectArea }: Pro
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Map */}
         <div className="lg:col-span-3 relative aspect-[3/4] md:aspect-[4/5] rounded-2xl bg-[hsl(222,47%,6%)] border border-white/10 overflow-hidden">
-          {/* Israel silhouette SVG with geographic features */}
+          {/* Israel silhouette SVG — accurate geographic outline */}
           <svg viewBox="0 0 200 500" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
-            {/* Country outline — bolder */}
+            <defs>
+              <filter id="borderGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+              </filter>
+            </defs>
+            {/* Country outline — accurate Israel shape */}
             <path
-              d="M95 10 L105 8 L115 15 L120 25 L118 35 L125 42 L130 38 L132 30 L138 25 L140 32 L135 45 L128 55 L122 52 L115 58 L110 55 L108 60 L112 68 L108 75 L105 72 L100 78 L98 85 L102 90 L100 95 L95 92 L90 98 L88 105 L92 110 L90 118 L85 115 L82 120 L85 128 L83 135 L80 130 L78 138 L82 145 L80 155 L78 160 L82 168 L85 175 L83 185 L80 190 L78 200 L82 210 L85 220 L88 230 L90 240 L88 250 L85 260 L82 270 L80 280 L78 290 L75 310 L72 330 L70 350 L68 370 L70 390 L75 410 L80 430 L85 445 L90 455 L95 460 L100 465 L105 470 L108 475 L105 480 L100 485 L95 488 L90 490 L85 485 L80 475 L75 460 L70 445 L65 430 L60 410 L58 390 L55 370 L52 350 L50 330 L48 310 L50 290 L52 270 L55 250 L58 235 L60 220 L62 210 L60 200 L58 190 L55 180 L58 170 L62 160 L65 150 L68 140 L70 130 L72 120 L70 110 L68 100 L72 90 L75 82 L78 75 L80 68 L82 60 L85 50 L88 40 L90 30 L92 20 Z"
+              d="M23 24 L51 51 L72 76 L92 80 L87 88 L82 118 L80 142 L75 158 L74 168 L72 184 L67 202 L54 218 L46 232 L22 272 L15 286 L20 310 L23 346 L31 382 L46 430 L87 478 L92 480 L97 478 L108 442 L113 394 L118 358 L128 322 L133 298 L139 274 L146 250 L149 238 L149 214 L154 202 L154 178 L159 154 L161 130 L162 118 L169 100 L164 88 L175 70 L180 52 L185 28 L169 24 L149 48 L128 52 L113 48 L97 46 L72 44 L46 36 L23 24 Z"
               fill="hsl(160,84%,39%)"
               fillOpacity="0.1"
               stroke="hsl(160,84%,50%)"
-              strokeWidth="1.8"
-              strokeOpacity="0.4"
+              strokeWidth="2"
+              strokeOpacity="0.45"
+              strokeLinejoin="round"
             />
-            {/* Border glow — outer */}
+            {/* Outer glow */}
             <path
-              d="M95 10 L105 8 L115 15 L120 25 L118 35 L125 42 L130 38 L132 30 L138 25 L140 32 L135 45 L128 55 L122 52 L115 58 L110 55 L108 60 L112 68 L108 75 L105 72 L100 78 L98 85 L102 90 L100 95 L95 92 L90 98 L88 105 L92 110 L90 118 L85 115 L82 120 L85 128 L83 135 L80 130 L78 138 L82 145 L80 155 L78 160 L82 168 L85 175 L83 185 L80 190 L78 200 L82 210 L85 220 L88 230 L90 240 L88 250 L85 260 L82 270 L80 280 L78 290 L75 310 L72 330 L70 350 L68 370 L70 390 L75 410 L80 430 L85 445 L90 455 L95 460 L100 465 L105 470 L108 475 L105 480 L100 485 L95 488 L90 490 L85 485 L80 475 L75 460 L70 445 L65 430 L60 410 L58 390 L55 370 L52 350 L50 330 L48 310 L50 290 L52 270 L55 250 L58 235 L60 220 L62 210 L60 200 L58 190 L55 180 L58 170 L62 160 L65 150 L68 140 L70 130 L72 120 L70 110 L68 100 L72 90 L75 82 L78 75 L80 68 L82 60 L85 50 L88 40 L90 30 L92 20 Z"
+              d="M23 24 L51 51 L72 76 L92 80 L87 88 L82 118 L80 142 L75 158 L74 168 L72 184 L67 202 L54 218 L46 232 L22 272 L15 286 L20 310 L23 346 L31 382 L46 430 L87 478 L92 480 L97 478 L108 442 L113 394 L118 358 L128 322 L133 298 L139 274 L146 250 L149 238 L149 214 L154 202 L154 178 L159 154 L161 130 L162 118 L169 100 L164 88 L175 70 L180 52 L185 28 L169 24 L149 48 L128 52 L113 48 L97 46 L72 44 L46 36 L23 24 Z"
               fill="none"
               stroke="hsl(160,84%,50%)"
-              strokeWidth="4"
+              strokeWidth="6"
               strokeOpacity="0.08"
               filter="url(#borderGlow)"
             />
-            <defs>
-              <filter id="borderGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-              </filter>
-            </defs>
+
             {/* Lebanon border (north) */}
-            <line x1="60" y1="8" x2="142" y2="8" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" />
-            <text x="100" y="6" textAnchor="middle" fontSize="4" fill="white" fillOpacity="0.12" fontFamily="Heebo">לבנון</text>
+            <path d="M10 20 L23 24" stroke="white" strokeWidth="0.6" strokeOpacity="0.15" strokeDasharray="3,2" fill="none" />
+            <text x="8" y="16" fontSize="5" fill="white" fillOpacity="0.15" fontFamily="Heebo">לבנון 🇱🇧</text>
+
             {/* Syria border (northeast) */}
-            <line x1="140" y1="10" x2="150" y2="70" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" />
-            <text x="152" y="40" fontSize="4" fill="white" fillOpacity="0.12" fontFamily="Heebo" transform="rotate(75,152,40)">סוריה</text>
+            <path d="M185 28 L195 15" stroke="white" strokeWidth="0.6" strokeOpacity="0.15" strokeDasharray="3,2" fill="none" />
+            <text x="186" y="12" fontSize="5" fill="white" fillOpacity="0.15" fontFamily="Heebo">סוריה 🇸🇾</text>
+
             {/* Jordan border (east) */}
-            <path d="M140 70 L145 120 L140 180 L135 240 L130 300 L120 380 L110 460 L100 490" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" fill="none" />
-            <text x="148" y="200" fontSize="4.5" fill="white" fillOpacity="0.12" fontFamily="Heebo" transform="rotate(85,148,200)">ירדן</text>
+            <text x="178" y="250" fontSize="5.5" fill="white" fillOpacity="0.13" fontFamily="Heebo" transform="rotate(80,178,250)">🇯🇴 ירדן</text>
+
             {/* Egypt border (southwest) */}
-            <path d="M48 310 L40 380 L35 430 L40 470 L90 490" stroke="white" strokeWidth="0.5" strokeOpacity="0.12" strokeDasharray="3,3" fill="none" />
-            <text x="42" y="440" fontSize="4.5" fill="white" fillOpacity="0.12" fontFamily="Heebo" transform="rotate(-70,42,440)">מצרים</text>
+            <path d="M22 272 L8 290 L5 350 L15 420 L46 430" stroke="white" strokeWidth="0.6" strokeOpacity="0.12" strokeDasharray="3,2" fill="none" />
+            <text x="5" y="380" fontSize="5.5" fill="white" fillOpacity="0.13" fontFamily="Heebo" transform="rotate(-80,5,380)">🇪🇬 מצרים</text>
+
             {/* Sea of Galilee / כנרת */}
-            <ellipse cx="130" cy="55" rx="8" ry="12" fill="hsl(210,80%,40%)" fillOpacity="0.25" stroke="hsl(210,80%,50%)" strokeWidth="0.5" strokeOpacity="0.3" />
-            <text x="130" y="58" textAnchor="middle" fontSize="5" fill="hsl(210,80%,60%)" fillOpacity="0.5" fontFamily="Heebo">כנרת</text>
+            <ellipse cx="157" cy="80" rx="6" ry="10" fill="hsl(210,80%,40%)" fillOpacity="0.3" stroke="hsl(210,80%,55%)" strokeWidth="0.6" strokeOpacity="0.4" />
+            <text x="157" y="83" textAnchor="middle" fontSize="4.5" fill="hsl(210,80%,65%)" fillOpacity="0.6" fontFamily="Heebo">כנרת</text>
+
             {/* Dead Sea / ים המלח */}
-            <ellipse cx="125" cy="220" rx="5" ry="30" fill="hsl(195,70%,35%)" fillOpacity="0.2" stroke="hsl(195,70%,45%)" strokeWidth="0.5" strokeOpacity="0.25" />
-            <text x="125" y="222" textAnchor="middle" fontSize="4.5" fill="hsl(195,70%,50%)" fillOpacity="0.45" fontFamily="Heebo">ים המלח</text>
-            {/* Jordan River hint */}
-            <path d="M128 68 Q130 100 128 140 Q126 170 125 190" stroke="hsl(210,80%,50%)" strokeWidth="0.5" strokeOpacity="0.15" fill="none" />
-            {/* Negev desert texture */}
-            <text x="85" y="400" textAnchor="middle" fontSize="6" fill="white" fillOpacity="0.06" fontFamily="Heebo" letterSpacing="4">מדבר הנגב</text>
-            {/* City dots */}
+            <ellipse cx="147" cy="236" rx="4" ry="22" fill="hsl(195,70%,35%)" fillOpacity="0.25" stroke="hsl(195,70%,50%)" strokeWidth="0.5" strokeOpacity="0.3" />
+            <text x="147" y="238" textAnchor="middle" fontSize="4" fill="hsl(195,70%,55%)" fillOpacity="0.5" fontFamily="Heebo">ים המלח</text>
+
+            {/* Jordan River */}
+            <path d="M157 92 Q155 120 152 160 Q150 190 148 215" stroke="hsl(210,80%,55%)" strokeWidth="0.6" strokeOpacity="0.18" fill="none" />
+
+            {/* Negev desert */}
+            <text x="60" y="380" textAnchor="middle" fontSize="7" fill="white" fillOpacity="0.06" fontFamily="Heebo" letterSpacing="5">מדבר הנגב</text>
+
+            {/* City dots — accurate positions */}
             {[
-              { x: 75, y: 160, name: "ת\"א" },
-              { x: 100, y: 195, name: "י-ם" },
-              { x: 82, y: 60, name: "חיפה" },
-              { x: 80, y: 310, name: "ב\"ש" },
-              { x: 78, y: 250, name: "אשדוד" },
-              { x: 82, y: 120, name: "נתניה" },
+              { x: 75, y: 170, name: "ת\"א", size: 3 },
+              { x: 121, y: 206, name: "ירושלים", size: 3 },
+              { x: 96, y: 81, name: "חיפה", size: 2.5 },
+              { x: 76, y: 268, name: "ב\"ש", size: 2 },
+              { x: 61, y: 202, name: "אשדוד", size: 1.8 },
+              { x: 83, y: 138, name: "נתניה", size: 1.8 },
+              { x: 92, y: 471, name: "אילת", size: 1.5 },
             ].map(city => (
               <g key={city.name}>
-                <circle cx={city.x} cy={city.y} r="2" fill="white" fillOpacity="0.15" />
-                <circle cx={city.x} cy={city.y} r="0.8" fill="white" fillOpacity="0.4" />
-                <text x={city.x + 5} y={city.y + 2} fontSize="4.5" fill="white" fillOpacity="0.2" fontFamily="Heebo">{city.name}</text>
+                <circle cx={city.x} cy={city.y} r={city.size} fill="white" fillOpacity="0.1" />
+                <circle cx={city.x} cy={city.y} r={city.size * 0.4} fill="white" fillOpacity="0.5" />
+                <text x={city.x - 2} y={city.y + city.size + 6} textAnchor="middle" fontSize="4.5" fill="white" fillOpacity="0.25" fontFamily="Heebo">{city.name}</text>
               </g>
             ))}
           </svg>
 
           {/* Mediterranean sea */}
-          <div className="absolute left-0 top-0 bottom-0 w-[22%] bg-gradient-to-r from-[hsl(210,80%,25%)]/25 to-transparent">
+          <div className="absolute left-0 top-0 bottom-0 w-[18%] bg-gradient-to-r from-[hsl(210,80%,22%)]/30 to-transparent">
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[9px] text-[hsl(210,80%,60%)]/40 font-medium -rotate-90 whitespace-nowrap tracking-[0.3em]">הים התיכון</span>
+              <span className="text-[9px] text-[hsl(210,80%,60%)]/30 font-medium -rotate-90 whitespace-nowrap tracking-[0.3em]">הים התיכון</span>
             </div>
           </div>
 
-          {/* Eilat indicator */}
-          <div className="absolute bottom-[3%] left-[42%] flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-[hsl(38,92%,50%)]/50 animate-pulse" />
-            <span className="text-[9px] text-white/25 font-medium">אילת 🏖️</span>
-          </div>
-          {/* Golan */}
-          <div className="absolute top-[2%] right-[15%] flex items-center gap-1">
+          {/* Golan Heights */}
+          <div className="absolute top-[5%] right-[5%] flex items-center gap-1">
             <span className="text-[9px] text-white/20 font-medium">🏔️ רמת הגולן</span>
           </div>
-          {/* Flag — larger */}
-          <div className="absolute top-4 left-4 z-30 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
-            <span className="text-2xl">🇮🇱</span>
+
+          {/* Flag — prominent */}
+          <div className="absolute top-4 left-4 z-30 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white/[0.06] backdrop-blur-md border border-white/10 shadow-lg">
+            <span className="text-3xl">🇮🇱</span>
             <div className="flex flex-col">
-              <span className="text-xs text-white/50 font-bold leading-tight">מדינת ישראל</span>
-              <span className="text-[9px] text-white/25">State of Israel</span>
+              <span className="text-sm text-white/50 font-bold leading-tight">מדינת ישראל</span>
+              <span className="text-[10px] text-white/25">State of Israel</span>
             </div>
           </div>
 
