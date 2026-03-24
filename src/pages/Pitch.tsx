@@ -648,8 +648,8 @@ export default function Pitch() {
             ].map((item, i) => (
               <AnimSection key={i} delay={i * 0.12}>
                 <div className="glass-card p-6 text-center space-y-3 h-full relative overflow-hidden">
-                  <div className="text-5xl font-black text-primary/10">{item.step}</div>
-                  <item.icon className="w-8 h-8 text-primary mx-auto" />
+                  <div className="text-5xl font-black text-gold/10">{item.step}</div>
+                  <item.icon className="w-8 h-8 text-gold mx-auto" />
                   <h3 className="text-lg font-bold text-foreground">{item.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
