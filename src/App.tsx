@@ -34,6 +34,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import DemoHub from "./pages/DemoHub";
 import AdvisorPricing from "./pages/AdvisorPricing";
+import AdvisorPlans from "./pages/AdvisorPlans";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
