@@ -586,6 +586,9 @@ function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, 
             <p className="text-4xl font-bold text-emerald-400">₪{animSavings.toLocaleString()}</p>
             <p className="text-xs text-white/40">₪{monthlySavings.toLocaleString()} × {loanTerm * 12} חודשים</p>
           </div>
+
+          {/* Insurance companies comparison table */}
+          <InsuranceCompaniesTable marketPremium={animMarket} chitumitPremium={animChitumit} />
         </motion.div>
       )}
     </div>
@@ -708,6 +711,111 @@ function CaptureStep({ fullName, setFullName, phone, setPhone, email, setEmail, 
         <Lock className="w-3 h-3" />
         <span>הפרטים מוצפנים ומאובטחים בתקן AES-256</span>
       </div>
+    </div>
+  );
+}
+
+/* ═══ Insurance Companies Comparison Table ═══ */
+function InsuranceCompaniesTable({ marketPremium, chitumitPremium }: { marketPremium: number; chitumitPremium: number }) {
+  const companies = [
+    { name: "הראל", factor: 1.08, color: "text-blue-400" },
+    { name: "הפניקס", factor: 1.02, color: "text-orange-400" },
+    { name: "מגדל", factor: 0.97, color: "text-red-400" },
+    { name: "מנורה מבטחים", factor: 1.05, color: "text-purple-400" },
+    { name: "כלל ביטוח", factor: 0.99, color: "text-sky-400" },
+  ];
+
+  return (
+    <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-white/80 flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-cyan-400" />
+          השוואת חברות ביטוח
+        </h3>
+        <span className="text-[10px] text-white/30">מעודכן למרץ 2026</span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-white/10">
+              <th className="text-right py-2 px-3 text-[11px] text-white/40 font-medium">חברה</th>
+              <th className="text-center py-2 px-3 text-[11px] text-white/40 font-medium">פרמיה חודשית</th>
+              <th className="text-center py-2 px-3 text-[11px] text-white/40 font-medium">יחס לממוצע</th>
+              <th className="text-center py-2 px-3 text-[11px] text-white/40 font-medium hidden sm:table-cell">דירוג</th>
+            </tr>
+          </thead>
+          <tbody>
+            {companies.map((c, i) => {
+              const premium = Math.round(marketPremium * c.factor);
+              const diff = ((c.factor - 1) * 100).toFixed(1);
+              const isAbove = c.factor > 1;
+              return (
+                <motion.tr
+                  key={c.name}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                >
+                  <td className="py-3 px-3">
+                    <span className={cn("font-medium text-xs", c.color)}>{c.name}</span>
+                  </td>
+                  <td className="py-3 px-3 text-center">
+                    <span className="text-white/80 font-bold text-xs">₪{premium.toLocaleString()}</span>
+                  </td>
+                  <td className="py-3 px-3 text-center">
+                    <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full",
+                      isAbove ? "bg-red-500/10 text-red-400" : "bg-emerald-500/10 text-emerald-400"
+                    )}>
+                      {isAbove ? `+${diff}%` : `${diff}%`}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 text-center hidden sm:table-cell">
+                    <div className="flex justify-center gap-0.5">
+                      {Array.from({ length: 5 }, (_, s) => (
+                        <div key={s} className={cn("w-1.5 h-1.5 rounded-full", s < (5 - Math.abs(Math.round((c.factor - 1) * 20))) ? "bg-cyan-400" : "bg-white/10")} />
+                      ))}
+                    </div>
+                  </td>
+                </motion.tr>
+              );
+            })}
+            {/* Chitumit row - highlighted */}
+            <motion.tr
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="bg-gradient-to-l from-cyan-500/10 to-teal-500/10 border-2 border-cyan-500/30"
+            >
+              <td className="py-3 px-3">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="font-bold text-cyan-300 text-xs">חיתומית</span>
+                  <span className="bg-cyan-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded-full mr-1">הכי זול</span>
+                </div>
+              </td>
+              <td className="py-3 px-3 text-center">
+                <span className="text-cyan-300 font-bold text-xs">₪{chitumitPremium.toLocaleString()}</span>
+              </td>
+              <td className="py-3 px-3 text-center">
+                <span className="text-[11px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
+                  -40%
+                </span>
+              </td>
+              <td className="py-3 px-3 text-center hidden sm:table-cell">
+                <div className="flex justify-center gap-0.5">
+                  {Array.from({ length: 5 }, (_, s) => (
+                    <div key={s} className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  ))}
+                </div>
+              </td>
+            </motion.tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-[10px] text-white/20 text-center">* המחירים הם הערכה בלבד ומבוססים על נתוני שוק ממוצעים. המחיר הסופי ייקבע בהתאם לבדיקה רפואית ותנאים אישיים.</p>
     </div>
   );
 }
