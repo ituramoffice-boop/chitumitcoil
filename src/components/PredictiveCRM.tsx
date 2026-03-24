@@ -445,11 +445,11 @@ export function PriorityBoard({
     return { doc, totalVolume };
   }, []);
 
-  const handleGenerateMasterFile = useCallback(() => {
+  const handleGenerateMasterFile = useCallback(async () => {
     const selected = enrichedLeads.filter(l => selectedBulk.has(l.id));
     if (selected.length === 0) return;
 
-    const { doc } = buildPdfDoc(selected);
+    const { doc } = await buildPdfDoc(selected);
     const fileName = `chitumit_bank_submission_${new Date().toISOString().slice(0, 10)}.pdf`;
     doc.save(fileName);
 
