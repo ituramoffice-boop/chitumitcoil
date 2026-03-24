@@ -668,7 +668,6 @@ const MasterAdminPage = () => {
             </AreaChart>
           </ResponsiveContainer>
         </motion.div>
-      </div>
 
         {/* ── VIP Lead Generator ── */}
         <VIPLeadGenerator />
