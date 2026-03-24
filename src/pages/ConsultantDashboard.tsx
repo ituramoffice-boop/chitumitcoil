@@ -366,6 +366,10 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
     if (editingLead) {
       updateMutation.mutate({ id: editingLead.id, data: formData });
     } else {
+      if (isAtLimit) {
+        toast.error("הגעת למכסת 10 הלידים החינמיים. שדרג לתוכנית Pro כדי להמשיך!");
+        return;
+      }
       createMutation.mutate(formData);
     }
   };
