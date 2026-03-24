@@ -480,7 +480,7 @@ export default function Pitch() {
             transition={{ duration: 0.6, delay: 0.7 }}
             className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
           >
-            <Button size="lg" className="text-lg px-10 py-6 rounded-xl shadow-lg shadow-primary/25" onClick={() => navigate("/auth")}>
+            <Button size="lg" className="text-lg px-10 py-6 rounded-xl bg-gold text-gold-foreground hover:bg-gold/90 shadow-lg shadow-gold/25 glow-gold" onClick={() => navigate("/auth")}>
               אני רוצה לנסות — בחינם
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-10 py-6 rounded-xl" onClick={() => {
