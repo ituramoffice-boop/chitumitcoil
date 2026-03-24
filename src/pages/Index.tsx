@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles } from "lucide-react";
+import { PublicFooter } from "@/components/PublicFooter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 
