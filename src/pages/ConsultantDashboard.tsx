@@ -81,6 +81,7 @@ import { formatDistanceToNow, format } from "date-fns";
 import { he } from "date-fns/locale";
 import { RevenueForecaster, PriorityBoard } from "@/components/PredictiveCRM";
 import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
+import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
