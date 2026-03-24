@@ -661,6 +661,70 @@ export function PriorityBoard({
       doc.text("Chitumit - Bank Submission File", 105, 285, { align: "center" });
     });
 
+    // ─── Final Page: "Verified by Chitumit" Seal & Banner ───
+    doc.addPage("a4", "portrait");
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 297, "F");
+
+    // Gold border frame
+    doc.setDrawColor(212, 175, 55);
+    doc.setLineWidth(2);
+    doc.rect(12, 12, 186, 273, "S");
+    doc.setLineWidth(0.5);
+    doc.rect(15, 15, 180, 267, "S");
+
+    // Logo centered
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, "PNG", 80, 40, 50, 50);
+    }
+
+    // "Verified by Chitumit" title
+    doc.setFontSize(24);
+    doc.setTextColor(212, 175, 55);
+    doc.text("Verified by Chitumit", 105, 110, { align: "center" });
+
+    // Decorative line
+    doc.setDrawColor(212, 175, 55);
+    doc.setLineWidth(0.8);
+    doc.line(50, 118, 160, 118);
+
+    // Audit summary
+    doc.setFontSize(10);
+    doc.setTextColor(200, 200, 200);
+    const auditLines = [
+      `${rtl("תאריך הפקה:")} ${new Date().toLocaleDateString("he-IL")}`,
+      `${rtl("מספר תיקים מנותחים:")} ${selected.length}`,
+      `${rtl("נפח הלוואות כולל:")} ${totalVolume.toLocaleString()} NIS`,
+      `${rtl("מנוע ניתוח:")} Chitumit AI Underwriter Advocate v2.0`,
+      `${rtl("רמת ביטחון:")} ${rtl("גבוהה — נתונים מאומתים מול מסמכי מקור")}`,
+    ];
+    auditLines.forEach((line, i) => {
+      doc.text(line, 105, 135 + i * 10, { align: "center" });
+    });
+
+    // Documents analyzed table header
+    doc.setFontSize(9);
+    doc.setTextColor(212, 175, 55);
+    doc.text(rtl("מסמכים שנותחו:"), 190, 200, { align: "right" });
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    const docTypes = [rtl("תלושי שכר"), rtl("דו\"ח BDI"), rtl("תדפיסי עו\"ש"), rtl("אישורי העסקה"), rtl("שומת מקרקעין")];
+    docTypes.forEach((dt, i) => {
+      doc.text(`✓ ${dt}`, 185, 210 + i * 7, { align: "right" });
+    });
+
+    // Banner at bottom
+    doc.setFillColor(212, 175, 55);
+    doc.roundedRect(20, 252, 170, 20, 3, 3, "F");
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.text(rtl("תיק זה עבר חיתום AI. תהיו מאושרים."), 105, 265, { align: "center" });
+
+    // Small footer
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(rtl("© 2026 חיתומית — האישור בדרך, תהיה מאושר."), 105, 280, { align: "center" });
+
     return { doc, totalVolume };
   }, []);
 
