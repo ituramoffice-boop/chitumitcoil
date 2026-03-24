@@ -82,7 +82,7 @@ const JoinTheElite = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-center mb-12"
         >
-          <ChitumitLogo size="lg" />
+          <ChitumitLogo size={56} showSlogan />
         </motion.div>
 
         {/* Hero */}

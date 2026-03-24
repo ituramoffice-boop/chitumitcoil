@@ -41,6 +41,8 @@ import AdminMobile from "./pages/AdminMobile";
 import Milestone2000 from "./pages/Milestone2000";
 import GetStarted from "./pages/GetStarted";
 import MasterAdminDemo from "./pages/MasterAdminDemo";
+import MarketingAssetsHub from "./pages/MarketingAssetsHub";
+import JoinTheElite from "./pages/JoinTheElite";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
