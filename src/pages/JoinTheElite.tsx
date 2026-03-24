@@ -21,7 +21,7 @@ const JoinTheElite = () => {
     if (!name || !phone) return;
     setLoading(true);
     try {
-      await supabase.from("leads").insert({
+      const { error } = await supabase.from("leads").insert({
         full_name: name,
         phone,
         email: email || null,
@@ -30,9 +30,11 @@ const JoinTheElite = () => {
         is_marketplace: true,
         notes: "מועמדות דרך דף האליטה",
       });
+      if (error) throw error;
       setSubmitted(true);
-    } catch {
-      toast({ title: "שגיאה", description: "אנא נסו שוב", variant: "destructive" });
+    } catch (err: any) {
+      console.error("Lead insert error:", err);
+      toast({ title: "שגיאה", description: err?.message || "אנא נסו שוב", variant: "destructive" });
     } finally {
       setLoading(false);
     }
