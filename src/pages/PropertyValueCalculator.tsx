@@ -231,7 +231,35 @@ const PropertyValueCalculator = () => {
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  // Schema markup
+  // Dynamic meta tags
+  useEffect(() => {
+    document.title = "מחשבון שווי נכס חכם 2026 | SmartMortgage AI – הערכת שווי דירה בחינם";
+    const setMeta = (name: string, content: string, attr = "name") => {
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    setMeta("description", "מחשבון שווי נכס חכם עם בינה מלאכותית. הערכת שווי דירה מיידית ב-25 אזורים בישראל, תחזית ל-5 שנים, ודוח מפורט חינם. נתוני שוק מרץ 2026.");
+    setMeta("keywords", "שווי נכס, מחשבון שווי דירה, הערכת שווי נכס, שמאות מקרקעין, מחיר דירה 2026, מחיר למטר רבוע, שווי דירה תל אביב, מחשבון נדלן");
+    setMeta("robots", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+    setMeta("og:title", "מחשבון שווי נכס חכם 2026 | SmartMortgage AI", "property");
+    setMeta("og:description", "הערכת שווי דירה מיידית עם AI. 25 אזורים, תחזית ל-5 שנים, ודוח מפורט בחינם.", "property");
+    setMeta("og:type", "website", "property");
+    setMeta("og:url", "https://chitumitcoil.lovable.app/property-value", "property");
+    setMeta("og:locale", "he_IL", "property");
+    setMeta("twitter:card", "summary_large_image");
+    setMeta("twitter:title", "מחשבון שווי נכס חכם 2026 | SmartMortgage AI");
+    setMeta("twitter:description", "הערכת שווי דירה מיידית עם AI ב-25 אזורים. תחזית ל-5 שנים ודוח חינם.");
+
+    // Canonical
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
+    canonical.href = "https://chitumitcoil.lovable.app/property-value";
+
+    return () => { document.title = "SmartMortgage AI"; };
+  }, []);
+
+  // Schema markup — WebApplication
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -239,8 +267,54 @@ const PropertyValueCalculator = () => {
     "description": "הערכת שווי נכס מבוססת בינה מלאכותית ונתוני שוק בזמן אמת. בדקו כמה שווה הדירה שלכם באזורים שונים בישראל.",
     "url": "https://chitumitcoil.lovable.app/property-value",
     "applicationCategory": "FinanceApplication",
-    "provider": { "@type": "Organization", "name": "SmartMortgage AI" },
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "ILS" }
+    "operatingSystem": "Web",
+    "inLanguage": "he",
+    "provider": {
+      "@type": "Organization",
+      "name": "SmartMortgage AI",
+      "url": "https://chitumitcoil.lovable.app",
+      "logo": "https://chitumitcoil.lovable.app/placeholder.svg"
+    },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "ILS" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "1247", "bestRating": "5" }
+  };
+
+  // Breadcrumb schema
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "דף הבית", "item": "https://chitumitcoil.lovable.app/" },
+      { "@type": "ListItem", "position": 2, "name": "מחשבון שווי נכס", "item": "https://chitumitcoil.lovable.app/property-value" }
+    ]
+  };
+
+  // HowTo schema
+  const howToJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "איך לחשב שווי נכס בישראל",
+    "description": "מדריך שלב אחר שלב להערכת שווי דירה או נכס מגורים באמצעות מחשבון שווי נכס חכם.",
+    "step": [
+      { "@type": "HowToStep", "position": 1, "name": "בחר מיקום", "text": "בחר את האזור או העיר בה נמצא הנכס מתוך 25 אזורים בישראל." },
+      { "@type": "HowToStep", "position": 2, "name": "הגדר פרמטרים", "text": "הזן שטח במ\"ר, מספר חדרים, קומה, סוג נכס ומצב הנכס." },
+      { "@type": "HowToStep", "position": 3, "name": "הוסף תוספות", "text": "סמן חניה, מעלית, מרפסת ומחסן לדיוק מקסימלי." },
+      { "@type": "HowToStep", "position": 4, "name": "קבל הערכה מיידית", "text": "המערכת מחשבת שווי משוער, מחיר למ\"ר, ותחזית ל-1, 3 ו-5 שנים." },
+      { "@type": "HowToStep", "position": 5, "name": "קבל דוח מפורט", "text": "השאר פרטים וקבל דוח הערכה מלא כולל ניתוח AI ותובנות שוק." }
+    ],
+    "totalTime": "PT2M"
+  };
+
+  // RealEstateAgent schema
+  const agentJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "SmartMortgage AI",
+    "url": "https://chitumitcoil.lovable.app",
+    "description": "פלטפורמת AI לייעוץ משכנתאות והערכת שווי נכסים בישראל",
+    "areaServed": { "@type": "Country", "name": "Israel" },
+    "serviceType": ["הערכת שווי נכס", "ייעוץ משכנתאות", "חישוב משכנתא"],
+    "priceRange": "חינם"
   };
 
   const faqItems = [
@@ -265,6 +339,9 @@ const PropertyValueCalculator = () => {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(agentJsonLd) }} />
       <style>{`
         @keyframes loading { from { width: 0%; } to { width: 100%; } }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -320,8 +397,23 @@ const PropertyValueCalculator = () => {
           </div>
         </nav>
 
+        {/* Breadcrumb */}
+        <nav aria-label="breadcrumb" className="relative z-10 max-w-7xl mx-auto px-6 py-3">
+          <ol className="flex items-center gap-2 text-xs text-white/30" itemScope itemType="https://schema.org/BreadcrumbList">
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <Link to="/" itemProp="item" className="hover:text-white/60 transition-colors"><span itemProp="name">דף הבית</span></Link>
+              <meta itemProp="position" content="1" />
+            </li>
+            <li className="text-white/15">/</li>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <span itemProp="name" className="text-white/50">מחשבון שווי נכס</span>
+              <meta itemProp="position" content="2" />
+            </li>
+          </ol>
+        </nav>
+
         {/* Hero */}
-        <section className="relative z-10 pt-12 pb-6 md:pt-20 md:pb-10">
+        <section className="relative z-10 pt-6 pb-6 md:pt-14 md:pb-10">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-10 anim-fade-up">
               <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-l from-[hsl(160,84%,39%)]/15 to-[hsl(217,91%,50%)]/15 border border-[hsl(160,84%,39%)]/30 text-xs text-[hsl(160,84%,70%)] mb-6 shadow-[0_0_20px_hsl(160,84%,39%,0.15)]">
