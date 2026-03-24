@@ -64,6 +64,9 @@ const MortgageCalculatorLanding = () => {
   const [simAnswers, setSimAnswers] = useState<Record<string, string>>({});
   const [simScore, setSimScore] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [lastSliderTouched, setLastSliderTouched] = useState<string>("");
+  const [savedLeadId, setSavedLeadId] = useState<string | null>(null);
 
   const result = calculateMortgage(loanAmount, years, rate);
   const animatedMonthly = useAnimatedNumber(result.monthly);
