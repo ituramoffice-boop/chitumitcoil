@@ -552,6 +552,8 @@ const PropertyLoanFunnel = () => {
                           עצמאים נדרשים להמציא שומות מס ודוחות רווח והפסד
                         </p>
                       )}
+                    </div>
+
                     <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-white/60">סכום ההלוואה המבוקש</span>
