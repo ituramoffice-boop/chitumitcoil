@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { MessageCircle } from "lucide-react";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
 
 interface PublicFooterProps {
   className?: string;
