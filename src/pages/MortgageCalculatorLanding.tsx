@@ -197,6 +197,10 @@ const MortgageCalculatorLanding = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <Link to="/property-value" className="hidden md:flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors">
+              <Home className="w-3.5 h-3.5" />
+              <span>מחשבון שווי נכס</span>
+            </Link>
             <div className="hidden md:flex items-center gap-1 text-xs text-white/50">
               <Lock className="w-3 h-3" />
               <span>מאובטח SSL</span>
