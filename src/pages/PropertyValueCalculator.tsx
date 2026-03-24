@@ -1065,16 +1065,14 @@ const PropertyValueCalculator = () => {
         </section>
 
         {/* Disclaimer */}
-        <footer className="relative z-10 border-t border-white/5 py-8">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/5 mb-6">
-              <p className="text-[10px] text-white/30 leading-relaxed text-center">
-                <strong className="text-white/40">גילוי נאות:</strong> הערכת השווי המוצגת כאן היא אומדן בלבד המבוסס על נתוני שוק סטטיסטיים ואינה מהווה חוות דעת שמאית רשמית. לצורך משכנתא או עסקה, יש להיעזר בשמאי מקרקעין מוסמך. המידע אינו מהווה ייעוץ פיננסי או השקעתי. Chitumit אינה אחראית לנזק כלשהו שייגרם משימוש במידע זה. הנתונים מבוססים על ממוצעים אזוריים ועשויים להשתנות.
-              </p>
-            </div>
-            <p className="text-center text-xs text-white/20">© 2026 Chitumit. כל הזכויות שמורות.</p>
+        <div className="relative z-10 py-8 px-6">
+          <div className="max-w-4xl mx-auto p-4 rounded-xl bg-white/5 border border-white/5">
+            <p className="text-[10px] text-white/30 leading-relaxed text-center">
+              <strong className="text-white/40">גילוי נאות:</strong> הערכת השווי המוצגת כאן היא אומדן בלבד המבוסס על נתוני שוק סטטיסטיים ואינה מהווה חוות דעת שמאית רשמית. לצורך משכנתא או עסקה, יש להיעזר בשמאי מקרקעין מוסמך. המידע אינו מהווה ייעוץ פיננסי או השקעתי. Chitumit אינה אחראית לנזק כלשהו שייגרם משימוש במידע זה. הנתונים מבוססים על ממוצעים אזוריים ועשויים להשתנות.
+            </p>
           </div>
-        </footer>
+        </div>
+        <PublicFooter />
       </div>
     </>
   );

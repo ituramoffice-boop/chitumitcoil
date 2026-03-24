@@ -87,6 +87,8 @@ const Index = () => {
           />
         </div>
       </section>
+
+      <PublicFooter />
     </div>
   );
 };
