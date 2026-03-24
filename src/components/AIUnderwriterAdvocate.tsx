@@ -708,4 +708,4 @@ export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onG
 }
 
 /* Export for PDF integration */
-export { computeMetrics, generateNarrative, generateBrightSpots, generateRecoveryPlan };
+export { computeMetrics, generateNarrative, generateBrightSpots, generateRecoveryPlan, generateSourceMappings, generateAuditLog, getFormulas, detectConflicts };
