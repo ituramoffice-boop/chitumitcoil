@@ -447,7 +447,7 @@ const PropertyValueCalculator = () => {
                                   key={t.key}
                                   onClick={() => setPropertyType(t.key)}
                                   className={cn(
-                                    "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all text-xs",
+                                    "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 text-xs hover:scale-105",
                                     propertyType === t.key
                                       ? "bg-[hsl(160,84%,39%)]/15 border-[hsl(160,84%,39%)]/40 text-[hsl(160,84%,60%)]"
                                       : "bg-white/5 border-white/5 text-white/50 hover:border-white/20"
