@@ -114,12 +114,7 @@ const MortgageCalculatorLanding = () => {
     return tags;
   };
 
-  // Determine lead category
-  const getLeadCategory = () => {
-    if (loanAmount >= 2000000 && financingRatio < 50) return "משקיע";
-    if (rate > 5 && years > 20) return "מחזר הלוואה";
-    return "רוכש ראשון";
-  };
+  // (old getLeadCategory removed — merged above)
 
   // Generate PDF report
   const generatePDF = () => {
