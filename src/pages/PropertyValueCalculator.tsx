@@ -12,10 +12,12 @@ import {
   Home, Ruler, Calendar, Car, TreePine, Waves,
   Train, GraduationCap, ShoppingBag, Heart, Zap,
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
+  Download,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import IsraelHeatMap from "@/components/IsraelHeatMap";
+import jsPDF from "jspdf";
 
 // ======== ISRAELI AREA DATA (simulated market data 2026) ========
 interface AreaData {
