@@ -115,7 +115,7 @@ const SocialMediaGenerator = () => {
             {copied ? <Check className="h-4 w-4 ml-2" /> : <Copy className="h-4 w-4 ml-2" />}
             {copied ? "הועתק!" : "העתק טקסט"}
           </Button>
-          <Button variant="outline" className="border-gold/20 text-gold">
+          <Button variant="outline" className="border-gold/20 text-gold" onClick={handleDownloadImage}>
             <Download className="h-4 w-4 ml-2" />
             הורד כתמונה
           </Button>
