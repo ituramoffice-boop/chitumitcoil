@@ -15,6 +15,8 @@ import PropertyValueCalculator from "./pages/PropertyValueCalculator";
 import RemoteSign from "./pages/RemoteSign";
 import Pitch from "./pages/Pitch";
 import Investors from "./pages/Investors";
+import ConsultantDirectory from "./pages/ConsultantDirectory";
+import ConsultantProfile from "./pages/ConsultantProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const App = () => (
               <Route path="/sign/:token" element={<RemoteSign />} />
               <Route path="/pitch" element={<Pitch />} />
               <Route path="/investors" element={<Investors />} />
+              <Route path="/directory" element={<ConsultantDirectory />} />
+              <Route path="/consultant/:userId" element={<ConsultantProfile />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:section" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />

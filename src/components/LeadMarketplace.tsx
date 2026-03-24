@@ -38,7 +38,7 @@ export default function LeadMarketplace() {
   const fetchData = async () => {
     setLoading(true);
     const [leadsRes, profileRes] = await Promise.all([
-      supabase.from("leads").select("*").eq("is_marketplace", true).eq("status", "new").order("lead_score", { ascending: false }),
+      supabase.from("leads").select("*").eq("is_marketplace" as any, true).eq("status", "new").order("lead_score", { ascending: false }),
       supabase.from("profiles").select("*").eq("user_id", user!.id).single(),
     ]);
 

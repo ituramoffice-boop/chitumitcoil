@@ -35,7 +35,7 @@ export default function ConsultantProfile() {
     setLoading(true);
     const [profileRes, reviewsRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", userId!).single(),
-      supabase.from("consultant_reviews").select("*").eq("consultant_id", userId!).order("created_at", { ascending: false }),
+      supabase.from("consultant_reviews" as any).select("*").eq("consultant_id", userId!).order("created_at", { ascending: false }),
     ]);
 
     if (profileRes.data) setProfile(profileRes.data);

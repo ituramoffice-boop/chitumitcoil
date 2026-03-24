@@ -62,13 +62,13 @@ export default function ConsultantDirectory() {
       .in("plan", ["free", "pro", "enterprise"]);
 
     if (profiles) {
-      // Fetch reviews for each consultant
+    // Fetch reviews
       const { data: reviews } = await supabase
-        .from("consultant_reviews")
+        .from("consultant_reviews" as any)
         .select("consultant_id, rating");
 
       const reviewMap: Record<string, { total: number; count: number }> = {};
-      reviews?.forEach((r: any) => {
+      (reviews as any[])?.forEach((r: any) => {
         if (!reviewMap[r.consultant_id]) reviewMap[r.consultant_id] = { total: 0, count: 0 };
         reviewMap[r.consultant_id].total += r.rating;
         reviewMap[r.consultant_id].count += 1;
