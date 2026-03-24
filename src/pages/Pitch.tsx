@@ -273,7 +273,7 @@ function DemoCard({ icon: Icon, badge, title, desc, mockup, delay }: {
       </div>
       {/* Info */}
       <div className="p-6 space-y-3">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gold/10 text-gold text-xs font-medium">
           <Icon className="w-3.5 h-3.5" /> {badge}
         </span>
         <h3 className="text-lg font-bold text-foreground">{title}</h3>
