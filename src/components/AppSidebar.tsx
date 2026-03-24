@@ -14,6 +14,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLocation } from "react-router-dom";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
