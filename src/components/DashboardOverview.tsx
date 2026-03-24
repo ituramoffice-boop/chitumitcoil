@@ -49,31 +49,31 @@ const DashboardOverview = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-        <BarChart3 className="w-5 h-5 text-primary" />
+      <h2 className="text-xl font-bold gradient-header flex items-center gap-2">
+        <BarChart3 className="w-5 h-5 text-cyan-glow" />
         סקירה כללית
       </h2>
 
-      {/* KPIs - clickable */}
+      {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KPI icon={Users} label="סה״כ לקוחות" value={leads.length} onClick={() => navigate("/dashboard/clients")} />
-        <KPI icon={DollarSign} label="היקף משכנתאות" value={`₪${(totalMortgage / 1000000).toFixed(1)}M`} color="text-primary" onClick={() => navigate("/dashboard/reports")} />
+        <KPI icon={DollarSign} label="היקף משכנתאות" value={`₪${(totalMortgage / 1000000).toFixed(1)}M`} color="text-cyan-glow" glow="glow-cyan" onClick={() => navigate("/dashboard/reports")} />
         <KPI icon={TrendingUp} label="שיעור אישור" value={`${conversionRate}%`} color="text-success" onClick={() => navigate("/dashboard/reports")} />
-        <KPI icon={Heart} label="LTV ממוצע" value={`${avgLTV}%`} color="text-warning" onClick={() => navigate("/dashboard/scenarios")} />
+        <KPI icon={Heart} label="LTV ממוצע" value={`${avgLTV}%`} color="text-gold" glow="glow-gold" onClick={() => navigate("/dashboard/scenarios")} />
       </div>
 
-      {/* Status Grid - clickable */}
+      {/* Status Grid */}
       <div className="glass-card p-6 space-y-4">
         <h3 className="font-semibold text-foreground text-sm">סטטוס תיקים</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatusBox label="חדשים" count={statusCounts.new} color="text-primary" bg="bg-primary/10" onClick={() => navigate("/dashboard/clients")} />
-          <StatusBox label="בטיפול" count={statusCounts.in_progress} color="text-warning" bg="bg-warning/10" onClick={() => navigate("/dashboard/clients")} />
+          <StatusBox label="חדשים" count={statusCounts.new} color="text-cyan-glow" bg="bg-cyan-glow/10" onClick={() => navigate("/dashboard/clients")} />
+          <StatusBox label="בטיפול" count={statusCounts.in_progress} color="text-gold" bg="bg-gold/10" onClick={() => navigate("/dashboard/clients")} />
           <StatusBox label="אושרו" count={statusCounts.approved} color="text-success" bg="bg-success/10" onClick={() => navigate("/dashboard/clients")} />
           <StatusBox label="נדחו" count={statusCounts.rejected} color="text-destructive" bg="bg-destructive/10" onClick={() => navigate("/dashboard/clients")} />
         </div>
       </div>
 
-      {/* High Risk - clickable */}
+      {/* High Risk */}
       {highRiskLeads.length > 0 && (
         <div className="glass-card p-6 space-y-3">
           <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
@@ -87,7 +87,7 @@ const DashboardOverview = () => {
                 <div
                   key={lead.id}
                   onClick={() => navigate("/dashboard/clients")}
-                  className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 cursor-pointer hover:bg-destructive/10 transition-colors group"
+                  className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/10 cursor-pointer hover:bg-destructive/10 transition-colors group"
                 >
                   <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{lead.full_name}</span>
                   <div className="flex items-center gap-2">
@@ -101,37 +101,37 @@ const DashboardOverview = () => {
         </div>
       )}
 
-      {/* Quick Links to Calculators */}
+      {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
           onClick={() => navigate("/calculator")}
-          className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 hover:shadow-md transition-all group flex items-center gap-4"
+          className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-cyan-glow/30 hover:shadow-md transition-all group flex items-center gap-4"
         >
-          <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors shrink-0">
-            <DollarSign className="w-5 h-5 text-primary" />
+          <div className="p-3 rounded-xl bg-cyan-glow/10 group-hover:bg-cyan-glow/20 transition-colors shrink-0">
+            <DollarSign className="w-5 h-5 text-cyan-glow" />
           </div>
           <div>
-            <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">מחשבון משכנתא</h4>
+            <h4 className="font-semibold text-foreground text-sm group-hover:text-cyan-glow transition-colors">מחשבון משכנתא</h4>
             <p className="text-xs text-muted-foreground mt-0.5">חישוב החזר חודשי, ריבית והשוואת מסלולים</p>
           </div>
           <ExternalLink className="w-4 h-4 text-muted-foreground mr-auto opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         <div
           onClick={() => navigate("/property-value")}
-          className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 hover:shadow-md transition-all group flex items-center gap-4"
+          className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-gold/30 hover:shadow-md transition-all group flex items-center gap-4"
         >
-          <div className="p-3 rounded-xl bg-[hsl(160,84%,39%)]/10 group-hover:bg-[hsl(160,84%,39%)]/20 transition-colors shrink-0">
-            <TrendingUp className="w-5 h-5 text-[hsl(160,84%,39%)]" />
+          <div className="p-3 rounded-xl bg-gold/10 group-hover:bg-gold/20 transition-colors shrink-0">
+            <TrendingUp className="w-5 h-5 text-gold" />
           </div>
           <div>
-            <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">מחשבון שווי נכס</h4>
+            <h4 className="font-semibold text-foreground text-sm group-hover:text-gold transition-colors">מחשבון שווי נכס</h4>
             <p className="text-xs text-muted-foreground mt-0.5">הערכת שווי מיידית לפי אזור, גודל ומגמות שוק</p>
           </div>
           <ExternalLink className="w-4 h-4 text-muted-foreground mr-auto opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
 
-      {/* Financial Summary + Recent Clients */}
+      {/* Financial Summary + Recent */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card p-6 space-y-3 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all" onClick={() => navigate("/dashboard/reports")}>
           <h3 className="font-semibold text-foreground text-sm flex items-center justify-between">
@@ -145,15 +145,15 @@ const DashboardOverview = () => {
         <div className="glass-card p-6 space-y-3">
           <h3 className="font-semibold text-foreground text-sm flex items-center justify-between">
             לקוחות אחרונים
-            <span className="text-xs text-primary cursor-pointer hover:underline" onClick={() => navigate("/dashboard/clients")}>הצג הכל →</span>
+            <span className="text-xs text-gold cursor-pointer hover:underline" onClick={() => navigate("/dashboard/clients")}>הצג הכל →</span>
           </h3>
           {leads.slice(0, 5).map((lead: any) => (
             <div
               key={lead.id}
               onClick={() => navigate("/dashboard/clients")}
-              className="flex items-center justify-between p-3 rounded-lg bg-secondary cursor-pointer hover:bg-secondary/80 hover:ring-1 hover:ring-primary/20 transition-all group"
+              className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 cursor-pointer hover:bg-secondary/80 hover:ring-1 hover:ring-gold/20 transition-all group"
             >
-              <span className="text-sm text-foreground group-hover:text-primary transition-colors font-medium">{lead.full_name}</span>
+              <span className="text-sm text-foreground group-hover:text-gold transition-colors font-medium">{lead.full_name}</span>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{new Date(lead.created_at).toLocaleDateString("he-IL")}</span>
                 <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -166,19 +166,19 @@ const DashboardOverview = () => {
   );
 };
 
-function KPI({ icon: Icon, label, value, color, onClick }: { icon: any; label: string; value: any; color?: string; onClick?: () => void }) {
+function KPI({ icon: Icon, label, value, color, glow, onClick }: { icon: any; label: string; value: any; color?: string; glow?: string; onClick?: () => void }) {
   return (
     <div
-      className="glass-card p-5 cursor-pointer hover:ring-1 hover:ring-primary/20 hover:shadow-md transition-all group"
+      className={cn("glass-card p-5 cursor-pointer hover:ring-1 hover:ring-gold/20 hover:shadow-md transition-all group", glow)}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="text-2xl font-bold text-foreground mt-1 group-hover:text-primary transition-colors">{value}</p>
+          <p className="text-2xl font-bold gradient-header mt-1">{value}</p>
         </div>
-        <div className="p-2 rounded-lg bg-secondary group-hover:bg-primary/10 transition-colors">
-          <Icon className={cn("w-5 h-5", color || "text-muted-foreground")} />
+        <div className="p-2 rounded-lg bg-secondary/80 group-hover:bg-gold/10 transition-colors">
+          <Icon className={cn("w-5 h-5", color || "text-gold")} />
         </div>
       </div>
     </div>
@@ -188,7 +188,7 @@ function KPI({ icon: Icon, label, value, color, onClick }: { icon: any; label: s
 function StatusBox({ label, count, color, bg, onClick }: { label: string; count: number; color: string; bg: string; onClick?: () => void }) {
   return (
     <div
-      className={cn("rounded-xl p-4 text-center cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all", bg)}
+      className={cn("rounded-xl p-4 text-center cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all border border-border/30", bg)}
       onClick={onClick}
     >
       <p className={cn("text-3xl font-bold", color)}>{count}</p>
@@ -199,7 +199,7 @@ function StatusBox({ label, count, color, bg, onClick }: { label: string; count:
 
 function FinRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center p-3 rounded-lg bg-secondary">
+    <div className="flex justify-between items-center p-3 rounded-lg bg-secondary/50">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="font-bold text-foreground">{value}</span>
     </div>

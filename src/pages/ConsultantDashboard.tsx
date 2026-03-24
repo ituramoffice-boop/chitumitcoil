@@ -1123,19 +1123,24 @@ function StatCard({ icon: Icon, title, value, variant }: {
   variant?: "primary" | "warning" | "success";
 }) {
   const colors = {
-    primary: "text-primary",
-    warning: "text-warning",
+    primary: "text-cyan-glow",
+    warning: "text-gold",
     success: "text-success",
   };
+  const glows = {
+    primary: "glow-cyan",
+    warning: "glow-gold",
+    success: "",
+  };
   return (
-    <div className="glass-card p-5 hover-scale cursor-default transition-all duration-200 hover:shadow-md">
+    <div className={cn("glass-card p-5 hover-scale cursor-default transition-all duration-200 hover:shadow-md", variant && glows[variant])}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-2xl font-bold gradient-header">{value}</p>
         </div>
-        <div className="p-2 rounded-lg bg-secondary">
-          <Icon className={cn("w-5 h-5", variant ? colors[variant] : "text-muted-foreground")} />
+        <div className="p-2 rounded-lg bg-secondary/80">
+          <Icon className={cn("w-5 h-5", variant ? colors[variant] : "text-gold")} />
         </div>
       </div>
     </div>
