@@ -89,24 +89,26 @@ const Auth = () => {
         </div>
 
         {/* Role Toggle */}
-        <div className="flex gap-2 p-1 rounded-xl bg-secondary">
+        <div className="flex gap-2 p-1.5 rounded-xl bg-secondary relative z-10">
           <button
+            type="button"
             onClick={() => setRoleType("consultant")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer relative z-10 ${
               isConsultant
                 ? "bg-gold text-gold-foreground shadow-md"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
             }`}
           >
             <Users className="w-4 h-4" />
             יועץ משכנתאות
           </button>
           <button
+            type="button"
             onClick={() => setRoleType("client")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all cursor-pointer relative z-10 ${
               !isConsultant
                 ? "bg-primary text-primary-foreground shadow-md"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
             }`}
           >
             <User className="w-4 h-4" />
