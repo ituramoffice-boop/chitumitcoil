@@ -21,16 +21,21 @@ import {
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
-/* ── Insurance rate tables (simplified actuarial) ── */
-function getMarketRate(age: number, isSmoker: boolean, termYears: number): number {
-  const baseRate = age < 30 ? 0.035 : age < 40 ? 0.055 : age < 50 ? 0.085 : age < 60 ? 0.14 : 0.22;
-  const smokerMultiplier = isSmoker ? 1.8 : 1;
-  const termFactor = termYears > 20 ? 1.15 : termYears > 15 ? 1.05 : 1;
-  return baseRate * smokerMultiplier * termFactor;
+/* ── Insurance premium tables (based on Israeli market data 2025) ── */
+/* Monthly premium for mortgage life insurance (ביטוח חיים למשכנתא) */
+/* Market rates: ₪500K→20-50/mo, ₪1M→40-100/mo, ₪1.5M+→60-150/mo */
+/* Smokers pay 2-3x, age 30 vs 45 can be 2-3x difference */
+function getMonthlyPremium(mortgageAmount: number, age: number, isSmoker: boolean, termYears: number): number {
+  // Base rate per ₪100K of mortgage (bank/market average)
+  const ageBase = age < 30 ? 3.2 : age < 35 ? 4.0 : age < 40 ? 5.5 : age < 45 ? 7.5 : age < 50 ? 10.5 : age < 55 ? 14 : age < 60 ? 19 : 26;
+  const smokerMultiplier = isSmoker ? 2.4 : 1;
+  const termFactor = termYears > 25 ? 1.12 : termYears > 20 ? 1.06 : 1;
+  const units = mortgageAmount / 100000;
+  return Math.round(ageBase * smokerMultiplier * termFactor * units);
 }
 
-function getChitumitRate(age: number, isSmoker: boolean, termYears: number): number {
-  return getMarketRate(age, isSmoker, termYears) * 0.62; // 38% savings
+function getChitumitPremium(mortgageAmount: number, age: number, isSmoker: boolean, termYears: number): number {
+  return Math.round(getMonthlyPremium(mortgageAmount, age, isSmoker, termYears) * 0.6); // 40% savings via private market
 }
 
 function getRiskProfile(age: number, isSmoker: boolean): { label: string; tag: string; color: string } {
