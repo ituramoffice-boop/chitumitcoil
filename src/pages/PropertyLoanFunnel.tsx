@@ -517,6 +517,41 @@ const PropertyLoanFunnel = () => {
                       <div className="flex justify-between text-[10px] text-white/30"><span>₪5K</span><span>₪100K</span></div>
                     </div>
 
+                    {/* Employment Seniority */}
+                    <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-gold/70" />
+                        <span className="text-sm text-white/60">וותק תעסוקתי במקום העבודה הנוכחי</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {EMPLOYMENT_SENIORITY.map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setEmploymentSeniority(opt.value)}
+                            className={cn(
+                              "py-3 px-2 rounded-lg text-xs font-medium transition-all border text-center",
+                              employmentSeniority === opt.value
+                                ? "border-gold bg-gold/10 text-gold"
+                                : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
+                            )}
+                          >
+                            <span className="block text-base mb-0.5">{opt.emoji}</span>
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      {employmentSeniority === "less_than_1" && (
+                        <p className="text-[11px] text-amber-400/70 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          וותק קצר עלול להשפיע על תנאי ההלוואה — יועץ ילווה אותך בתהליך
+                        </p>
+                      )}
+                      {employmentSeniority === "self_employed" && (
+                        <p className="text-[11px] text-white/40 flex items-center gap-1">
+                          <Briefcase className="w-3 h-3" />
+                          עצמאים נדרשים להמציא שומות מס ודוחות רווח והפסד
+                        </p>
+                      )}
                     <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-white/60">סכום ההלוואה המבוקש</span>
