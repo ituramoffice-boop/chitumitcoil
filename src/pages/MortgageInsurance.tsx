@@ -18,6 +18,11 @@ import {
   Cigarette, Calendar, DollarSign, Target, BadgeCheck, Zap, Users,
   ChevronDown, BarChart3,
 } from "lucide-react";
+import harelLogo from "@/assets/insurance-logos/harel.png";
+import phoenixLogo from "@/assets/insurance-logos/phoenix.png";
+import migdalLogo from "@/assets/insurance-logos/migdal.png";
+import menoraLogo from "@/assets/insurance-logos/menora.png";
+import clalLogo from "@/assets/insurance-logos/clal.png";
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
