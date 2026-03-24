@@ -13,6 +13,8 @@ import {
   Settings,
   ShoppingCart,
   TrendingUp,
+  Swords,
+  Megaphone,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { AppStoreBadges } from "@/components/AppStoreBadges";
