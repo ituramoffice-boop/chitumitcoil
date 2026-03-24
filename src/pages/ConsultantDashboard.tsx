@@ -196,8 +196,8 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   const openWhatsApp = (phone: string, name: string, missingDoc?: string) => {
     const cleanPhone = phone.replace(/\D/g, "");
     const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
-    const docText = missingDoc || "מסמך חסר";
-    const message = `היי ${name}, ראיתי שהעלית חלק מהמסמכים ל-SmartMortgage. חסר לנו רק את ${docText} כדי להתקדם לאישור מהבנק. אפשר לשלוח כאן או להעלות למערכת. 📄`;
+    const docText = missingDoc || "מסמך אחד נוסף";
+    const message = `היי ${name} 😊\nרציתי לעדכן שאנחנו כמעט מוכנים להגיש את הבקשה!\nחסר לנו רק ${docText} — תוכל/י להעלות אותו כאן בקלות:\n📎 https://chitumitcoil.lovable.app/auth\n\nאם צריך עזרה לאתר את המסמך, אני כאן בשבילך!`;
     window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
