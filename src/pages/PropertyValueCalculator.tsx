@@ -397,8 +397,23 @@ const PropertyValueCalculator = () => {
           </div>
         </nav>
 
+        {/* Breadcrumb */}
+        <nav aria-label="breadcrumb" className="relative z-10 max-w-7xl mx-auto px-6 py-3">
+          <ol className="flex items-center gap-2 text-xs text-white/30" itemScope itemType="https://schema.org/BreadcrumbList">
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <Link to="/" itemProp="item" className="hover:text-white/60 transition-colors"><span itemProp="name">דף הבית</span></Link>
+              <meta itemProp="position" content="1" />
+            </li>
+            <li className="text-white/15">/</li>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <span itemProp="name" className="text-white/50">מחשבון שווי נכס</span>
+              <meta itemProp="position" content="2" />
+            </li>
+          </ol>
+        </nav>
+
         {/* Hero */}
-        <section className="relative z-10 pt-12 pb-6 md:pt-20 md:pb-10">
+        <section className="relative z-10 pt-6 pb-6 md:pt-14 md:pb-10">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center max-w-3xl mx-auto mb-10 anim-fade-up">
               <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-l from-[hsl(160,84%,39%)]/15 to-[hsl(217,91%,50%)]/15 border border-[hsl(160,84%,39%)]/30 text-xs text-[hsl(160,84%,70%)] mb-6 shadow-[0_0_20px_hsl(160,84%,39%,0.15)]">
