@@ -601,6 +601,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           missingDocsCount={alertCounts.missing_docs}
         />
 
+        {/* Revenue Forecast HUD */}
+        <RevenueForecaster leads={leads} />
+
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard icon={Users} title="סה״כ לידים" value={stats.total} />
