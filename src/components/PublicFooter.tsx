@@ -53,6 +53,9 @@ export function PublicFooter({ className = "", activePage }: PublicFooterProps) 
             <Link to="/accessibility" className="hover:text-gold transition-colors">הצהרת נגישות</Link>
           )}
         </div>
+
+        {/* App Store Badges */}
+        <AppStoreBadges />
       </div>
     </footer>
   );
