@@ -593,6 +593,9 @@ const ClientDashboard = () => {
           <motion.div variants={fadeUp}>
             <SmartIngestion />
           </motion.div>
+
+          {/* ── Compliance Footer ──────────── */}
+          <ComplianceFooter />
         </motion.div>
       </main>
 
