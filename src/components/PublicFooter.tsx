@@ -58,6 +58,7 @@ export function PublicFooter({ className = "", activePage }: PublicFooterProps) 
         {/* App Store Badges */}
         <AppStoreBadges />
       </div>
+      <ComplianceBanner />
     </footer>
   );
 }
