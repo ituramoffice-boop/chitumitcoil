@@ -113,6 +113,8 @@ function useAnimatedNumber(target: number, duration = 1200) {
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
 const PropertyValueCalculator = () => {
+  const { branding } = useConsultantBranding(DEFAULT_CONSULTANT_ID);
+  const consultantId = branding?.consultantId || DEFAULT_CONSULTANT_ID;
   // Calculator state
   const [selectedArea, setSelectedArea] = useState<string>("תל אביב – מרכז");
   const [sqm, setSqm] = useState(80);
