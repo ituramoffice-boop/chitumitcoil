@@ -11,6 +11,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import ClientDashboard from "./pages/ClientDashboard";
 import SelfCheck from "./pages/SelfCheck";
 import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
 import PropertyValueCalculator from "./pages/PropertyValueCalculator";
@@ -58,6 +59,7 @@ const App = () => {
               <Route path="/consultant/:userId" element={<ConsultantProfile />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:section" element={<Dashboard />} />
+              <Route path="/client-dashboard" element={<ClientDashboard />} />
               <Route path="/accessibility" element={<Accessibility />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
