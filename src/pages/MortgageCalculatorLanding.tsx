@@ -11,9 +11,11 @@ import {
   Sparkles, Building2, Phone, Mail, User, ChevronDown,
   Lock, Award, Star, Zap, BarChart3, Clock, FileCheck, Upload,
   Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
+  Download,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import jsPDF from "jspdf";
 
 // Mortgage calculator logic
 function calculateMortgage(amount: number, years: number, rate: number) {
