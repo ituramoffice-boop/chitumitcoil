@@ -174,7 +174,7 @@ const ViralShareCards = () => {
         />
 
         {/* Share Card Preview */}
-        <div className="relative rounded-xl overflow-hidden bg-[hsl(222,47%,5%)] p-8 border border-gold/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+        <div ref={cardRef} className="relative rounded-xl overflow-hidden bg-[hsl(222,47%,5%)] p-8 border border-gold/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
           <div
             className="absolute inset-0 opacity-20"
             style={{
