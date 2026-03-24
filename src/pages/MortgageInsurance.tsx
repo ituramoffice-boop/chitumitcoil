@@ -670,6 +670,13 @@ function CaptureStep({ fullName, setFullName, phone, setPhone, email, setEmail, 
         </p>
       </div>
 
+      {/* ID Card Scanner */}
+      <IdCardScanner
+        onComplete={(data) => {
+          if (data.fullName && !fullName) setFullName(data.fullName);
+        }}
+      />
+
       <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-cyan-500/20 p-6 space-y-4">
         <div className="space-y-2">
           <label className="text-sm text-white/60 flex items-center gap-2"><User className="w-4 h-4" /> שם מלא *</label>
