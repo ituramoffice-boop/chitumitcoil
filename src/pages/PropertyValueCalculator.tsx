@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import IsraelHeatMap from "@/components/IsraelHeatMap";
 
 // ======== ISRAELI AREA DATA (simulated market data 2026) ========
 interface AreaData {
