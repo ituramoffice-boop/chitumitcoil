@@ -38,6 +38,7 @@ import { DocumentIntelligenceZone, ComplianceFooter } from "@/components/Documen
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
+import confetti from "canvas-confetti";
 
 /* ── Stage pipeline — "Path to Your Keys" ──── */
 const CASE_STAGES = [
@@ -226,6 +227,22 @@ const ClientDashboard = () => {
   const uploadedClassifications = myDocuments.map((d: any) => d.classification);
   const completedDocs = REQUIRED_DOCS.filter((doc) => uploadedClassifications.includes(doc.key));
   const completionPercent = Math.round((completedDocs.length / REQUIRED_DOCS.length) * 100);
+  const allDocsComplete = completedDocs.length === REQUIRED_DOCS.length;
+  const [confettiFired, setConfettiFired] = useState(false);
+
+  useEffect(() => {
+    if (allDocsComplete && !confettiFired) {
+      setConfettiFired(true);
+      const end = Date.now() + 2500;
+      const colors = ["#D4AF37", "#FFD700", "#C5A028", "#22c55e"];
+      (function frame() {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+      toast.success("🎉 כל המסמכים אומתו — התיק מוכן להגשה!");
+    }
+  }, [allDocsComplete, confettiFired]);
 
   const hasDocuments = myDocuments.length > 0;
   const hasAnalysis = myDocuments.some((d: any) => d.extracted_data?.analyzed_at);
@@ -503,9 +520,22 @@ const ClientDashboard = () => {
                 <FileText className="w-5 h-5 text-cyan-400" />
                 מרכז המסמכים
               </h3>
-              <Badge variant="outline" className="text-xs border-border/60 text-muted-foreground">
-                {completedDocs.length}/{REQUIRED_DOCS.length} הושלמו
-              </Badge>
+              {allDocsComplete ? (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Badge className="bg-gradient-to-r from-yellow-600 to-yellow-500 text-white border-0 text-xs px-3 py-1 shadow-lg shadow-yellow-500/25">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                    התיק מוכן להגשה ✨
+                  </Badge>
+                </motion.div>
+              ) : (
+                <Badge variant="outline" className="text-xs border-border/60 text-muted-foreground">
+                  {completedDocs.length}/{REQUIRED_DOCS.length} הושלמו
+                </Badge>
+              )}
             </div>
 
             <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
