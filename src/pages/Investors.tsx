@@ -461,6 +461,69 @@ export default function Investors() {
         </div>
       </section>
 
+      {/* ═══════ SLIDE 6.5: TESTIMONIALS ═══════ */}
+      <section className="relative z-10 py-28 px-4">
+        <div className="max-w-5xl mx-auto">
+          <Reveal className="mb-4">
+            <span className="text-xs font-bold text-gold tracking-widest uppercase">מה אומרים עלינו</span>
+          </Reveal>
+          <Reveal className="mb-14" delay={0.1}>
+            <h2 className="text-3xl md:text-4xl font-extrabold">
+              יועצים שכבר <span className="text-gold">משתמשים</span> במערכת
+            </h2>
+          </Reveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "אבי כהן",
+                role: "יועץ משכנתאות בכיר, תל אביב",
+                quote: "מאז שעברתי לחיתומית, אני חוסך 10 שעות בשבוע. המערכת עושה את העבודה בשבילי — מתמללת שיחות, שולפת מסמכים, ומעדכנת את הלקוחות אוטומטית.",
+                metric: "↑ 40% סגירות",
+              },
+              {
+                name: "מיכל לוי",
+                role: "מנהלת סוכנות משכנתאות, חיפה",
+                quote: "הצוות שלי מנהל 200+ לקוחות עם חיתומית. לפני זה היו לנו 4 מערכות שונות. עכשיו הכל במקום אחד — וה-AI באמת חוסך זמן מטורף.",
+                metric: "200+ לקוחות פעילים",
+              },
+              {
+                name: "יוסי ברקוביץ׳",
+                role: "יועץ עצמאי, באר שבע",
+                quote: "המחשבון הממותג הביא לי 30 לידים חדשים בחודש הראשון — בלי לשלם שקל על שיווק. הלקוחות מגיעים אליי מוכנים.",
+                metric: "30 לידים/חודש",
+              },
+            ].map((t, i) => (
+              <Reveal key={i} delay={i * 0.15} variant="card">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-gold/30 transition-colors duration-300 h-full flex flex-col justify-between gap-4"
+                >
+                  <div>
+                    <div className="flex items-center gap-1 mb-4">
+                      {[...Array(5)].map((_, s) => (
+                        <Sparkles key={s} className="w-3.5 h-3.5 text-gold fill-gold" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-slate-300 leading-relaxed italic">"{t.quote}"</p>
+                  </div>
+                  <div className="pt-4 border-t border-slate-700/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-bold text-slate-100">{t.name}</p>
+                        <p className="text-xs text-slate-500">{t.role}</p>
+                      </div>
+                      <span className="text-xs font-bold text-gold bg-gold/10 px-2.5 py-1 rounded-full">{t.metric}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══════ SLIDE 7: THE ASK ═══════ */}
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-4xl mx-auto">
