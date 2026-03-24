@@ -739,6 +739,11 @@ const MortgageCalculatorLanding = () => {
         </div>
       </section>
 
+      {/* Trust Markers */}
+      <section className="relative z-10 py-8">
+        <TrustBankLogos />
+      </section>
+
       {/* Footer */}
       <PublicFooter />
     </div>

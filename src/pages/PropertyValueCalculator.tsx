@@ -1074,6 +1074,9 @@ const PropertyValueCalculator = () => {
             </p>
           </div>
         </div>
+        <div className="relative z-10 py-8">
+          <TrustBankLogos />
+        </div>
         <PublicFooter />
       </div>
     </>
