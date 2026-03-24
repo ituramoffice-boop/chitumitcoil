@@ -193,6 +193,275 @@ const insightStyles = {
   success: { icon: CheckCircle2, border: "border-success/30", bg: "bg-success/5", text: "text-success", badge: "bg-success/10 text-success border-success/30" },
 };
 
+/* ── Typing Animation Hook ─────────────────── */
+function useTypingAnimation(text: string, speed = 30, delay = 0) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    const timeout = setTimeout(() => {
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < text.length) {
+          setDisplayed(text.slice(0, i + 1));
+          i++;
+        } else {
+          clearInterval(interval);
+          setDone(true);
+        }
+      }, speed);
+      return () => clearInterval(interval);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [text, speed, delay]);
+
+  return { displayed, done };
+}
+
+/* ── AI Strategy Insights ──────────────────── */
+function AIStrategyInsights({ onReanalyze }: { onReanalyze: () => void }) {
+  const [phase, setPhase] = useState<"scanning" | "ready">("scanning");
+  const [pulsingReanalyze, setPulsingReanalyze] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setPhase("ready"), 2200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleReanalyze = () => {
+    setPulsingReanalyze(true);
+    setTimeout(() => setPulsingReanalyze(false), 1500);
+    setPhase("scanning");
+    setTimeout(() => setPhase("ready"), 2200);
+    onReanalyze();
+  };
+
+  const STATUS_TEXT = "מצב פיננסי בינוני-טוב: הכנסה יציבה עם יחס החזר של 38%. נדרשת אופטימיזציה של תיק האשראי לקבלת תנאי משכנתא משופרים.";
+  const { displayed: statusText, done: statusDone } = useTypingAnimation(
+    STATUS_TEXT, 20, phase === "ready" ? 300 : 999999
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-card/30 backdrop-blur-2xl"
+    >
+      {/* Glowing border effect */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        animate={{
+          boxShadow: [
+            "inset 0 0 30px hsl(270 70% 60% / 0.05), 0 0 20px hsl(220 80% 60% / 0.05)",
+            "inset 0 0 40px hsl(270 70% 60% / 0.1), 0 0 30px hsl(220 80% 60% / 0.08)",
+            "inset 0 0 30px hsl(270 70% 60% / 0.05), 0 0 20px hsl(220 80% 60% / 0.05)",
+          ],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Ambient gradient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-40%] right-[-20%] w-[400px] h-[400px] rounded-full bg-purple-500/[0.04] blur-[100px]" />
+        <div className="absolute bottom-[-30%] left-[-10%] w-[300px] h-[300px] rounded-full bg-blue-500/[0.04] blur-[80px]" />
+      </div>
+
+      <div className="relative p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/20"
+              animate={pulsingReanalyze ? { scale: [1, 1.2, 1], boxShadow: ["0 0 0px hsl(270 70% 60% / 0)", "0 0 24px hsl(270 70% 60% / 0.4)", "0 0 0px hsl(270 70% 60% / 0)"] } : {}}
+              transition={{ duration: 0.8, repeat: pulsingReanalyze ? 2 : 0 }}
+            >
+              <Sparkles className="w-5 h-5 text-purple-400" />
+            </motion.div>
+            <div>
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                AI Strategy Insights
+                <motion.span
+                  className="inline-block w-1.5 h-1.5 rounded-full bg-purple-400"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+              </h3>
+              <p className="text-[11px] text-muted-foreground">ניתוח אסטרטגי מותאם אישית</p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleReanalyze}
+            className="text-xs gap-1.5 border-purple-500/20 hover:bg-purple-500/10 hover:text-purple-400 hover:border-purple-500/40 transition-all"
+          >
+            <RefreshCw className={cn("w-3.5 h-3.5", pulsingReanalyze && "animate-spin")} />
+            נתח מחדש עם AI
+          </Button>
+        </div>
+
+        {/* Scanning state */}
+        <AnimatePresence mode="wait">
+          {phase === "scanning" ? (
+            <motion.div
+              key="scanning"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center gap-3 py-8 justify-center"
+            >
+              <motion.div
+                className="flex gap-1"
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+              >
+                <Brain className="w-5 h-5 text-purple-400" />
+              </motion.div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-purple-400 font-medium">סורק נתונים</span>
+                <motion.span
+                  className="text-purple-400 font-bold"
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 0 }}
+                >.</motion.span>
+                <motion.span
+                  className="text-purple-400 font-bold"
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                >.</motion.span>
+                <motion.span
+                  className="text-purple-400 font-bold"
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                >.</motion.span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-4"
+            >
+              {/* Section 1: Current Status */}
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="rounded-xl border border-blue-500/15 bg-blue-500/[0.04] p-4 space-y-2"
+              >
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-blue-400" />
+                  <h4 className="text-sm font-bold text-foreground">מצב נוכחי</h4>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed min-h-[2.5rem]">
+                  {statusText}
+                  {!statusDone && (
+                    <motion.span
+                      className="inline-block w-[2px] h-3 bg-blue-400 mr-0.5 align-middle"
+                      animate={{ opacity: [1, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity }}
+                    />
+                  )}
+                </p>
+              </motion.div>
+
+              {/* Section 2: Critical Actions */}
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-4 space-y-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-amber-400" />
+                  <h4 className="text-sm font-bold text-foreground">פעולות קריטיות</h4>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    "הורד ניצול מסגרת אשראי מ-72% ל-30% — סגור הלוואת צריכה (₪850/חודש)",
+                    "הסדר 2 תשלומים בפיגור מול חברת האשראי לפני הגשת הבקשה",
+                    "הימנע מפתיחת בקשות אשראי חדשות ב-3 חודשים הקרובים",
+                  ].map((action, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + i * 0.15 }}
+                      className="flex items-start gap-2"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-[10px] font-bold text-amber-400">{i + 1}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{action}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Section 3: Mortgage Impact */}
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="rounded-xl border border-cyan-500/15 bg-cyan-500/[0.04] p-4 space-y-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Home className="w-4 h-4 text-cyan-400" />
+                  <h4 className="text-sm font-bold text-foreground">השפעה על המשכנתא</h4>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg bg-cyan-500/[0.06] border border-cyan-500/10 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">שיפור דירוג צפוי</p>
+                    <motion.p
+                      className="text-xl font-black text-cyan-400 mt-1"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.8, type: "spring", damping: 12 }}
+                    >
+                      +55
+                    </motion.p>
+                    <p className="text-[10px] text-muted-foreground">נקודות</p>
+                  </div>
+                  <div className="rounded-lg bg-cyan-500/[0.06] border border-cyan-500/10 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">חיסכון ריבית שנתי</p>
+                    <motion.p
+                      className="text-xl font-black text-cyan-400 mt-1"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 1, type: "spring", damping: 12 }}
+                    >
+                      ₪18K
+                    </motion.p>
+                    <p className="text-[10px] text-muted-foreground">לשנה</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  ביצוע הפעולות לעיל צפוי להעלות את הדירוג ל-678, להוריד את הריבית ב-0.35% ולהגדיל סכום משכנתא מקסימלי ב-₪120,000.
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Disclaimer */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="text-[10px] text-muted-foreground/50 text-center leading-relaxed pt-2 border-t border-border/20"
+        >
+          Analysis generated by Chitumit AI Engine based on provided documents. Consult with a human advisor for final decisions.
+        </motion.p>
+      </div>
+    </motion.div>
+  );
+}
+
 /* ── Main Component ────────────────────────── */
 export function CreditScoreAnalyzer() {
   const [pdfUploaded, setPdfUploaded] = useState(false);
