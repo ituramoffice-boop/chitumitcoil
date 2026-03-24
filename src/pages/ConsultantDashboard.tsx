@@ -1073,6 +1073,15 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           )}
         </div>
       </main>
+
+      {/* Client-Facing Presentation Mode */}
+      {presentationLead && (
+        <PresentationMode
+          lead={presentationLead}
+          open={!!presentationLead}
+          onClose={() => setPresentationLead(null)}
+        />
+      )}
     </div>
   );
 };
