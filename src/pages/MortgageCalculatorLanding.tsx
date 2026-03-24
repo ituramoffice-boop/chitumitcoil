@@ -192,7 +192,7 @@ const MortgageCalculatorLanding = () => {
     setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
+      const effectiveConsultantId = consultantId;
       const leadScore = calcLeadScore(data.email, marketingConsent);
       const category = getLeadCategory(data.category);
       const tags = getLeadTags();
