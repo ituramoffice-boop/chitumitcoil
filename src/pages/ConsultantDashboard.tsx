@@ -79,6 +79,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { formatDistanceToNow, format } from "date-fns";
 import { he } from "date-fns/locale";
+import { RevenueForecaster, PriorityBoard } from "@/components/PredictiveCRM";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
