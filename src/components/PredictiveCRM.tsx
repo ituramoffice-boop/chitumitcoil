@@ -611,6 +611,49 @@ export function PriorityBoard({
       doc.text("AI Insight:", 190, fy + 2, { align: "right" });
       doc.setTextColor(180, 200, 210);
       doc.text(lead.aiInsight, 190, fy + 10, { align: "right", maxWidth: 170 });
+
+      // ── AI Underwriter Advocate Narrative ──
+      fy += 30;
+      const advocateMetrics = computeMetrics(lead);
+      const narrative = generateNarrative(lead, advocateMetrics, true); // banker mode
+      const brightSpots = generateBrightSpots(advocateMetrics, true);
+
+      doc.setFillColor(15, 30, 45);
+      doc.roundedRect(15, fy - 5, 180, 45, 3, 3, "F");
+      doc.setDrawColor(212, 175, 55);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(15, fy - 5, 180, 45, 3, 3, "S");
+
+      doc.setFontSize(9);
+      doc.setTextColor(212, 175, 55);
+      doc.text(rtl("סיכום מנהלים — AI Underwriter Advocate"), 190, fy + 2, { align: "right" });
+
+      doc.setFontSize(7);
+      doc.setTextColor(200, 200, 200);
+      const narrativeLines = doc.splitTextToSize(narrative.p1, 170);
+      doc.text(narrativeLines, 190, fy + 10, { align: "right" });
+      const mitigationLines = doc.splitTextToSize(narrative.p2, 170);
+      doc.text(mitigationLines, 190, fy + 22, { align: "right" });
+
+      // Bright spots
+      fy += 50;
+      doc.setFontSize(8);
+      doc.setTextColor(16, 185, 129);
+      doc.text(rtl("נקודות אור:"), 190, fy + 2, { align: "right" });
+      doc.setFontSize(7);
+      doc.setTextColor(180, 200, 180);
+      brightSpots.slice(0, 3).forEach((spot, si) => {
+        doc.text(`• ${spot}`, 185, fy + 10 + si * 7, { align: "right", maxWidth: 165 });
+      });
+
+      // Chitumit AI Verified seal
+      fy += 35;
+      doc.setFillColor(30, 40, 55);
+      doc.roundedRect(60, fy - 3, 90, 12, 2, 2, "F");
+      doc.setFontSize(8);
+      doc.setTextColor(212, 175, 55);
+      doc.text("Chitumit AI Verified", 105, fy + 5, { align: "center" });
+
       doc.setDrawColor(212, 175, 55);
       doc.line(15, 277, 195, 277);
       doc.setFontSize(7);
