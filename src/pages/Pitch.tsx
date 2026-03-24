@@ -130,12 +130,12 @@ function TestimonialsCarousel() {
                     <Star key={i} className="w-4 h-4 fill-warning text-warning" />
                   ))}
                 </div>
-                <Quote className="w-8 h-8 text-primary/20" />
+                <Quote className="w-8 h-8 text-gold/20" />
                 <blockquote className="text-lg md:text-xl font-bold text-foreground leading-relaxed">
                   {testimonials[current].quote}
                 </blockquote>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                  <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold font-bold">
                     {testimonials[current].name.charAt(0)}
                   </div>
                   <div>
@@ -160,7 +160,7 @@ function TestimonialsCarousel() {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary w-6" : "bg-muted-foreground/30"}`}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-gold w-6" : "bg-muted-foreground/30"}`}
           />
         ))}
       </div>
@@ -172,8 +172,8 @@ function TestimonialsCarousel() {
 function LiveDemoMockup() {
   const steps = [
     { label: "גולש נכנס למחשבון", detail: "הלקוח מזיז סליידרים ובוחר סכום משכנתא", color: "text-foreground" },
-    { label: "AI מנתח את הנתונים", detail: "חישוב ריבית, החזר חודשי ודירוג סיכון", color: "text-primary" },
-    { label: "ראיון AI קצר", detail: "שם, טלפון, סוג נכס — ב-3 שלבים", color: "text-primary" },
+    { label: "AI מנתח את הנתונים", detail: "חישוב ריבית, החזר חודשי ודירוג סיכון", color: "text-gold" },
+    { label: "ראיון AI קצר", detail: "שם, טלפון, סוג נכס — ב-3 שלבים", color: "text-gold" },
     { label: "ליד חם נכנס ל-CRM!", detail: "עם ציון AI, פרטי חישוב והתראה ליועץ", color: "text-success" },
   ];
   const [activeStep, setActiveStep] = useState(0);
@@ -206,7 +206,7 @@ function LiveDemoMockup() {
           {steps.map((_, i) => (
             <div key={i} className="flex-1 h-1.5 rounded-full overflow-hidden bg-secondary">
               <motion.div
-                className="h-full rounded-full bg-primary"
+                className="h-full rounded-full bg-gold"
                 initial={{ width: "0%" }}
                 animate={{ width: i <= activeStep ? "100%" : "0%" }}
                 transition={{ duration: 0.5 }}
@@ -323,7 +323,7 @@ function SignMock() {
           <span className="text-[10px] text-success">✓ נשלח ל-SMS</span>
         </div>
         <div className="p-4 flex flex-col items-center gap-3">
-          <div className="w-32 h-12 rounded border-2 border-dashed border-primary/30 flex items-center justify-center">
+          <div className="w-32 h-12 rounded border-2 border-dashed border-gold/30 flex items-center justify-center">
             <motion.svg
               viewBox="0 0 120 30"
               className="w-24 h-8"
@@ -334,7 +334,7 @@ function SignMock() {
               <motion.path
                 d="M10 20 Q30 5 50 18 Q70 30 90 12 Q100 6 110 15"
                 fill="none"
-                stroke="hsl(var(--primary))"
+                stroke="hsl(var(--gold))"
                 strokeWidth="2"
                 strokeLinecap="round"
                 initial={{ pathLength: 0 }}
@@ -374,7 +374,7 @@ function ScanMock() {
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-1 text-[10px] text-primary">
+      <div className="flex items-center gap-1 text-[10px] text-gold">
         <Brain className="w-3 h-3" />
         <span>AI זיהה: כושר החזר חודשי ₪5,200</span>
       </div>
@@ -461,7 +461,7 @@ export default function Pitch() {
           >
             נמאס לך לרדוף
             <br />
-            אחרי <span className="gradient-header">לידים שמתים</span>?
+            אחרי <span className="text-gold">לידים שמתים</span>?
           </motion.h1>
 
           <motion.p
@@ -498,7 +498,7 @@ export default function Pitch() {
           className="absolute bottom-10 left-1/2 -translate-x-1/2"
         >
           <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex justify-center pt-2">
-            <div className="w-1.5 h-3 rounded-full bg-primary/60" />
+            <div className="w-1.5 h-3 rounded-full bg-gold/60" />
           </div>
         </motion.div>
       </section>
@@ -508,7 +508,7 @@ export default function Pitch() {
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-              מכירים את <span className="gradient-header">הכאבים</span> האלה?
+              מכירים את <span className="text-gold">הכאבים</span> האלה?
             </h2>
             <p className="text-muted-foreground">אם ענית "כן" על לפחות אחד — המערכת הזו נבנתה בשבילך</p>
           </AnimSection>
@@ -532,7 +532,7 @@ export default function Pitch() {
               <CheckCircle2 className="w-4 h-4" /> הפתרון
             </span>
             <h2 className="text-3xl md:text-5xl font-extrabold mb-4">
-              <span className="gradient-header">מערכת אחת</span> שמחליפה את כולן
+              <span className="text-gold">מערכת אחת</span> שמחליפה את כולן
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               תראה בעצמך איך כל פיצ'ר עובד — לא סתם מילים, הנה ה-Demo:
@@ -605,7 +605,7 @@ export default function Pitch() {
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-extrabold">
-              <span className="text-destructive line-through">הדרך הישנה</span> vs <span className="gradient-header">הדרך החכמה</span>
+              <span className="text-destructive line-through">הדרך הישנה</span> vs <span className="text-gold">הדרך החכמה</span>
             </h2>
           </AnimSection>
 
@@ -615,8 +615,8 @@ export default function Pitch() {
                 <thead>
                   <tr className="border-b border-border/60 bg-secondary/30">
                     <th className="p-3.5 text-right text-sm font-bold text-foreground w-1/3"></th>
-                    <th className="p-3.5 text-center text-sm font-bold text-destructive w-1/3">😤 היום</th>
-                    <th className="p-3.5 text-center text-sm font-bold text-primary w-1/3">🚀 איתנו</th>
+                    <th className="p-3.5 text-center text-sm font-bold text-destructive/80 w-1/3">😤 היום</th>
+                    <th className="p-3.5 text-center text-sm font-bold text-gold w-1/3">🚀 איתנו</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -664,11 +664,11 @@ export default function Pitch() {
       <section className="relative z-10 py-24 px-4">
         <div className="max-w-4xl mx-auto">
           <AnimSection className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-glow/10 border border-cyan-glow/20 text-cyan-glow text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium mb-4">
               <Play className="w-4 h-4" /> ראה את זה בפעולה
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold">
-              60 שניות — מ<span className="gradient-header">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
+              60 שניות — מ<span className="text-gold">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
             </h2>
           </AnimSection>
 
@@ -682,7 +682,7 @@ export default function Pitch() {
       <section className="relative z-10 py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <AnimSection className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-extrabold">מה אומרים <span className="gradient-header">יועצים שכבר עברו</span></h2>
+            <h2 className="text-2xl md:text-3xl font-extrabold">מה אומרים <span className="text-gold">יועצים שכבר עברו</span></h2>
           </AnimSection>
           <TestimonialsCarousel />
         </div>
@@ -701,7 +701,7 @@ export default function Pitch() {
       <section className="relative z-10 py-32 px-4">
         <AnimSection className="text-center max-w-3xl mx-auto space-y-6">
           <h2 className="text-3xl md:text-5xl font-black">
-            מוכן <span className="gradient-header">לעבוד חכם</span>?
+            מוכן <span className="text-gold">לעבוד חכם</span>?
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             10 לידים ראשונים בחינם. בלי כרטיס אשראי. בלי התחייבות.
