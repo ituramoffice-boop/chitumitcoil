@@ -324,6 +324,15 @@ const ClientDashboard = () => {
   const status = myLead ? STATUS_MAP[myLead.status] || STATUS_MAP.new : null;
 
   return (
+    <>
+    {advisorId && (
+      <AdvisorSyncModal
+        open={showSyncModal}
+        onOpenChange={setShowSyncModal}
+        advisorId={advisorId}
+        advisorName={advisorName}
+      />
+    )}
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Ambient glow orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
