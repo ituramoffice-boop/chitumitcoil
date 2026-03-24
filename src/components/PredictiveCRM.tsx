@@ -528,14 +528,25 @@ export function PriorityBoard({
             </Button>
           )}
           {selectedBulk.size > 0 && (
-            <Button
-              size="sm"
-              className="text-xs bg-gradient-to-l from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]"
-              onClick={handleGenerateMasterFile}
-            >
-              <Package className="w-3.5 h-3.5 ml-1" />
-              הגש {selectedBulk.size} תיקים לבנק
-            </Button>
+            <>
+              <Button
+                size="sm"
+                className="text-xs bg-gradient-to-l from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                onClick={handleGenerateMasterFile}
+              >
+                <Package className="w-3.5 h-3.5 ml-1" />
+                הגש {selectedBulk.size} תיקים לבנק
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs border-accent/40 text-accent hover:bg-accent/10"
+                onClick={() => setShowEmailDialog(true)}
+              >
+                <Mail className="w-3.5 h-3.5 ml-1" />
+                שלח במייל לבנק
+              </Button>
+            </>
           )}
         </div>
       </div>
