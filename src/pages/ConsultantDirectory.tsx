@@ -110,24 +110,46 @@ export default function ConsultantDirectory() {
       {/* Hero */}
       <section className="relative z-10 pt-20 pb-12 px-4">
         <div className="max-w-5xl mx-auto text-center space-y-6">
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}>
+          {/* Quality Seal Logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6, rotate: -10 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.7, type: "spring" }}
+            className="flex justify-center"
+          >
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-gold/20 blur-2xl scale-150" />
+              <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full border-2 border-gold/40 bg-background/60 backdrop-blur-xl flex items-center justify-center glow-gold">
+                <ChitumitLogo size={56} />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.15 }}>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium">
-              <Award className="w-4 h-4" /> מדריך יועצי משכנתאות מאומתים
+              <Shield className="w-4 h-4" /> תו איכות חיתומית · מדריך יועצים מאומתים
             </span>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
             className="text-3xl md:text-5xl font-black"
           >
-            מצא את <span className="text-gold">היועץ המושלם</span> עבורך
+            מצא את <span className="gradient-header">היועץ המושלם</span> עבורך
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-slate-400 max-w-xl mx-auto"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="text-muted-foreground max-w-xl mx-auto"
           >
-            כל היועצים במדריך אומתו על ידי חיתומית. הביקורות נכתבות רק על ידי לקוחות אמיתיים שסיימו תהליך.
+            כל היועצים במדריך עברו אימות ע״י חיתומית. הביקורות נכתבות רק על ידי לקוחות אמיתיים שסיימו תהליך.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+            className="text-gold/70 text-xs font-medium tracking-wide"
+          >
+            הבינה שמאחורי האישור
           </motion.p>
         </div>
       </section>
