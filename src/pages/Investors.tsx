@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import StarField from "@/components/StarField";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import {
   TrendingUp, Users, Globe, Zap, Shield, Brain, DollarSign, Target,
   Layers, BarChart3, Sparkles, ArrowDown, Calendar, CheckCircle2,
@@ -103,7 +104,17 @@ export default function Investors() {
       {/* ═══════ HERO ═══════ */}
       <section ref={heroRef} className="relative z-10 min-h-screen flex items-center justify-center px-4">
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="text-center max-w-5xl mx-auto space-y-8">
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }}>
+          {/* Quality Seal */}
+          <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, type: "spring" }} className="flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-gold/15 blur-2xl scale-[2]" />
+              <div className="w-20 h-20 rounded-full border-2 border-gold/40 bg-slate-900/60 backdrop-blur-xl flex items-center justify-center glow-gold">
+                <ChitumitLogo size={44} />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.1 }}>
             <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold/10 border border-gold/30 text-gold text-sm font-medium">
               <Crown className="w-4 h-4" /> Investor Deck · מצגת למשקיעים
             </span>
@@ -486,7 +497,9 @@ export default function Investors() {
       </section>
 
       <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
-        <p>© 2026 חיתומית · Confidential Investor Materials</p>
+        <p className="flex items-center justify-center gap-2">
+          <ChitumitLogo size={18} /> © 2026 חיתומית — <span className="text-gold/50">הבינה שמאחורי האישור</span> · Confidential Investor Materials
+        </p>
       </footer>
     </div>
   );

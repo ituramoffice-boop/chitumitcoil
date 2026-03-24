@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {
-  Building2, Shield, TrendingUp, CheckCircle2, ArrowLeft,
+  Shield, TrendingUp, CheckCircle2, ArrowLeft,
   Sparkles, Phone, Mail, User, Lock, Brain, MapPin,
   Home, Ruler, Calendar, Car, TreePine, Waves,
   Train, GraduationCap, ShoppingBag, Heart, Zap,
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
   Download,
 } from "lucide-react";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -66,7 +67,7 @@ const AREAS: AreaData[] = [
 ];
 
 const PROPERTY_TYPES = [
-  { key: "apartment", label: "דירה", icon: Building2, factor: 1.0 },
+  { key: "apartment", label: "דירה", icon: Home, factor: 1.0 },
   { key: "penthouse", label: "פנטהאוז", icon: Sparkles, factor: 1.35 },
   { key: "garden", label: "גן / קרקע", icon: TreePine, factor: 1.15 },
   { key: "cottage", label: "קוטג'", icon: Home, factor: 1.25 },
@@ -479,14 +480,12 @@ const PropertyValueCalculator = () => {
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-[hsl(160,84%,39%)] rounded-xl blur-md opacity-50" />
-                <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-[hsl(160,84%,45%)] to-[hsl(160,84%,35%)]">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
+                <div className="absolute inset-0 bg-gold/20 rounded-full blur-md" />
+                <ChitumitLogo size={40} />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight">SmartMortgage</h1>
-                <p className="text-[10px] text-white/40 tracking-wider uppercase">Property Valuation AI</p>
+                <h1 className="text-lg font-bold tracking-tight">חיתומית</h1>
+                <p className="text-[10px] text-gold/40 tracking-wider">הבינה שמאחורי האישור</p>
               </div>
             </div>
             <div className="flex items-center gap-4">

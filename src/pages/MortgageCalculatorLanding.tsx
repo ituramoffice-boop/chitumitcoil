@@ -8,11 +8,12 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {
   Calculator, Shield, TrendingUp, CheckCircle2, ArrowLeft,
-  Sparkles, Building2, Phone, Mail, User, ChevronDown,
+  Sparkles, Phone, Mail, User, ChevronDown,
   Lock, Award, Star, Zap, BarChart3, Clock, FileCheck, Upload,
   Target, Gauge, Brain, ArrowRight, Briefcase, Home, CreditCard,
   Download,
 } from "lucide-react";
+import { ChitumitLogo } from "@/components/ChitumitLogo";
 import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -312,14 +313,12 @@ const MortgageCalculatorLanding = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-[hsl(217,91%,50%)] rounded-xl blur-md opacity-50" />
-              <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-[hsl(217,91%,50%)] to-[hsl(217,91%,40%)]">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
+              <div className="absolute inset-0 bg-gold/20 rounded-full blur-md" />
+              <ChitumitLogo size={40} />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">Chitumit</h1>
-              <p className="text-[10px] text-white/40 tracking-wider uppercase">AI-Powered Platform</p>
+              <h1 className="text-lg font-bold tracking-tight">חיתומית</h1>
+              <p className="text-[10px] text-gold/40 tracking-wider">הבינה שמאחורי האישור</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -742,8 +741,8 @@ const MortgageCalculatorLanding = () => {
       <footer className="relative z-10 border-t border-white/5 py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-white/30 text-xs">
-            <Building2 className="w-4 h-4" />
-            <span>Chitumit © {new Date().getFullYear()}</span>
+            <ChitumitLogo size={16} />
+            <span>חיתומית © {new Date().getFullYear()}</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-white/20">
             <span>תנאי שימוש</span>
