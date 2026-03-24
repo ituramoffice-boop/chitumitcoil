@@ -982,6 +982,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <h3 className="font-bold text-foreground">{selectedLead.full_name} — ניתוח מעמיק</h3>
               <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)}>סגור</Button>
             </div>
+            {/* Profit Intelligence sidebar */}
+            <div className="space-y-3 mb-4">
+              <CloseDealTrigger lead={selectedLead} />
+              <FeeEstimator lead={selectedLead} />
+            </div>
+
             <Tabs defaultValue="advocate" dir="rtl">
               <TabsList>
                 <TabsTrigger value="advocate">AI חיתום</TabsTrigger>
