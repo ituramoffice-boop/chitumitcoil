@@ -61,9 +61,7 @@ const MortgageCalculatorLanding = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", email: "" });
   const [marketingConsent, setMarketingConsent] = useState(false);
-  const [journeyStep, setJourneyStep] = useState(0);
-  const [simAnswers, setSimAnswers] = useState<Record<string, string>>({});
-  const [simScore, setSimScore] = useState<number | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [lastSliderTouched, setLastSliderTouched] = useState<string>("");
