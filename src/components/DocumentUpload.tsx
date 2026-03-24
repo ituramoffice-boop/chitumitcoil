@@ -184,6 +184,7 @@ export function DocumentUpload() {
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 }
