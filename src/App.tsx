@@ -57,6 +57,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AccessibilityBadge />
+            <MobileBottomNav />
+            <PWAInstallPrompt />
             </WorkspaceProvider>
           </AuthProvider>
         </BrowserRouter>
