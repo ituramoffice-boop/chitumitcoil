@@ -16,7 +16,7 @@ import {
   ArrowLeft, ArrowRight, Building2, Home, Banknote, ShieldCheck, Lock,
   User, Phone, Mail, CheckCircle2, Sparkles, Brain, Upload, FileText,
   CreditCard, Landmark, TrendingUp, AlertTriangle, Target, Clock,
-  ChevronDown, Star, Loader2, KeyRound,
+  ChevronDown, Star, Loader2, KeyRound, Briefcase,
 } from "lucide-react";
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
@@ -65,6 +65,15 @@ const PROPERTY_TYPES = [
   { value: "land", label: "מגרש" },
   { value: "commercial", label: "נכס מסחרי" },
   { value: "office", label: "משרד" },
+];
+
+const EMPLOYMENT_SENIORITY = [
+  { value: "less_than_1", label: "פחות משנה", emoji: "🌱" },
+  { value: "1_to_3", label: "1-3 שנים", emoji: "📊" },
+  { value: "3_to_5", label: "3-5 שנים", emoji: "💼" },
+  { value: "5_to_10", label: "5-10 שנים", emoji: "⭐" },
+  { value: "10_plus", label: "מעל 10 שנים", emoji: "🏆" },
+  { value: "self_employed", label: "עצמאי/ת", emoji: "🧑‍💻" },
 ];
 
 const REQUIRED_DOCS = [
@@ -128,6 +137,7 @@ const PropertyLoanFunnel = () => {
   const [email, setEmail] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState<Set<string>>(new Set());
+  const [employmentSeniority, setEmploymentSeniority] = useState("");
 
   // Calculations
   const ltv = propertyValue > 0 ? Math.round(((loanAmount + existingMortgageBalance) / propertyValue) * 100) : 0;
