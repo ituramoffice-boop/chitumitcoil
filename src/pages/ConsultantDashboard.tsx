@@ -561,24 +561,17 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
       </header>
 
       <main className="container mx-auto px-6 lg:px-10 py-10 space-y-8">
-        {/* AI Summary Banner */}
-        {summary.parts.length > 0 && (
-          <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-l from-cyan-glow/5 via-primary/10 to-cyan-glow/5 p-4 animate-fade-in glow-primary">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-gradient-to-br from-cyan-glow/20 to-primary/20 shrink-0">
-                <Sparkles className="w-5 h-5 text-cyan-glow" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">
-                  {summary.greeting}! <span className="font-normal text-muted-foreground">
-                    יש לך {summary.parts.join(" ו-")}.
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
-          </div>
-        )}
+        {/* AI Co-Pilot Smart Summary */}
+        <SmartSummaryWidget
+          greeting={summary.greeting}
+          newDocsCollected={documents.filter(d => {
+            const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
+            return age < 1;
+          }).length}
+          pendingLeads={stats.new}
+          expiringCount={alertCounts.expiring}
+          missingDocsCount={alertCounts.missing_docs}
+        />
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
