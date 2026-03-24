@@ -54,6 +54,10 @@ function useAnimatedNumber(target: number, duration = 1200) {
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
+// WhatsApp helper
+const getWhatsAppUrl = (phone?: string | null) =>
+  `https://wa.me/${phone || "972501234567"}`;
+
 const MortgageCalculatorLanding = () => {
   const [loanAmount, setLoanAmount] = useState(1000000);
   const [years, setYears] = useState(25);
