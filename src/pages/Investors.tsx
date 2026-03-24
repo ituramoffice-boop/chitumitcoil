@@ -7,7 +7,7 @@ import { PublicFooter } from "@/components/PublicFooter";
 import {
   TrendingUp, Users, Globe, Zap, Shield, Brain, DollarSign, Target,
   Layers, BarChart3, Sparkles, ArrowDown, Calendar, CheckCircle2,
-  Phone, FileSignature, ScanSearch, Calculator, Crown, Award, Rocket
+  Phone, FileSignature, ScanSearch, Calculator, Crown, Award, Rocket, Megaphone
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
