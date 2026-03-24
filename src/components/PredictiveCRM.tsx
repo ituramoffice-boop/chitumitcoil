@@ -676,7 +676,7 @@ export function PriorityBoard({
       doc.text("PROFESSIONAL SERVICE VALUE", 105, fy + 1, { align: "center" });
       doc.setFontSize(8);
       doc.setTextColor(200, 200, 200);
-      const svcText = mortgage >= 2000000
+      const svcText = mortgageAmt >= 2000000
         ? rtl("תיק מורכב בדרגה גבוהה — ניתוח חיתום מקיף, נרטיב בנקאי מותאם, ותמיכה עד לאישור מלא")
         : rtl("ניתוח חיתום מקצועי — סקירת נתוני אשראי, בניית נרטיב בנקאי, ותוכנית פעולה ממוקדת");
       doc.text(svcText, 105, fy + 10, { align: "center", maxWidth: 160 });
