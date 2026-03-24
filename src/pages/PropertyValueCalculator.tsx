@@ -202,7 +202,7 @@ const PropertyValueCalculator = () => {
   );
 
   // Calculate lead score based on property value inputs
-  const calcLeadScore = () => {
+  const calcLeadScore = (email?: string, consent?: boolean) => {
     let score = 0;
     if (totalValue >= 3000000) score += 30;
     else if (totalValue >= 1500000) score += 20;
@@ -211,27 +211,36 @@ const PropertyValueCalculator = () => {
     else if (area.demandLevel === "medium") score += 10;
     if (area.trend > 5) score += 15;
     else if (area.trend > 3) score += 10;
-    if (formData.email) score += 10;
+    if (email) score += 10;
     if (lastSliderTouched) score += 10;
-    if (marketingConsent) score += 5;
+    if (consent) score += 5;
     return Math.min(score, 100);
   };
 
-  const getLeadCategory = () => {
+  const getLeadCategory = (userCategory?: string) => {
+    if (userCategory === "investor") return "משקיע";
+    if (userCategory === "refinance") return "מחזר הלוואה";
+    if (userCategory === "first_buyer") return "רוכש ראשון";
     if (totalValue >= 4000000) return "משקיע";
     if (condition === "needs_renovation") return "משפר דיור";
     return "רוכש ראשון";
   };
 
+  const getLeadTags = () => {
+    const tags: string[] = [];
+    if (totalValue >= 3000000) tags.push("VIP Lead");
+    if (area.demandLevel === "high" && area.trend > 5) tags.push("Hot Market");
+    if (condition === "needs_renovation") tags.push("Renovation Potential");
+    return tags;
+  };
+
   const generatePDF = () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     doc.setR2L(true);
-
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, 210, 45, "F");
     doc.setFillColor(16, 185, 129);
     doc.rect(0, 42, 210, 3, "F");
-
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.text("SmartMortgage AI", 105, 18, { align: "center" });
@@ -239,13 +248,11 @@ const PropertyValueCalculator = () => {
     doc.text("Property Valuation Report", 105, 28, { align: "center" });
     doc.setFontSize(8);
     doc.text(new Date().toLocaleDateString("he-IL"), 105, 36, { align: "center" });
-
     doc.setTextColor(30, 41, 59);
     let y = 58;
     doc.setFontSize(14);
     doc.text("Property Summary", 105, y, { align: "center" });
     y += 12;
-
     const lines = [
       `Area: ${area.name} (${area.region})`,
       `Type: ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label || propertyType}`,
@@ -257,7 +264,6 @@ const PropertyValueCalculator = () => {
       `5-Year Forecast: ${value5y.toLocaleString()} ILS`,
       `Confidence: ${confidenceScore}%`,
     ];
-
     doc.setFontSize(11);
     lines.forEach(text => {
       doc.setFillColor(248, 250, 252);
@@ -265,14 +271,12 @@ const PropertyValueCalculator = () => {
       doc.text(text, 105, y, { align: "center" });
       y += 12;
     });
-
     y += 5;
     if (insights.length > 0) {
       doc.setFontSize(10);
       doc.setTextColor(100, 116, 139);
       doc.text("AI: " + insights[0].text, 105, y, { align: "center", maxWidth: 150 });
     }
-
     y += 20;
     doc.setFillColor(37, 211, 102);
     doc.roundedRect(55, y, 100, 14, 4, 4, "F");
@@ -280,59 +284,49 @@ const PropertyValueCalculator = () => {
     doc.setFontSize(12);
     doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
     doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
-
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
     doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
-
     doc.save(`SmartMortgage_PropertyReport_${formData.full_name || "Client"}.pdf`);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.full_name || !formData.phone) {
-      toast({ title: "נא למלא שם וטלפון", variant: "destructive" });
-      return;
-    }
-    setSubmitting(true);
+  const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
+    setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
-      const leadScore = calcLeadScore();
-      const category = getLeadCategory();
-
+      const leadScore = calcLeadScore(data.email, marketingConsent);
+      const category = getLeadCategory(data.category);
+      const tags = getLeadTags();
       const { error } = await supabase.from("leads").insert({
         consultant_id: consultantId,
-        full_name: formData.full_name,
-        phone: formData.phone || null,
-        email: formData.email || null,
+        full_name: data.full_name,
+        phone: data.phone || null,
+        email: data.email || null,
         property_value: totalValue,
         mortgage_amount: Math.round(totalValue * 0.7),
         lead_source: "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
-        notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
+        notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
       } as any);
       if (error) throw error;
-
-      // CRM notification (best-effort)
       if (session?.user?.id) {
+        const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
         supabase.from("notifications").insert({
           user_id: session.user.id,
-          title: `🏠 ליד חדש מהערכת שווי: ${formData.full_name}`,
+          title: `🏠 ליד חדש מהערכת שווי: ${data.full_name}${tagLabel}`,
           body: `₪${totalValue.toLocaleString()} • ${area.name} • ציון ${leadScore} • ${category}`,
           type: leadScore >= 70 ? "urgent" : "info",
           link: "/dashboard/leads",
         } as any).then(() => {});
       }
-
       setIsUnlocked(true);
-      setStep("success");
-      setTimeout(() => setStep("report"), 3000);
     } catch (e: any) {
       toast({ title: "שגיאה בשליחה", description: e.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
+      throw e;
     }
+  };
   };
 
   const scrollToForm = () => {
