@@ -84,7 +84,8 @@ import { AIUnderwriterAdvocate } from "@/components/AIUnderwriterAdvocate";
 import { CollaborativeUnderwriting } from "@/components/CollaborativeUnderwriting";
 import { AdvisorBenchmark } from "@/components/AdvisorBenchmark";
 import { InsiderFeed } from "@/components/InsiderFeed";
-import { PerformanceStats, FeeEstimator, CloseDealTrigger } from "@/components/ProfitIntelligence";
+import { PerformanceStats, FeeEstimator, CloseDealTrigger, PipelineTicker } from "@/components/ProfitIntelligence";
+import { PresentationMode } from "@/components/PresentationMode";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -169,6 +170,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sendingMagicLink, setSendingMagicLink] = useState<string | null>(null);
   const [funnelFilter, setFunnelFilter] = useState<LeadStatus | "all">("all");
+  const [presentationLead, setPresentationLead] = useState<Lead | null>(null);
   const [alertTab, setAlertTab] = useState<AlertCategory>("expiring");
   const [formData, setFormData] = useState({
     full_name: "",
@@ -698,7 +700,10 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
         </div>
 
         {/* Profit Intelligence */}
-        <PerformanceStats leads={leads} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PerformanceStats leads={leads} />
+          <PipelineTicker leads={leads} />
+        </div>
 
         {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -986,6 +991,15 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <div className="space-y-3 mb-4">
               <CloseDealTrigger lead={selectedLead} />
               <FeeEstimator lead={selectedLead} />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-gold/20 text-gold hover:bg-gold/10"
+                onClick={() => setPresentationLead(selectedLead)}
+              >
+                <Crown className="w-3.5 h-3.5 ml-1.5" />
+                מצב מצגת ללקוח
+              </Button>
             </div>
 
             <Tabs defaultValue="advocate" dir="rtl">
@@ -1059,6 +1073,15 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           )}
         </div>
       </main>
+
+      {/* Client-Facing Presentation Mode */}
+      {presentationLead && (
+        <PresentationMode
+          lead={presentationLead}
+          open={!!presentationLead}
+          onClose={() => setPresentationLead(null)}
+        />
+      )}
     </div>
   );
 };
