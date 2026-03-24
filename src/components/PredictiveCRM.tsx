@@ -473,7 +473,7 @@ export function PriorityBoard({
 
     try {
       // Build PDF
-      const { doc, totalVolume } = buildPdfDoc(selected);
+      const { doc, totalVolume } = await buildPdfDoc(selected);
       const pdfBlob = doc.output("blob");
       const fileName = `bank_submission_${new Date().toISOString().slice(0, 10)}_${crypto.randomUUID().slice(0, 8)}.pdf`;
 
