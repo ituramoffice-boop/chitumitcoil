@@ -41,6 +41,8 @@ import AdminMobile from "./pages/AdminMobile";
 import Milestone2000 from "./pages/Milestone2000";
 import GetStarted from "./pages/GetStarted";
 import MasterAdminDemo from "./pages/MasterAdminDemo";
+import MarketingAssetsHub from "./pages/MarketingAssetsHub";
+import JoinTheElite from "./pages/JoinTheElite";
 import { DemoBanner } from "@/components/DemoBanner";
 
 const queryClient = new QueryClient();
@@ -80,7 +82,9 @@ const App = () => {
                 <Route path="/advisor-pricing" element={<AdvisorPricing />} />
                  <Route path="/advisor-plans" element={<AdvisorPlans />} />
                   <Route path="/master-admin" element={<MasterAdmin />} />
-                  <Route path="/master-admin/demo" element={<MasterAdminDemo />} />
+                   <Route path="/master-admin/demo" element={<MasterAdminDemo />} />
+                   <Route path="/master-admin/marketing" element={<MarketingAssetsHub />} />
+                   <Route path="/join-the-elite" element={<JoinTheElite />} />
                   <Route path="/ceo-report" element={<CEOReport />} />
                   <Route path="/admin-mobile" element={<AdminMobile />} />
                   <Route path="/milestone-2000" element={<Milestone2000 />} />
