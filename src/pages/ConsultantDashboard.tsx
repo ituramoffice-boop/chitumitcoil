@@ -957,7 +957,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             <PriorityBoard
               leads={leads}
               documents={documents}
-              onSelectLead={(lead) => setSelectedLead(lead)}
+              onSelectLead={(lead) => setSelectedLead(lead as any as Lead)}
               selectedLeadId={selectedLead?.id || null}
               onWhatsApp={openWhatsApp}
             />
