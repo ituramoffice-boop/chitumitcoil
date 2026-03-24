@@ -14,6 +14,7 @@ import {
   BarChart3, ChevronDown, ArrowRight, Target, Eye,
   Download,
 } from "lucide-react";
+import ConversationalLeadCapture from "@/components/ConversationalLeadCapture";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import IsraelHeatMap from "@/components/IsraelHeatMap";
@@ -201,7 +202,7 @@ const PropertyValueCalculator = () => {
   );
 
   // Calculate lead score based on property value inputs
-  const calcLeadScore = () => {
+  const calcLeadScore = (email?: string, consent?: boolean) => {
     let score = 0;
     if (totalValue >= 3000000) score += 30;
     else if (totalValue >= 1500000) score += 20;
@@ -210,27 +211,36 @@ const PropertyValueCalculator = () => {
     else if (area.demandLevel === "medium") score += 10;
     if (area.trend > 5) score += 15;
     else if (area.trend > 3) score += 10;
-    if (formData.email) score += 10;
+    if (email) score += 10;
     if (lastSliderTouched) score += 10;
-    if (marketingConsent) score += 5;
+    if (consent) score += 5;
     return Math.min(score, 100);
   };
 
-  const getLeadCategory = () => {
+  const getLeadCategory = (userCategory?: string) => {
+    if (userCategory === "investor") return "משקיע";
+    if (userCategory === "refinance") return "מחזר הלוואה";
+    if (userCategory === "first_buyer") return "רוכש ראשון";
     if (totalValue >= 4000000) return "משקיע";
     if (condition === "needs_renovation") return "משפר דיור";
     return "רוכש ראשון";
   };
 
+  const getLeadTags = () => {
+    const tags: string[] = [];
+    if (totalValue >= 3000000) tags.push("VIP Lead");
+    if (area.demandLevel === "high" && area.trend > 5) tags.push("Hot Market");
+    if (condition === "needs_renovation") tags.push("Renovation Potential");
+    return tags;
+  };
+
   const generatePDF = () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     doc.setR2L(true);
-
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, 210, 45, "F");
     doc.setFillColor(16, 185, 129);
     doc.rect(0, 42, 210, 3, "F");
-
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.text("SmartMortgage AI", 105, 18, { align: "center" });
@@ -238,13 +248,11 @@ const PropertyValueCalculator = () => {
     doc.text("Property Valuation Report", 105, 28, { align: "center" });
     doc.setFontSize(8);
     doc.text(new Date().toLocaleDateString("he-IL"), 105, 36, { align: "center" });
-
     doc.setTextColor(30, 41, 59);
     let y = 58;
     doc.setFontSize(14);
     doc.text("Property Summary", 105, y, { align: "center" });
     y += 12;
-
     const lines = [
       `Area: ${area.name} (${area.region})`,
       `Type: ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label || propertyType}`,
@@ -256,7 +264,6 @@ const PropertyValueCalculator = () => {
       `5-Year Forecast: ${value5y.toLocaleString()} ILS`,
       `Confidence: ${confidenceScore}%`,
     ];
-
     doc.setFontSize(11);
     lines.forEach(text => {
       doc.setFillColor(248, 250, 252);
@@ -264,14 +271,12 @@ const PropertyValueCalculator = () => {
       doc.text(text, 105, y, { align: "center" });
       y += 12;
     });
-
     y += 5;
     if (insights.length > 0) {
       doc.setFontSize(10);
       doc.setTextColor(100, 116, 139);
       doc.text("AI: " + insights[0].text, 105, y, { align: "center", maxWidth: 150 });
     }
-
     y += 20;
     doc.setFillColor(37, 211, 102);
     doc.roundedRect(55, y, 100, 14, 4, 4, "F");
@@ -279,59 +284,49 @@ const PropertyValueCalculator = () => {
     doc.setFontSize(12);
     doc.text("Contact us on WhatsApp", 105, y + 9, { align: "center" });
     doc.link(55, y, 100, 14, { url: "https://wa.me/972501234567" });
-
     doc.setTextColor(148, 163, 184);
     doc.setFontSize(7);
     doc.text("This report is for estimation purposes only. SmartMortgage AI (c) 2026", 105, 285, { align: "center" });
-
     doc.save(`SmartMortgage_PropertyReport_${formData.full_name || "Client"}.pdf`);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.full_name || !formData.phone) {
-      toast({ title: "נא למלא שם וטלפון", variant: "destructive" });
-      return;
-    }
-    setSubmitting(true);
+  const handleConversationalSubmit = async (data: { full_name: string; phone: string; email: string; category: string }) => {
+    setFormData({ full_name: data.full_name, phone: data.phone, email: data.email });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const consultantId = session?.user?.id || DEFAULT_CONSULTANT_ID;
-      const leadScore = calcLeadScore();
-      const category = getLeadCategory();
-
+      const leadScore = calcLeadScore(data.email, marketingConsent);
+      const category = getLeadCategory(data.category);
+      const tags = getLeadTags();
       const { error } = await supabase.from("leads").insert({
         consultant_id: consultantId,
-        full_name: formData.full_name,
-        phone: formData.phone || null,
-        email: formData.email || null,
+        full_name: data.full_name,
+        phone: data.phone || null,
+        email: data.email || null,
         property_value: totalValue,
         mortgage_amount: Math.round(totalValue * 0.7),
         lead_source: "organic",
         marketing_consent: marketingConsent,
         lead_score: leadScore,
-        notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
+        notes: `הערכת שווי נכס: ${area.name}, ${sqm} מ"ר, ${PROPERTY_TYPES.find(t => t.key === propertyType)?.label}, ${rooms} חדרים. שווי: ₪${totalValue.toLocaleString()}. קטגוריה: ${category}. ${tags.length ? `תגיות: ${tags.join(", ")}. ` : ""}סליידר: ${lastSliderTouched}. ציון: ${leadScore}`,
       } as any);
       if (error) throw error;
-
-      // CRM notification (best-effort)
       if (session?.user?.id) {
+        const tagLabel = tags.length ? ` [${tags.join(", ")}]` : "";
         supabase.from("notifications").insert({
           user_id: session.user.id,
-          title: `🏠 ליד חדש מהערכת שווי: ${formData.full_name}`,
+          title: `🏠 ליד חדש מהערכת שווי: ${data.full_name}${tagLabel}`,
           body: `₪${totalValue.toLocaleString()} • ${area.name} • ציון ${leadScore} • ${category}`,
           type: leadScore >= 70 ? "urgent" : "info",
           link: "/dashboard/leads",
         } as any).then(() => {});
       }
-
       setIsUnlocked(true);
-      setStep("success");
-      setTimeout(() => setStep("report"), 3000);
     } catch (e: any) {
       toast({ title: "שגיאה בשליחה", description: e.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
+      throw e;
     }
+  };
   };
 
   const scrollToForm = () => {
@@ -1000,144 +995,21 @@ const PropertyValueCalculator = () => {
           </div>
         </section>
 
-        {/* Lead Form */}
+        {/* Conversational Lead Capture */}
         {step !== "calc" && (
           <section ref={formRef} className="relative z-10 py-12">
             <div className="max-w-lg mx-auto px-6">
-              {step === "form" ? (
-                <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(160,84%,39%)]/20 to-[hsl(217,91%,50%)]/10 rounded-3xl blur-xl" />
-                  <div className="relative bg-[hsl(222,47%,8%)] border border-white/10 rounded-3xl p-8">
-                    <div className="text-center mb-8">
-                      <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[hsl(160,84%,39%)]/20 to-[hsl(217,91%,50%)]/20 flex items-center justify-center mb-4">
-                        <Eye className="w-8 h-8 text-[hsl(160,84%,50%)]" />
-                      </div>
-                      <h3 className="text-2xl font-bold mb-2">קבל דוח הערכה מפורט</h3>
-                      <p className="text-sm text-white/40">כולל תחזית, השוואה אזורית, וטיפים למקסום ערך</p>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-xs text-white/50 mb-1.5 block">שם מלא *</Label>
-                        <div className="relative">
-                          <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                          <Input value={formData.full_name} onChange={e => setFormData(d => ({ ...d, full_name: e.target.value }))} placeholder="ישראל ישראלי" className="bg-white/5 border-white/10 text-white pr-10 h-12 rounded-xl placeholder:text-white/20 focus:border-[hsl(160,84%,39%)] focus:ring-[hsl(160,84%,39%)]/20" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-white/50 mb-1.5 block">טלפון *</Label>
-                        <div className="relative">
-                          <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                          <Input value={formData.phone} onChange={e => setFormData(d => ({ ...d, phone: e.target.value }))} placeholder="050-1234567" className="bg-white/5 border-white/10 text-white pr-10 h-12 rounded-xl placeholder:text-white/20 focus:border-[hsl(160,84%,39%)] focus:ring-[hsl(160,84%,39%)]/20" dir="ltr" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-white/50 mb-1.5 block">אימייל (אופציונלי)</Label>
-                        <div className="relative">
-                          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                          <Input value={formData.email} onChange={e => setFormData(d => ({ ...d, email: e.target.value }))} placeholder="email@example.com" type="email" className="bg-white/5 border-white/10 text-white pr-10 h-12 rounded-xl placeholder:text-white/20 focus:border-[hsl(160,84%,39%)] focus:ring-[hsl(160,84%,39%)]/20" dir="ltr" />
-                        </div>
-                      </div>
-
-                      {/* Summary */}
-                      <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
-                        <p className="text-xs text-white/40 font-medium">סיכום הערכה:</p>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-white/50">אזור</span>
-                          <span className="font-bold">{area.name}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-white/50">שטח</span>
-                          <span className="font-bold">{sqm} מ"ר • {rooms} חדרים</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-white/50">שווי משוער</span>
-                          <span className="font-bold text-[hsl(160,84%,50%)]">₪{totalValue.toLocaleString()}</span>
-                        </div>
-                      </div>
-
-                      {/* Marketing consent */}
-                      <label className="flex items-start gap-3 cursor-pointer group">
-                        <div className="relative mt-0.5">
-                          <input type="checkbox" checked={marketingConsent} onChange={e => setMarketingConsent(e.target.checked)} className="sr-only peer" />
-                          <div className="w-5 h-5 rounded-md border-2 border-white/20 bg-white/5 peer-checked:bg-[hsl(160,84%,39%)] peer-checked:border-[hsl(160,84%,39%)] transition-all flex items-center justify-center">
-                            {marketingConsent && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-                          </div>
-                        </div>
-                        <span className="text-xs text-white/40 leading-relaxed group-hover:text-white/60 transition-colors">
-                          אני מאשר/ת קבלת עדכונים, טיפים ומבצעים בנושא נדל"ן ומשכנתאות בדוא"ל ו/או ב-SMS. ניתן לבטל בכל עת.
-                        </span>
-                      </label>
-
-                      <Button onClick={handleSubmit} disabled={submitting} className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(160,84%,35%)] hover:from-[hsl(160,84%,45%)] hover:to-[hsl(160,84%,40%)] text-white border-0 shadow-[0_0_30px_hsl(160,84%,39%,0.3)] hover:shadow-[0_0_40px_hsl(160,84%,39%,0.5)] transition-all">
-                        {submitting ? (
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <Target className="w-5 h-5 ml-2" />
-                            שלח וקבל דוח מפורט
-                          </>
-                        )}
-                      </Button>
-                      <p className="text-center text-[10px] text-white/25 flex items-center justify-center gap-1">
-                        <Lock className="w-3 h-3" />
-                        הפרטים שלך מוגנים ולא יועברו לצד שלישי
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : step === "success" ? (
-                <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(160,84%,39%)]/20 to-transparent rounded-3xl blur-xl" />
-                  <div className="relative bg-[hsl(222,47%,8%)] border border-[hsl(160,84%,39%)]/30 rounded-3xl p-10 text-center">
-                    <div className="w-20 h-20 mx-auto rounded-full bg-[hsl(160,84%,39%)]/10 flex items-center justify-center mb-6 animate-bounce">
-                      <CheckCircle2 className="w-10 h-10 text-[hsl(160,84%,50%)]" />
-                    </div>
-                    <h3 className="text-3xl font-black mb-3">הפרטים נקלטו! 🏠</h3>
-                    <p className="text-white/50 mb-2">מכין את דוח ההערכה שלך...</p>
-                    <div className="w-48 h-1 mx-auto rounded-full bg-white/10 overflow-hidden mt-6">
-                      <div className="h-full bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(217,91%,50%)] rounded-full" style={{ animation: "loading 3s ease-in-out forwards" }} />
-                    </div>
-                  </div>
-                </div>
-              ) : step === "report" ? (
-                <div className="relative animate-[fadeSlideUp_0.5s_ease-out]">
-                  <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(160,84%,39%)]/15 to-transparent rounded-3xl blur-xl" />
-                  <div className="relative bg-[hsl(222,47%,8%)] border border-white/10 rounded-3xl p-8">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-black mb-2">דוח הערכת שווי 📊</h3>
-                      <p className="text-xs text-white/40">יועץ יחזור אליך עם ניתוח מעמיק תוך 24 שעות</p>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="p-4 rounded-xl bg-[hsl(160,84%,39%)]/10 border border-[hsl(160,84%,39%)]/20 text-center">
-                        <p className="text-xs text-white/40 mb-1">שווי משוער</p>
-                        <p className="text-3xl font-black text-[hsl(160,84%,55%)]">₪{totalValue.toLocaleString()}</p>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="p-3 rounded-lg bg-white/5 text-center">
-                          <p className="text-[10px] text-white/40">שנה</p>
-                          <p className="text-sm font-bold">₪{value1y.toLocaleString()}</p>
-                        </div>
-                        <div className="p-3 rounded-lg bg-white/5 text-center">
-                          <p className="text-[10px] text-white/40">3 שנים</p>
-                          <p className="text-sm font-bold">₪{value3y.toLocaleString()}</p>
-                        </div>
-                        <div className="p-3 rounded-lg bg-white/5 text-center">
-                          <p className="text-[10px] text-white/40">5 שנים</p>
-                          <p className="text-sm font-bold">₪{value5y.toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <div className="text-center pt-4">
-                        <Link to="/self-check">
-                          <Button className="bg-gradient-to-l from-[hsl(217,91%,50%)] to-[hsl(217,91%,40%)] text-white border-0 h-12 px-8 rounded-xl">
-                            <Sparkles className="w-4 h-4 ml-2" />
-                            המשך לבדיקת היתכנות
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
+              <ConversationalLeadCapture
+                onSubmit={handleConversationalSubmit}
+                submitting={submitting}
+                accent="green"
+                summaryLines={[
+                  { label: "אזור", value: area.name },
+                  { label: "שטח", value: `${sqm} מ"ר • ${rooms} חדרים` },
+                  { label: "שווי משוער", value: `₪${totalValue.toLocaleString()}`, highlight: true },
+                ]}
+                onDownloadPDF={generatePDF}
+              />
             </div>
           </section>
         )}
