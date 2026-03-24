@@ -131,6 +131,8 @@ const PropertyValueCalculator = () => {
   const [marketingConsent, setMarketingConsent] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [lastSliderTouched, setLastSliderTouched] = useState<string>("");
 
   // Close dropdown on outside click
   useEffect(() => {
