@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { toPng } from "html-to-image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
@@ -132,6 +133,7 @@ const ComparisonEngine = () => {
 const ViralShareCards = () => {
   const [advisorName, setAdvisorName] = useState("דני כהן");
   const [copied, setCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -140,6 +142,20 @@ const ViralShareCards = () => {
     setCopied(true);
     toast({ title: "הועתק! מוכן לשיתוף" });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadCard = async () => {
+    if (!cardRef.current) return;
+    try {
+      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
+      const link = document.createElement("a");
+      link.download = `chitumit-share-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast({ title: "הכרטיס הורד בהצלחה!" });
+    } catch {
+      toast({ title: "שגיאה בהורדה", variant: "destructive" });
+    }
   };
 
   return (
@@ -158,7 +174,7 @@ const ViralShareCards = () => {
         />
 
         {/* Share Card Preview */}
-        <div className="relative rounded-xl overflow-hidden bg-[hsl(222,47%,5%)] p-8 border border-gold/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+        <div ref={cardRef} className="relative rounded-xl overflow-hidden bg-[hsl(222,47%,5%)] p-8 border border-gold/30 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -181,7 +197,11 @@ const ViralShareCards = () => {
         <div className="flex gap-2">
           <Button onClick={handleShare} className="flex-1 bg-gold hover:bg-gold/90 text-gold-foreground">
             {copied ? <Check className="h-4 w-4 ml-2" /> : <Copy className="h-4 w-4 ml-2" />}
-            {copied ? "הועתק!" : "שתף בוואטסאפ / אינסטגרם"}
+            {copied ? "הועתק!" : "העתק טקסט"}
+          </Button>
+          <Button variant="outline" className="border-gold/20 text-gold" onClick={handleDownloadCard}>
+            <Download className="h-4 w-4 ml-2" />
+            הורד כתמונה
           </Button>
         </div>
       </CardContent>
