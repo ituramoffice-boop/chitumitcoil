@@ -21,16 +21,21 @@ import {
 
 const DEFAULT_CONSULTANT_ID = "a4777786-46d3-44fa-a303-a092ebd70f2d";
 
-/* ── Insurance rate tables (simplified actuarial) ── */
-function getMarketRate(age: number, isSmoker: boolean, termYears: number): number {
-  const baseRate = age < 30 ? 0.035 : age < 40 ? 0.055 : age < 50 ? 0.085 : age < 60 ? 0.14 : 0.22;
-  const smokerMultiplier = isSmoker ? 1.8 : 1;
-  const termFactor = termYears > 20 ? 1.15 : termYears > 15 ? 1.05 : 1;
-  return baseRate * smokerMultiplier * termFactor;
+/* ── Insurance premium tables (based on Israeli market data 2025) ── */
+/* Monthly premium for mortgage life insurance (ביטוח חיים למשכנתא) */
+/* Market rates: ₪500K→20-50/mo, ₪1M→40-100/mo, ₪1.5M+→60-150/mo */
+/* Smokers pay 2-3x, age 30 vs 45 can be 2-3x difference */
+function getMonthlyPremium(mortgageAmount: number, age: number, isSmoker: boolean, termYears: number): number {
+  // Base rate per ₪100K of mortgage (bank/market average)
+  const ageBase = age < 30 ? 3.2 : age < 35 ? 4.0 : age < 40 ? 5.5 : age < 45 ? 7.5 : age < 50 ? 10.5 : age < 55 ? 14 : age < 60 ? 19 : 26;
+  const smokerMultiplier = isSmoker ? 2.4 : 1;
+  const termFactor = termYears > 25 ? 1.12 : termYears > 20 ? 1.06 : 1;
+  const units = mortgageAmount / 100000;
+  return Math.round(ageBase * smokerMultiplier * termFactor * units);
 }
 
-function getChitumitRate(age: number, isSmoker: boolean, termYears: number): number {
-  return getMarketRate(age, isSmoker, termYears) * 0.62; // 38% savings
+function getChitumitPremium(mortgageAmount: number, age: number, isSmoker: boolean, termYears: number): number {
+  return Math.round(getMonthlyPremium(mortgageAmount, age, isSmoker, termYears) * 0.6); // 40% savings via private market
 }
 
 function getRiskProfile(age: number, isSmoker: boolean): { label: string; tag: string; color: string } {
@@ -102,15 +107,13 @@ const MortgageInsurance = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanComplete, setScanComplete] = useState(false);
 
-  // Calculations
-  const marketRate = getMarketRate(age, isSmoker, loanTerm);
-  const chitumitRate = getChitumitRate(age, isSmoker, loanTerm);
-  const marketMonthly = Math.round(mortgageAmount * marketRate / 12);
-  const chitumitMonthly = Math.round(mortgageAmount * chitumitRate / 12);
+  // Calculations — monthly premium in ₪
+  const marketMonthly = getMonthlyPremium(mortgageAmount, age, isSmoker, loanTerm);
+  const chitumitMonthly = getChitumitPremium(mortgageAmount, age, isSmoker, loanTerm);
   const monthlySavings = marketMonthly - chitumitMonthly;
   const totalSavings = monthlySavings * loanTerm * 12;
   const riskProfile = getRiskProfile(age, isSmoker);
-  const scoreBoost = monthlySavings > 500 ? 5 : monthlySavings > 200 ? 4 : 3;
+  const scoreBoost = monthlySavings > 50 ? 5 : monthlySavings > 20 ? 4 : 3;
 
   const animMarket = useAnimatedNumber(marketMonthly);
   const animChitumit = useAnimatedNumber(chitumitMonthly);
@@ -158,8 +161,8 @@ const MortgageInsurance = () => {
         `גיל הלווה הצעיר: ${age}`,
         `מעשן: ${isSmoker ? "כן" : "לא"}`,
         `פרופיל סיכון: ${riskProfile.tag}`,
-        `פרמיה שוק: ₪${marketMonthly}/חודש`,
-        `פרמיה חיתומית: ₪${chitumitMonthly}/חודש`,
+        `פרמיה בבנק: ₪${marketMonthly}/חודש`,
+        `פרמיה דרך חיתומית: ₪${chitumitMonthly}/חודש`,
         `חיסכון חודשי: ₪${monthlySavings}`,
         `חיסכון כולל: ₪${totalSavings.toLocaleString()}`,
         `שיפור ציון חיתומית: +${scoreBoost} נקודות`,
@@ -330,8 +333,6 @@ const MortgageInsurance = () => {
                       animSavings={animSavings}
                       monthlySavings={monthlySavings}
                       loanTerm={loanTerm}
-                      marketRate={marketRate}
-                      chitumitRate={chitumitRate}
                     />
                   )}
 
@@ -536,17 +537,17 @@ function CalculatorStep({ mortgageAmount, setMortgageAmount, loanTerm, setLoanTe
 }
 
 /* ═══ STEP 2: Comparison ═══ */
-function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, animSavings, monthlySavings, loanTerm, marketRate, chitumitRate }: any) {
+function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, animSavings, monthlySavings, loanTerm }: any) {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center">📊 השוואת מחירים בזמן אמת</h2>
+      <h2 className="text-2xl font-bold text-center">📊 השוואת פרמיות בזמן אמת</h2>
 
       {/* Scanning animation */}
       {!scanComplete && (
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-cyan-500/20 p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm text-cyan-300">
             <Activity className="w-4 h-4 animate-pulse" />
-            <span>מאמת הנחות מבוססות בריאות...</span>
+            <span>סורק מחירי פוליסות בשוק...</span>
           </div>
           <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
             <motion.div
@@ -565,17 +566,17 @@ function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Market rate */}
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 space-y-3">
-              <p className="text-xs text-white/40 uppercase tracking-wider">ממוצע שוק</p>
+              <p className="text-xs text-white/40 uppercase tracking-wider">פרמיה ממוצעת בבנק</p>
               <p className="text-3xl font-bold text-white/70 line-through decoration-red-400/50">₪{animMarket.toLocaleString()}<span className="text-sm">/חודש</span></p>
-              <p className="text-xs text-white/30">ריבית: {(marketRate * 100).toFixed(2)}%</p>
+              <p className="text-xs text-white/30">ביטוח חיים למשכנתא דרך הבנק</p>
             </div>
 
             {/* Chitumit rate */}
             <div className="bg-gradient-to-br from-cyan-500/10 to-teal-500/10 backdrop-blur-xl rounded-2xl border-2 border-cyan-500/40 p-6 space-y-3 relative overflow-hidden">
               <div className="absolute top-3 left-3 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">מומלץ</div>
-              <p className="text-xs text-cyan-300 uppercase tracking-wider">חיתומית Preferred</p>
+              <p className="text-xs text-cyan-300 uppercase tracking-wider">פרמיה דרך חיתומית</p>
               <p className="text-3xl font-bold text-cyan-300">₪{animChitumit.toLocaleString()}<span className="text-sm">/חודש</span></p>
-              <p className="text-xs text-cyan-400/50">ריבית: {(chitumitRate * 100).toFixed(2)}%</p>
+              <p className="text-xs text-cyan-400/50">ביטוח פרטי במחיר מועדף</p>
             </div>
           </div>
 
