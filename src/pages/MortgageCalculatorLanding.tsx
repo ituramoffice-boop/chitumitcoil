@@ -313,14 +313,12 @@ const MortgageCalculatorLanding = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-[hsl(217,91%,50%)] rounded-xl blur-md opacity-50" />
-              <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-[hsl(217,91%,50%)] to-[hsl(217,91%,40%)]">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
+              <div className="absolute inset-0 bg-gold/20 rounded-full blur-md" />
+              <ChitumitLogo size={40} />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">Chitumit</h1>
-              <p className="text-[10px] text-white/40 tracking-wider uppercase">AI-Powered Platform</p>
+              <h1 className="text-lg font-bold tracking-tight">חיתומית</h1>
+              <p className="text-[10px] text-gold/40 tracking-wider">הבינה שמאחורי האישור</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

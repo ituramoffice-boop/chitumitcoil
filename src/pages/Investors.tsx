@@ -497,7 +497,9 @@ export default function Investors() {
       </section>
 
       <footer className="relative z-10 border-t border-gold/10 py-8 px-4 text-center text-sm text-slate-600">
-        <p>© 2026 חיתומית · Confidential Investor Materials</p>
+        <p className="flex items-center justify-center gap-2">
+          <ChitumitLogo size={18} /> © 2026 חיתומית — <span className="text-gold/50">הבינה שמאחורי האישור</span> · Confidential Investor Materials
+        </p>
       </footer>
     </div>
   );
