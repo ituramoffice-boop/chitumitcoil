@@ -726,7 +726,7 @@ const PropertyValueCalculator = () => {
                       <div className="flex flex-col md:flex-row items-center gap-4">
                         <Button
                           onClick={scrollToForm}
-                          className="w-full md:w-auto bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(160,84%,33%)] hover:from-[hsl(160,84%,45%)] hover:to-[hsl(160,84%,38%)] text-white border-0 h-14 px-10 text-lg font-bold rounded-2xl shadow-[0_0_30px_hsl(160,84%,39%,0.3)] hover:shadow-[0_0_40px_hsl(160,84%,39%,0.5)] transition-all"
+                          className="w-full md:w-auto bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(160,84%,33%)] hover:from-[hsl(160,84%,45%)] hover:to-[hsl(160,84%,38%)] text-white border-0 h-14 px-10 text-lg font-bold rounded-2xl shadow-[0_0_30px_hsl(160,84%,39%,0.3)] hover:shadow-[0_0_40px_hsl(160,84%,39%,0.5)] transition-all hover:scale-105 duration-300"
                         >
                           <Sparkles className="w-5 h-5 ml-2" />
                           קבל דוח הערכה מלא חינם
