@@ -345,7 +345,7 @@ const PropertyValueCalculator = () => {
             </div>
 
             {/* Calculator Card */}
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto anim-fade-up-2">
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(160,84%,39%)]/20 to-transparent rounded-3xl blur-xl" />
 
