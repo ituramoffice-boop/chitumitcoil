@@ -529,14 +529,14 @@ const MortgageCalculatorLanding = () => {
         </div>
       </section>
 
-      {/* AI Market Tip Badge */}
+      {/* AI Market Tip Badge — Blurred until unlocked */}
       <section className="relative z-10 py-4">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/20">
+          <div className="relative flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/20 overflow-hidden">
             <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[hsl(38,92%,50%)]/15 flex items-center justify-center text-lg">
               {activeTip.icon}
             </div>
-            <div className="flex-1">
+            <div className={cn("flex-1 transition-all duration-300", !isUnlocked && "blur-sm select-none")}>
               <div className="flex items-center gap-2 mb-1">
                 <Brain className="w-3.5 h-3.5 text-[hsl(38,92%,50%)]" />
                 <span className="text-xs font-bold text-[hsl(38,92%,50%)] uppercase tracking-wider">טיפ AI חי</span>
@@ -544,8 +544,9 @@ const MortgageCalculatorLanding = () => {
               </div>
               <p className="text-sm text-white/70 leading-relaxed">{activeTip.tip}</p>
             </div>
-            <Link to="/self-check">
+            {!isUnlocked ? (
               <button
+                onClick={scrollToForm}
                 className="group relative flex-shrink-0 overflow-hidden rounded-xl px-5 py-2.5 text-xs font-bold transition-all duration-300 hover:scale-105"
                 style={{
                   background: 'linear-gradient(135deg, hsl(38,92%,50%) 0%, hsl(30,95%,45%) 50%, hsl(38,92%,55%) 100%)',
@@ -555,12 +556,35 @@ const MortgageCalculatorLanding = () => {
                 <span className="absolute inset-0 bg-gradient-to-l from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <span className="absolute inset-0 animate-[shimmer_2s_infinite] bg-gradient-to-l from-transparent via-white/15 to-transparent" style={{ backgroundSize: '200% 100%' }} />
                 <span className="relative flex items-center gap-2 text-white drop-shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  לעוד טיפים
-                  <ArrowLeft className="w-3 h-3 transition-transform group-hover:-translate-x-1" />
+                  <Lock className="w-3.5 h-3.5" />
+                  השאר פרטים לפתיחה
                 </span>
               </button>
-            </Link>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={generatePDF}
+                  className="group relative flex-shrink-0 overflow-hidden rounded-xl px-4 py-2.5 text-xs font-bold bg-[hsl(217,91%,50%)] hover:bg-[hsl(217,91%,55%)] transition-all duration-300 hover:scale-105 text-white"
+                >
+                  <Download className="w-3.5 h-3.5 inline ml-1" />
+                  הורד דוח PDF
+                </button>
+                <Link to="/self-check">
+                  <button
+                    className="group relative flex-shrink-0 overflow-hidden rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-300 hover:scale-105"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(38,92%,50%) 0%, hsl(30,95%,45%) 50%, hsl(38,92%,55%) 100%)',
+                      boxShadow: '0 0 20px hsla(38,92%,50%,0.4)',
+                    }}
+                  >
+                    <span className="relative flex items-center gap-2 text-white drop-shadow-sm">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      לעוד טיפים
+                    </span>
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
