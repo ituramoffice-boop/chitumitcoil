@@ -662,9 +662,9 @@ const PropertyValueCalculator = () => {
                             {[
                               { label: "שנה", val: animated1y, pct: area.trend },
                               { label: "3 שנים", val: animated3y, pct: Math.round(((value3y - totalValue) / totalValue) * 100) },
-                              { label: "5 שנים", val: useAnimatedNumber(value5y), pct: Math.round(((value5y - totalValue) / totalValue) * 100) },
+                              { label: "5 שנים", val: animated5y, pct: Math.round(((value5y - totalValue) / totalValue) * 100) },
                             ].map((row, i) => (
-                              <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-white/5">
+                              <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 transition-all duration-300 hover:bg-white/10">
                                 <span className="text-xs text-white/50">{row.label}</span>
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-bold tabular-nums">₪{row.val.toLocaleString()}</span>
