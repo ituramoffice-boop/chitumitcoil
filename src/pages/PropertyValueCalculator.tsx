@@ -19,7 +19,10 @@ import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import IsraelHeatMap from "@/components/IsraelHeatMap";
 import jsPDF from "jspdf";
+import { useConsultantBranding, PLAN_LIMITS } from "@/hooks/useConsultantBranding";
 
+const getWhatsAppUrl = (phone?: string | null) =>
+  `https://wa.me/${phone || "972501234567"}`;
 // ======== ISRAELI AREA DATA (simulated market data 2026) ========
 interface AreaData {
   name: string;
