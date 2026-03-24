@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SelfCheck from "./pages/SelfCheck";
 import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
+import PropertyValueCalculator from "./pages/PropertyValueCalculator";
 import RemoteSign from "./pages/RemoteSign";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/self-check" element={<SelfCheck />} />
               <Route path="/calculator" element={<MortgageCalculatorLanding />} />
+              <Route path="/property-value" element={<PropertyValueCalculator />} />
               <Route path="/sign/:token" element={<RemoteSign />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:section" element={<Dashboard />} />
