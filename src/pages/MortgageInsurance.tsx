@@ -586,6 +586,9 @@ function ComparisonStep({ scanProgress, scanComplete, animMarket, animChitumit, 
             <p className="text-4xl font-bold text-emerald-400">₪{animSavings.toLocaleString()}</p>
             <p className="text-xs text-white/40">₪{monthlySavings.toLocaleString()} × {loanTerm * 12} חודשים</p>
           </div>
+
+          {/* Insurance companies comparison table */}
+          <InsuranceCompaniesTable marketPremium={animMarket} chitumitPremium={animChitumit} />
         </motion.div>
       )}
     </div>
