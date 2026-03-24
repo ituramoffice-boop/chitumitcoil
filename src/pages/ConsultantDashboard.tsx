@@ -968,6 +968,9 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           )}
         </div>
 
+        {/* Insider Feed */}
+        <InsiderFeed leads={leads} />
+
         {/* Selected Lead Detail */}
         {selectedLead && (
           <div className="glass-card p-5 animate-fade-in">
