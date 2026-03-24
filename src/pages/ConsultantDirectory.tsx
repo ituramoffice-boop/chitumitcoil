@@ -109,48 +109,85 @@ export default function ConsultantDirectory() {
 
       {/* Hero */}
       <section className="relative z-10 pt-20 pb-12 px-4">
-        <div className="max-w-5xl mx-auto text-center space-y-6">
-          {/* Quality Seal Logo */}
+        <div className="max-w-5xl mx-auto text-center space-y-8">
+          {/* Quality Seal Logo — larger with continuous rotation glow */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.6, rotate: -10 }}
+            initial={{ opacity: 0, scale: 0.4, rotate: -15 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 0.7, type: "spring" }}
+            transition={{ duration: 0.9, type: "spring", bounce: 0.35 }}
             className="flex justify-center"
           >
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-gold/20 blur-2xl scale-150" />
-              <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full border-2 border-gold/40 bg-background/60 backdrop-blur-xl flex items-center justify-center glow-gold">
-                <ChitumitLogo size={56} />
+            <div className="relative group">
+              {/* Outer rotating ring */}
+              <motion.div
+                className="absolute -inset-4 rounded-full border border-gold/20"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                style={{ borderStyle: "dashed" }}
+              />
+              {/* Gold glow pulse */}
+              <motion.div
+                className="absolute inset-0 rounded-full bg-gold/15 blur-3xl scale-[2]"
+                animate={{ opacity: [0.3, 0.6, 0.3], scale: [1.8, 2.2, 1.8] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-gold/50 bg-background/60 backdrop-blur-xl flex items-center justify-center glow-gold">
+                <ChitumitLogo size={72} />
               </div>
             </div>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.15 }}>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium">
+            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gold/10 border border-gold/25 text-gold text-sm font-semibold tracking-wide">
               <Shield className="w-4 h-4" /> תו איכות חיתומית · מדריך יועצים מאומתים
             </span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-3xl md:text-5xl font-black"
+            className="text-3xl md:text-5xl font-black text-transparent bg-clip-text"
+            style={{ backgroundImage: "linear-gradient(135deg, hsl(43 74% 72%), hsl(43 74% 52%), hsl(43 74% 38%))" }}
           >
-            מצא את <span className="gradient-header">היועץ המושלם</span> עבורך
+            מצא את היועץ המושלם עבורך
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-            className="text-muted-foreground max-w-xl mx-auto"
+            className="text-gold/60 max-w-xl mx-auto text-base"
           >
             כל היועצים במדריך עברו אימות ע״י חיתומית. הביקורות נכתבות רק על ידי לקוחות אמיתיים שסיימו תהליך.
           </motion.p>
 
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-            className="text-gold/70 text-xs font-medium tracking-wide"
+            className="text-gold/40 text-xs font-medium tracking-widest uppercase"
           >
             הבינה שמאחורי האישור
           </motion.p>
+
+          {/* Stats Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}
+            className="flex justify-center gap-4 md:gap-8 pt-4"
+          >
+            {[
+              { icon: Users, value: `${consultants.length}+`, label: "יועצים מאומתים" },
+              { icon: Star, value: "4.8", label: "דירוג ממוצע" },
+              { icon: Award, value: "100%", label: "אימות חיתומית" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + i * 0.1 }}
+                className="px-5 py-3 rounded-xl bg-gold/5 border border-gold/15 backdrop-blur-sm flex flex-col items-center gap-1 min-w-[100px]"
+              >
+                <stat.icon className="w-4 h-4 text-gold/60" />
+                <span className="text-xl font-black text-gold">{stat.value}</span>
+                <span className="text-[11px] text-gold/40 font-medium">{stat.label}</span>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
