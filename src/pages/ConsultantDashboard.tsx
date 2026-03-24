@@ -586,7 +586,44 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           <StatCard icon={CheckCircle2} title="אושרו" value={stats.approved} variant="success" />
         </div>
 
-        {/* Conversion Funnel */}
+        {/* Free Plan Usage Bar & Upgrade CTA */}
+        {isFree && (
+          <div className={cn(
+            "relative overflow-hidden rounded-xl border p-5 animate-fade-in",
+            isAtLimit
+              ? "border-gold/50 bg-gradient-to-l from-gold/10 via-gold/5 to-transparent gold-border-card"
+              : "border-border/40 glass-card"
+          )}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-gold" />
+                <h3 className="text-sm font-bold text-foreground">
+                  תוכנית חינמית — {usedLeads} / {FREE_LEAD_LIMIT} לידים
+                </h3>
+              </div>
+              <Button
+                className="bg-gold text-gold-foreground hover:bg-gold/90 gold-glow-btn gap-1.5 font-bold shadow-lg animate-glow-pulse"
+                size="sm"
+                onClick={() => toast.info("שדרוג לתוכנית Pro — בקרוב!")}
+              >
+                <Crown className="w-4 h-4" />
+                שדרג ל-Pro
+              </Button>
+            </div>
+            <Progress value={usagePercent} className="h-2.5 bg-secondary" />
+            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+              <span>{usedLeads} לידים בשימוש</span>
+              <span>{Math.max(0, FREE_LEAD_LIMIT - usedLeads)} נותרו</span>
+            </div>
+            {isAtLimit && (
+              <div className="mt-3 p-3 rounded-lg bg-gold/10 border border-gold/20 flex items-center gap-2 text-sm text-gold">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>הגעת למכסה! שדרג לתוכנית Pro כדי להוסיף לידים ללא הגבלה, חייגן AI, ושוק לידים.</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-primary" />
