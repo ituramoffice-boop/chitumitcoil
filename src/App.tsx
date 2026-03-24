@@ -16,6 +16,7 @@ import ClientDashboard from "./pages/ClientDashboard";
 import SelfCheck from "./pages/SelfCheck";
 import MortgageCalculatorLanding from "./pages/MortgageCalculatorLanding";
 import PropertyValueCalculator from "./pages/PropertyValueCalculator";
+import PropertyLoanFunnel from "./pages/PropertyLoanFunnel";
 import RemoteSign from "./pages/RemoteSign";
 import Pitch from "./pages/Pitch";
 import Investors from "./pages/Investors";
