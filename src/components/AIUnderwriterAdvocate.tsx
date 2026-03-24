@@ -363,12 +363,64 @@ export function AIUnderwriterAdvocate({ lead, onGeneratePDF }: { lead: Lead; onG
         </div>
       )}
 
+      {/* ── Advisor Whisperer ── */}
+      <div className="rounded-xl border border-primary/15 bg-gradient-to-br from-card to-primary/3 overflow-hidden">
+        <button
+          onClick={() => toggle("whisper")}
+          className="w-full flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm text-foreground">Advisor Whisperer — טיפים למנהל הסניף</span>
+          </div>
+          {expandedSections.whisper ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <AnimatePresence>
+          {expandedSections.whisper && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 space-y-2">
+                {whisperTips.map((tip, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10"
+                  >
+                    <span className="text-sm text-foreground">{tip}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Generate Bank Submission button */}
+      {onGeneratePDF && (
+        <Button
+          onClick={onGeneratePDF}
+          className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20"
+          size="lg"
+        >
+          <Send className="w-4 h-4" />
+          הפק הגשה לבנק — מכתב חיתום + מסמכים + ציון
+        </Button>
+      )}
+
       {/* Footer disclaimer */}
       <div className="flex items-center gap-2 text-[10px] text-muted-foreground p-2">
         <Lightbulb className="w-3 h-3 text-accent/50" />
         <span>התובנות מיוצרות ע״י AI ואינן מחליפות ייעוץ מקצועי. הסיכום ייכלל ב-PDF הגשה לבנק באופן אוטומטי.</span>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
 
