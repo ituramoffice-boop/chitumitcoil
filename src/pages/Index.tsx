@@ -8,6 +8,7 @@ import {
   Building2, Award, BadgeCheck, Cpu, Smartphone, ChevronRight,
 } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
+import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { useState, useRef, useEffect, useMemo } from "react";
