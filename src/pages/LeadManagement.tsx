@@ -953,9 +953,10 @@ const LeadManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredLeads.map(lead => {
+                  {filteredLeads.map((lead, leadIndex) => {
                     const fu = needsFollowUp(lead);
                     const src = SOURCE_CONFIG[lead.lead_source || "organic"];
+                    const blurred = isLeadBlurred(leadIndex);
                     return (
                       <TableRow key={lead.id} className={cn(
                         "group transition-colors",
