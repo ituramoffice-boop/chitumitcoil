@@ -447,8 +447,8 @@ export default function Pitch() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
-              <Sparkles className="w-4 h-4" /> נבנה על ידי יועצי משכנתאות, בשביל יועצי משכנתאות
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium">
+              <ChitumitLogo size={20} /> חיתומית — הבינה שמאחורי האישור
             </span>
           </motion.div>
 
