@@ -117,11 +117,7 @@ const Auth = () => {
         </div>
 
         {/* Info banner */}
-        <div className={`rounded-xl p-3 text-xs text-center border ${
-          isConsultant 
-            ? "bg-gold/5 border-gold/20 text-gold" 
-            : "bg-primary/5 border-primary/20 text-primary"
-        }`}>
+        <div className="rounded-xl p-3 text-xs text-center border bg-gold/5 border-gold/20 text-gold">
           {isConsultant
             ? "גישה מלאה ל-CRM, ניתוח תיקים, חייגן, ניהול לידים ודוחות"
             : "מעקב אחר סטטוס התיק, העלאת מסמכים וצפייה בהתקדמות"
