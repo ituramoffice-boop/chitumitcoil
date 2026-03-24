@@ -763,7 +763,7 @@ const PropertyValueCalculator = () => {
                           </div>
                           <Slider
                             value={[yearBuilt]}
-                            onValueChange={v => setYearBuilt(v[0])}
+                            onValueChange={v => { setYearBuilt(v[0]); setLastSliderTouched("year_built"); }}}
                             min={1960}
                             max={2026}
                             step={1}
