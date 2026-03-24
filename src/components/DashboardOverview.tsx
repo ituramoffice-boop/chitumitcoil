@@ -47,12 +47,17 @@ const DashboardOverview = () => {
     return (l.mortgage_amount / l.property_value) * 100 > 75;
   });
 
+  const todayStr = new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" });
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold gradient-header flex items-center gap-2">
-        <BarChart3 className="w-5 h-5 text-cyan-glow" />
-        סקירה כללית
-      </h2>
+    <div className="space-y-6" dir="rtl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold gradient-header flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-cyan-glow" />
+          סקירה כללית
+        </h2>
+        <span className="text-xs text-muted-foreground font-heebo">{todayStr}</span>
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
