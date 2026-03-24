@@ -78,27 +78,40 @@ const MortgageCalculatorLanding = () => {
   const financingRatio = Math.min(Math.round((loanAmount / (loanAmount * 1.35)) * 100), 75);
 
   // Calculate lead score based on calculator values
-  const calcLeadScore = () => {
+  const calcLeadScore = (email?: string, consent?: boolean) => {
     let score = 0;
-    // Loan amount signals
     if (loanAmount >= 2000000) score += 30;
     else if (loanAmount >= 1000000) score += 20;
     else if (loanAmount >= 500000) score += 10;
-    // LTV — financing ratio signals buying intent
-    if (financingRatio <= 50) score += 25; // strong equity = serious buyer
+    if (financingRatio <= 50) score += 25;
     else if (financingRatio <= 65) score += 15;
     else score += 5;
-    // Rate awareness — low rate = market-savvy
     if (rate <= 4) score += 15;
     else if (rate <= 5.5) score += 10;
     else score += 5;
-    // Engagement: touched multiple sliders
     if (lastSliderTouched) score += 10;
-    // Has email
-    if (formData.email) score += 10;
-    // Marketing consent
-    if (marketingConsent) score += 5;
+    if (email) score += 10;
+    if (consent) score += 5;
     return Math.min(score, 100);
+  };
+
+  // Determine lead category from calc inputs
+  const getLeadCategory = (userCategory?: string) => {
+    if (userCategory === "investor") return "משקיע";
+    if (userCategory === "refinance") return "מחזר הלוואה";
+    if (userCategory === "first_buyer") return "רוכש ראשון";
+    if (loanAmount >= 2000000 && financingRatio < 50) return "משקיע";
+    if (rate > 5 && years > 20) return "מחזר הלוואה";
+    return "רוכש ראשון";
+  };
+
+  // Lead tags for CRM
+  const getLeadTags = () => {
+    const tags: string[] = [];
+    if (financingRatio > 75) tags.push("High Risk / High Sensitivity");
+    if (loanAmount >= 2000000) tags.push("VIP Lead");
+    if (rate > 6) tags.push("Rate Sensitive");
+    return tags;
   };
 
   // Determine lead category
