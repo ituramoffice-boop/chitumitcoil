@@ -522,6 +522,8 @@ export default function Investors() {
             ))}
           </div>
         </div>
+      </section>
+
       {/* ═══════ SLIDE 7: THE ASK ═══════ */}
       <section className="relative z-10 py-28 px-4">
         <div className="max-w-4xl mx-auto">
