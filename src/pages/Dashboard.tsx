@@ -77,7 +77,12 @@ const Dashboard = () => {
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <header className="h-14 flex items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 sticky top-0 z-50">
-              <SidebarTrigger />
+              <div className="flex items-center gap-3">
+                <SidebarTrigger />
+                <span className="text-xs text-muted-foreground font-heebo hidden sm:inline">
+                  {format(new Date(), "dd/MM/yyyy")}
+                </span>
+              </div>
               <div className="flex items-center gap-2">
                 <NotificationBell />
                 <Button variant="outline" size="sm" onClick={() => setAdminMode("crm")}>
