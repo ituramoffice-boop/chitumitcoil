@@ -25,7 +25,7 @@ const JoinTheElite = () => {
         full_name: name,
         phone,
         email: email || null,
-        consultant_id: "00000000-0000-0000-0000-000000000000",
+        consultant_id: "7216126b-7293-488c-9689-917e172ad5ce",
         lead_source: "join-the-elite",
         is_marketplace: true,
         notes: "מועמדות דרך דף האליטה",
