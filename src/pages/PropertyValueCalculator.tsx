@@ -165,6 +165,7 @@ const PropertyValueCalculator = () => {
   const animatedPerSqm = useAnimatedNumber(valuePerSqm);
   const animated1y = useAnimatedNumber(value1y);
   const animated3y = useAnimatedNumber(value3y);
+  const animated5y = useAnimatedNumber(value5y);
 
   // Confidence score
   const confidenceScore = useMemo(() => {
@@ -266,9 +267,15 @@ const PropertyValueCalculator = () => {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <style>{`
         @keyframes loading { from { width: 0%; } to { width: 100%; } }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px hsl(160,84%,39%,0.2); } 50% { box-shadow: 0 0 40px hsl(160,84%,39%,0.4); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .anim-fade-up { animation: fadeSlideUp 0.7s ease-out both; }
+        .anim-fade-up-1 { animation: fadeSlideUp 0.7s ease-out 0.1s both; }
+        .anim-fade-up-2 { animation: fadeSlideUp 0.7s ease-out 0.2s both; }
+        .anim-fade-up-3 { animation: fadeSlideUp 0.7s ease-out 0.3s both; }
+        .anim-scale-in { animation: scaleIn 0.6s ease-out both; }
       `}</style>
 
       <div className="min-h-screen bg-[hsl(222,47%,4%)] text-white overflow-hidden" dir="rtl">
@@ -316,7 +323,7 @@ const PropertyValueCalculator = () => {
         {/* Hero */}
         <section className="relative z-10 pt-12 pb-6 md:pt-20 md:pb-10">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-10">
+            <div className="text-center max-w-3xl mx-auto mb-10 anim-fade-up">
               <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-l from-[hsl(160,84%,39%)]/15 to-[hsl(217,91%,50%)]/15 border border-[hsl(160,84%,39%)]/30 text-xs text-[hsl(160,84%,70%)] mb-6 shadow-[0_0_20px_hsl(160,84%,39%,0.15)]">
                 <Brain className="w-3.5 h-3.5 text-[hsl(160,84%,55%)] animate-pulse" />
                 <span className="bg-gradient-to-l from-[hsl(160,84%,65%)] to-[hsl(217,91%,70%)] bg-clip-text text-transparent font-semibold">נתוני שוק בזמן אמת</span>
@@ -338,7 +345,7 @@ const PropertyValueCalculator = () => {
             </div>
 
             {/* Calculator Card */}
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto anim-fade-up-2">
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-b from-[hsl(160,84%,39%)]/20 to-transparent rounded-3xl blur-xl" />
 
@@ -440,7 +447,7 @@ const PropertyValueCalculator = () => {
                                   key={t.key}
                                   onClick={() => setPropertyType(t.key)}
                                   className={cn(
-                                    "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all text-xs",
+                                    "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 text-xs hover:scale-105",
                                     propertyType === t.key
                                       ? "bg-[hsl(160,84%,39%)]/15 border-[hsl(160,84%,39%)]/40 text-[hsl(160,84%,60%)]"
                                       : "bg-white/5 border-white/5 text-white/50 hover:border-white/20"
@@ -661,9 +668,9 @@ const PropertyValueCalculator = () => {
                             {[
                               { label: "שנה", val: animated1y, pct: area.trend },
                               { label: "3 שנים", val: animated3y, pct: Math.round(((value3y - totalValue) / totalValue) * 100) },
-                              { label: "5 שנים", val: useAnimatedNumber(value5y), pct: Math.round(((value5y - totalValue) / totalValue) * 100) },
+                              { label: "5 שנים", val: animated5y, pct: Math.round(((value5y - totalValue) / totalValue) * 100) },
                             ].map((row, i) => (
-                              <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-white/5">
+                              <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 transition-all duration-300 hover:bg-white/10">
                                 <span className="text-xs text-white/50">{row.label}</span>
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-bold tabular-nums">₪{row.val.toLocaleString()}</span>
@@ -719,7 +726,7 @@ const PropertyValueCalculator = () => {
                       <div className="flex flex-col md:flex-row items-center gap-4">
                         <Button
                           onClick={scrollToForm}
-                          className="w-full md:w-auto bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(160,84%,33%)] hover:from-[hsl(160,84%,45%)] hover:to-[hsl(160,84%,38%)] text-white border-0 h-14 px-10 text-lg font-bold rounded-2xl shadow-[0_0_30px_hsl(160,84%,39%,0.3)] hover:shadow-[0_0_40px_hsl(160,84%,39%,0.5)] transition-all"
+                          className="w-full md:w-auto bg-gradient-to-l from-[hsl(160,84%,39%)] to-[hsl(160,84%,33%)] hover:from-[hsl(160,84%,45%)] hover:to-[hsl(160,84%,38%)] text-white border-0 h-14 px-10 text-lg font-bold rounded-2xl shadow-[0_0_30px_hsl(160,84%,39%,0.3)] hover:shadow-[0_0_40px_hsl(160,84%,39%,0.5)] transition-all hover:scale-105 duration-300"
                         >
                           <Sparkles className="w-5 h-5 ml-2" />
                           קבל דוח הערכה מלא חינם
@@ -742,7 +749,7 @@ const PropertyValueCalculator = () => {
           <div className="max-w-5xl mx-auto px-6">
             <div className="grid md:grid-cols-3 gap-3">
               {insights.map((tip, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/15">
+                <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-l from-[hsl(38,92%,50%)]/10 to-transparent border border-[hsl(38,92%,50%)]/15 hover:border-[hsl(38,92%,50%)]/30 transition-all duration-300 hover:scale-[1.02]" style={{ animationDelay: `${i * 0.15}s`, animation: 'fadeSlideUp 0.6s ease-out both' }}>
                   <span className="text-lg flex-shrink-0">{tip.icon}</span>
                   <div>
                     <div className="flex items-center gap-1 mb-1">
@@ -908,12 +915,12 @@ const PropertyValueCalculator = () => {
             </h2>
             <div className="space-y-3">
               {faqItems.map((item, i) => (
-                <details key={i} className="group">
-                  <summary className="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 cursor-pointer transition-all list-none">
+                <details key={i} className="group" style={{ animationDelay: `${i * 0.08}s`, animation: 'fadeSlideUp 0.5s ease-out both' }}>
+                  <summary className="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/[0.07] cursor-pointer transition-all duration-300 list-none">
                     <span className="font-medium text-sm text-white/80">{item.q}</span>
-                    <ChevronDown className="w-4 h-4 text-white/30 transition-transform group-open:rotate-180" />
+                    <ChevronDown className="w-4 h-4 text-white/30 transition-transform duration-300 group-open:rotate-180" />
                   </summary>
-                  <div className="px-5 pb-5 pt-2">
+                  <div className="px-5 pb-5 pt-3 animate-[fadeSlideUp_0.3s_ease-out]">
                     <p className="text-sm text-white/50 leading-relaxed">{item.a}</p>
                   </div>
                 </details>
