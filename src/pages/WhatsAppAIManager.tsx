@@ -82,7 +82,43 @@ const WhatsAppAIManager = () => {
     },
   });
 
-  const saveConfig = async () => {
+  // Compute stats from logs
+  const stats = (() => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayISO = todayStart.toISOString();
+
+    const todayLogs = logs.filter((l) => l.created_at >= todayISO);
+    const todayInbound = todayLogs.filter((l) => l.direction === "inbound");
+    const todayOutbound = todayLogs.filter((l) => l.direction === "outbound");
+
+    const messagesToday = todayInbound.length;
+
+    // Response rate: how many unique inbound numbers got an outbound reply today
+    const inboundNumbers = new Set(todayInbound.map((l) => l.from_number));
+    const repliedNumbers = new Set(todayOutbound.map((l) => l.from_number));
+    const answeredCount = [...inboundNumbers].filter((n) => repliedNumbers.has(n)).length;
+    const responseRate = inboundNumbers.size > 0 ? Math.round((answeredCount / inboundNumbers.size) * 100) : 0;
+
+    // Avg response time: pair inbound→outbound by from_number, compute diff
+    let totalResponseMs = 0;
+    let responseCount = 0;
+    for (const num of inboundNumbers) {
+      const firstInbound = todayInbound.filter((l) => l.from_number === num).sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+      const firstOutbound = todayOutbound.filter((l) => l.from_number === num).sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+      if (firstInbound && firstOutbound) {
+        const diff = new Date(firstOutbound.created_at).getTime() - new Date(firstInbound.created_at).getTime();
+        if (diff > 0) {
+          totalResponseMs += diff;
+          responseCount++;
+        }
+      }
+    }
+    const avgResponseSec = responseCount > 0 ? Math.round(totalResponseMs / responseCount / 1000) : 0;
+
+    return { messagesToday, responseRate, avgResponseSec };
+  })();
+
     if (!user) return;
     setIsSaving(true);
     try {
