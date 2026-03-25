@@ -6,6 +6,145 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Dynamic system prompts per persona mode
+const SYSTEM_PROMPTS: Record<string, string> = {
+  sales: `אתה נציג מכירות מקצועי של חיתומית — פלטפורמת משכנתאות חכמה.
+המטרה שלך: לזהות הזדמנויות, לסגור עסקאות ולהפנות לידים ליועץ.
+דבר בעברית טבעית, תהיה חם ומשכנע. השתמש בטכניקות מכירה עדינות.
+אם הלקוח מתעניין במשכנתא — אסוף שם, טלפון וסכום מבוקש.
+תמיד סיים עם קריאה לפעולה ברורה.`,
+
+  consultant: `אתה יועץ משכנתאות מומחה של חיתומית.
+המטרה שלך: לספק מידע מקצועי, לנתח מצב פיננסי ולהדריך לקוחות.
+דבר בעברית מקצועית אך נגישה. הסבר מונחים פיננסיים בפשטות.
+אם נשאלת על ריביות או תנאים — ציין שהם משתנים ושיועץ אנושי יוכל לתת הצעה מדויקת.
+אל תתחייב לתנאים ספציפיים.`,
+
+  support: `אתה נציג שירות לקוחות של חיתומית.
+המטרה שלך: לענות על שאלות, לפתור בעיות ולהפנות לגורם המתאים.
+דבר בעברית ידידותית ותמציתית. אם אינך יודע תשובה — אמור שתעביר לנציג אנושי.
+שעות פעילות: א-ה 09:00-18:00.`,
+};
+
+const DEFAULT_MODE = "consultant";
+
+// Extract message from various WhatsApp provider formats
+function extractMessage(body: any): { fromNumber: string; messageBody: string; messageType: string } {
+  // Meta Cloud API format
+  if (body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
+    const msg = body.entry[0].changes[0].value.messages[0];
+    return {
+      fromNumber: msg.from || "",
+      messageBody: msg.text?.body || msg.caption || "",
+      messageType: msg.type || "text",
+    };
+  }
+  // Twilio format
+  if (body?.From && body?.Body !== undefined) {
+    return {
+      fromNumber: body.From,
+      messageBody: body.Body,
+      messageType: body.MediaContentType0 ? "media" : "text",
+    };
+  }
+  // Generic fallback
+  return {
+    fromNumber: body.from || body.phone || body.sender || "unknown",
+    messageBody: body.message || body.text || body.body || JSON.stringify(body),
+    messageType: body.type || "text",
+  };
+}
+
+// Fetch recent conversation history for context
+async function getConversationHistory(supabase: any, fromNumber: string, limit = 10): Promise<Array<{ role: string; content: string }>> {
+  const { data } = await supabase
+    .from("whatsapp_logs")
+    .select("direction, message_body")
+    .eq("from_number", fromNumber)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (!data || data.length === 0) return [];
+
+  // Reverse to chronological order and map to chat format
+  return data.reverse().map((log: any) => ({
+    role: log.direction === "inbound" ? "user" : "assistant",
+    content: log.message_body || "",
+  }));
+}
+
+// Fetch active AI config (persona mode + system context)
+async function getAIConfig(supabase: any): Promise<{ mode: string; extraContext: string }> {
+  const { data } = await supabase
+    .from("whatsapp_ai_config")
+    .select("persona_mode, system_context")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return {
+    mode: data?.persona_mode || DEFAULT_MODE,
+    extraContext: data?.system_context || "",
+  };
+}
+
+// Build the full system prompt with mode + extra context
+function buildSystemPrompt(mode: string, extraContext: string): string {
+  const basePrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS[DEFAULT_MODE];
+  if (!extraContext) return basePrompt;
+  return `${basePrompt}\n\nעדכונים ומידע נוסף מהמערכת:\n${extraContext}`;
+}
+
+// Call AI via Lovable AI Gateway
+async function callAI(systemPrompt: string, conversationMessages: Array<{ role: string; content: string }>, currentMessage: string): Promise<string> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    console.error("LOVABLE_API_KEY is not configured");
+    return "מצטער, המערכת אינה זמינה כרגע. נציג אנושי ייצור איתך קשר בהקדם.";
+  }
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...conversationMessages,
+    { role: "user", content: currentMessage },
+  ];
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages,
+        max_tokens: 500,
+      }),
+    });
+
+    if (response.status === 429) {
+      console.warn("AI rate limited");
+      return "המערכת עמוסה כרגע, אנא נסה שוב בעוד דקה.";
+    }
+    if (response.status === 402) {
+      console.warn("AI credits exhausted");
+      return "מצטער, המערכת אינה זמינה כרגע. נציג אנושי ייצור איתך קשר בהקדם.";
+    }
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("AI gateway error:", response.status, errText);
+      return "מצטער, אירעה שגיאה. נציג אנושי ייצור איתך קשר בהקדם.";
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "מצטער, לא הצלחתי לעבד את ההודעה.";
+  } catch (err) {
+    console.error("AI call error:", err);
+    return "מצטער, אירעה שגיאה טכנית. נציג אנושי ייצור איתך קשר בהקדם.";
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,15 +156,12 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Support both GET (verification) and POST (messages)
+    // GET — WhatsApp/Meta verification challenge
     if (req.method === "GET") {
-      // WhatsApp/Meta verification challenge
       const url = new URL(req.url);
       const mode = url.searchParams.get("hub.mode");
       const token = url.searchParams.get("hub.verify_token");
       const challenge = url.searchParams.get("hub.challenge");
-
-      // You can set WHATSAPP_VERIFY_TOKEN as a secret for verification
       const verifyToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN") || "chitumit_verify";
 
       if (mode === "subscribe" && token === verifyToken) {
@@ -34,37 +170,14 @@ Deno.serve(async (req) => {
       return new Response("Forbidden", { status: 403, headers: corsHeaders });
     }
 
-    // POST — incoming message
+    // POST — incoming WhatsApp message
     const body = await req.json();
-    console.log("Incoming WhatsApp payload:", JSON.stringify(body));
+    console.log("Incoming WhatsApp payload:", JSON.stringify(body).slice(0, 500));
 
-    // Extract message data (supports Meta Cloud API format and generic)
-    let fromNumber = "";
-    let messageBody = "";
-    let messageType = "text";
+    const { fromNumber, messageBody, messageType } = extractMessage(body);
 
-    // Meta Cloud API format
-    if (body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
-      const msg = body.entry[0].changes[0].value.messages[0];
-      fromNumber = msg.from || "";
-      messageBody = msg.text?.body || msg.caption || "";
-      messageType = msg.type || "text";
-    }
-    // Twilio format
-    else if (body?.From && body?.Body !== undefined) {
-      fromNumber = body.From;
-      messageBody = body.Body;
-      messageType = body.MediaContentType0 ? "media" : "text";
-    }
-    // Generic fallback
-    else {
-      fromNumber = body.from || body.phone || body.sender || "unknown";
-      messageBody = body.message || body.text || body.body || JSON.stringify(body);
-      messageType = body.type || "text";
-    }
-
-    // Store in DB
-    const { error } = await supabase.from("whatsapp_logs").insert({
+    // 1. Log inbound message
+    const { error: inboundError } = await supabase.from("whatsapp_logs").insert({
       from_number: fromNumber,
       message_body: messageBody,
       message_type: messageType,
@@ -73,18 +186,56 @@ Deno.serve(async (req) => {
       metadata: body,
     });
 
-    if (error) {
-      console.error("DB insert error:", error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
+    if (inboundError) {
+      console.error("DB insert error (inbound):", inboundError);
+    }
+
+    // 2. Only process text messages for AI response
+    if (messageType !== "text" || !messageBody.trim()) {
+      return new Response(JSON.stringify({ success: true, ai_response: null }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    // 3. Fetch AI config (persona mode + system context)
+    const aiConfig = await getAIConfig(supabase);
+    console.log(`AI mode: ${aiConfig.mode}`);
+
+    // 4. Build system prompt
+    const systemPrompt = buildSystemPrompt(aiConfig.mode, aiConfig.extraContext);
+
+    // 5. Fetch conversation history for context
+    const conversationHistory = await getConversationHistory(supabase, fromNumber);
+
+    // 6. Call AI
+    const aiResponse = await callAI(systemPrompt, conversationHistory, messageBody);
+    console.log(`AI response (${aiConfig.mode}): ${aiResponse.slice(0, 200)}`);
+
+    // 7. Log AI response as outbound
+    const { error: outboundError } = await supabase.from("whatsapp_logs").insert({
+      from_number: fromNumber,
+      message_body: aiResponse,
+      message_type: "text",
+      direction: "outbound",
+      status: "sent",
+      metadata: { persona_mode: aiConfig.mode, model: "google/gemini-3-flash-preview" },
+    });
+
+    if (outboundError) {
+      console.error("DB insert error (outbound):", outboundError);
+    }
+
+    // 8. Return AI response (WhatsApp provider integration will send it)
+    return new Response(JSON.stringify({
+      success: true,
+      ai_response: aiResponse,
+      persona_mode: aiConfig.mode,
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (err) {
     console.error("Webhook error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
