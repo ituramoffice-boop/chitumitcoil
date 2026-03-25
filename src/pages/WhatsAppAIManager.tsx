@@ -8,17 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3 } from "lucide-react";
+import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3, Zap } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { format } from "date-fns";
 
-const PERSONA_MODES = [
-  { key: "sales", label: "מצב מכירות", icon: TrendingUp, description: "הבוט מתמקד בסגירת עסקאות וזיהוי הזדמנויות" },
-  { key: "consultant", label: "מצב ייעוץ", icon: Bot, description: "הבוט מספק מידע מקצועי ומלווה את הלקוח" },
-  { key: "support", label: "מצב תמיכה", icon: Headphones, description: "הבוט עונה על שאלות ומפנה לגורם המתאים" },
-] as const;
-
-type PersonaMode = typeof PERSONA_MODES[number]["key"];
+// No more manual persona modes — auto-routing handles it
 
 interface AIConfig {
   id: string;
@@ -44,7 +38,7 @@ const WhatsAppAIManager = () => {
   const { user, role, loading } = useAuth();
   const queryClient = useQueryClient();
 
-  const [activeMode, setActiveMode] = useState<PersonaMode>("consultant");
+  const [autoRouting, setAutoRouting] = useState(true);
   const [systemContext, setSystemContext] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -61,7 +55,7 @@ const WhatsAppAIManager = () => {
       if (error) throw error;
       const cfg = data as AIConfig | null;
       if (cfg) {
-        setActiveMode(cfg.persona_mode as PersonaMode);
+        setAutoRouting(cfg.persona_mode === "auto" || cfg.persona_mode === "consultant");
         setSystemContext(cfg.system_context || "");
       }
       return cfg;
