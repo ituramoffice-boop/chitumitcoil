@@ -163,6 +163,87 @@ interface CriticalAlert {
   missingDoc?: string;
 }
 
+function SubscriptionCard() {
+  const { subscriptionTier, isSubscribed, subscriptionEnd, refreshSubscription } = useWorkspace();
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { openCustomerPortal } = await import("@/lib/stripe");
+      const { url } = await openCustomerPortal();
+      if (url) window.open(url, "_blank");
+    } catch (e: any) {
+      toast.error("לא ניתן לפתוח את פורטל הניהול כרגע");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const handleCheckout = async (priceId: string) => {
+    setPortalLoading(true);
+    try {
+      const { createCheckoutSession } = await import("@/lib/stripe");
+      const { url } = await createCheckoutSession(priceId);
+      if (url) window.open(url, "_blank");
+    } catch (e: any) {
+      toast.error("לא ניתן לפתוח את דף התשלום כרגע");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const tierLabels: Record<string, string> = {
+    starter: "סטארטר (חינם)",
+    professional: "מקצועי — ₪370/חודש",
+    enterprise: "אנטרפרייז — ₪990/חודש",
+  };
+
+  return (
+    <div className="glass-card p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <CreditCard className="w-5 h-5 text-accent" />
+        <h3 className="font-bold text-foreground">ניהול מנוי</h3>
+      </div>
+      {isSubscribed && subscriptionTier ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">תוכנית נוכחית</span>
+            <span className="text-sm font-semibold text-accent">{tierLabels[subscriptionTier] || subscriptionTier}</span>
+          </div>
+          {subscriptionEnd && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">מתחדש בתאריך</span>
+              <span className="text-sm text-foreground">{new Date(subscriptionEnd).toLocaleDateString("he-IL")}</span>
+            </div>
+          )}
+          <Button
+            onClick={handleManageSubscription}
+            disabled={portalLoading}
+            variant="outline"
+            className="w-full border-accent/30 text-accent hover:bg-accent/10"
+          >
+            {portalLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <CreditCard className="w-4 h-4 ml-2" />}
+            ניהול מנוי ותשלום
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">אין מנוי פעיל — שדרג כדי לפתוח את כל הכלים</p>
+          <Button
+            onClick={() => handleCheckout("price_1TExIgGkBtnMlOwMWJlkef47")}
+            disabled={portalLoading}
+            className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+          >
+            {portalLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Crown className="w-4 h-4 ml-2" />}
+            שדרג ל-Professional — ₪370/חודש
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
   const { user, role, signOut } = useAuth();
   const { isDemoMode } = useDemo();
