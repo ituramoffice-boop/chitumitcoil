@@ -7,17 +7,25 @@ import {
 
 const SITE_NAME = 'חיתומית'
 
-interface MagicLinkEmailProps { siteName: string; confirmationUrl: string }
+interface MagicLinkEmailProps { siteName: string; confirmationUrl: string; token?: string }
 
-export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
+export const MagicLinkEmail = ({ siteName, confirmationUrl, token }: MagicLinkEmailProps) => (
   <Html lang="he" dir="rtl">
     <Head />
-    <Preview>קישור כניסה ל{SITE_NAME}</Preview>
+    <Preview>{token ? `קוד הכניסה שלך: ${token}` : `קישור כניסה ל${SITE_NAME}`}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}><Heading style={h1}>חיתומית</Heading></Section>
         <Text style={greeting}>שלום,</Text>
-        <Text style={text}>לחץ על הכפתור הבא כדי להתחבר ל{SITE_NAME}. הקישור תקף לזמן מוגבל.</Text>
+        {token ? (
+          <>
+            <Text style={text}>השתמש בקוד הבא כדי להתחבר ל{SITE_NAME}:</Text>
+            <Text style={codeStyle}>{token}</Text>
+            <Text style={textSmall}>או לחלופין, לחץ על הכפתור הבא:</Text>
+          </>
+        ) : (
+          <Text style={text}>לחץ על הכפתור הבא כדי להתחבר ל{SITE_NAME}. הקישור תקף לזמן מוגבל.</Text>
+        )}
         <Section style={btnWrap}><Button style={button} href={confirmationUrl}>התחבר עכשיו</Button></Section>
         <Hr style={hr} />
         <Text style={footer}>אם לא ביקשת קישור כניסה, ניתן להתעלם מהודעה זו.</Text>
