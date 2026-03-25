@@ -106,12 +106,19 @@ const App = () => {
                <Route path="/privacy" element={<Privacy />} />
                <Route path="/unsubscribe" element={<Unsubscribe />} />
 
-               {/* Client routes */}
-               <Route path="/client-dashboard" element={
-                 <ProtectedRoute allowedRoles={["client", "consultant", "admin"]}>
-                   <ClientDashboard />
-                 </ProtectedRoute>
-               } />
+                {/* Client routes */}
+                <Route path="/client-dashboard" element={
+                  <ProtectedRoute allowedRoles={["client", "consultant", "admin"]}>
+                    <ClientDashboard />
+                  </ProtectedRoute>
+                } />
+
+                {/* Insurance Agent route */}
+                <Route path="/insurance-dashboard" element={
+                  <ProtectedRoute allowedRoles={["consultant", "admin"]}>
+                    <InsuranceDashboard />
+                  </ProtectedRoute>
+                } />
 
                {/* Consultant + Admin routes */}
                <Route path="/dashboard" element={
