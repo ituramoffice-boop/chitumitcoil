@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
@@ -173,6 +173,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
   const [funnelFilter, setFunnelFilter] = useState<LeadStatus | "all">("all");
   const [presentationLead, setPresentationLead] = useState<Lead | null>(null);
   const [alertTab, setAlertTab] = useState<AlertCategory>("expiring");
+  const selectedLeadSectionRef = useRef<HTMLDivElement | null>(null);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -558,6 +559,23 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
     if (stats.new > 0) parts.push(`${stats.new} לידים חדשים ממתינים`);
     return { greeting, parts };
   }, [documents, alertCounts, stats]);
+
+  useEffect(() => {
+    if (!selectedLead || !selectedLeadSectionRef.current) return;
+    requestAnimationFrame(() => {
+      selectedLeadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [selectedLead?.id]);
+
+  const handleOpenPresentation = () => {
+    if (!selectedLead) {
+      toast.info("בחר תיק כדי לפתוח מצב מצגת");
+      return;
+    }
+
+    const latestLead = leads.find((lead) => lead.id === selectedLead.id) ?? selectedLead;
+    setPresentationLead(latestLead);
+  };
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -972,13 +990,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               leads={leads}
               documents={documents}
               onSelectLead={(lead) => {
-                const nextLead = lead as any as Lead | null;
-                setSelectedLead(nextLead);
-                if (nextLead) {
-                  requestAnimationFrame(() => {
-                    window.scrollBy({ top: 520, behavior: "smooth" });
-                  });
-                }
+                setSelectedLead(lead as any as Lead | null);
               }}
               selectedLeadId={selectedLead?.id || null}
               onWhatsApp={openWhatsApp}
@@ -991,7 +1003,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
         {/* Selected Lead Detail */}
         {selectedLead && (
-          <div className="glass-card p-5 animate-fade-in">
+          <div ref={selectedLeadSectionRef} className="glass-card p-5 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-foreground">{selectedLead.full_name} — ניתוח מעמיק</h3>
               <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)}>סגור</Button>
@@ -1004,7 +1016,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
                 variant="outline"
                 size="sm"
                 className="w-full border-gold/20 text-gold hover:bg-gold/10"
-                onClick={() => setPresentationLead(selectedLead)}
+                onClick={handleOpenPresentation}
               >
                 <Crown className="w-3.5 h-3.5 ml-1.5" />
                 מצב מצגת ללקוח
