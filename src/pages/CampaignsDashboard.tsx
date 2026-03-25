@@ -24,6 +24,11 @@ const trafficSources = [
   { source: "Instagram", leads: 84, closed: 9, cpa: "₪41", badge: "active" },
 ];
 
+const PIE_COLORS = ["hsl(217, 91%, 60%)", "hsl(262, 83%, 58%)", "hsl(173, 80%, 40%)", "hsl(43, 96%, 56%)", "hsl(346, 77%, 50%)"];
+
+const pieData = trafficSources.map((s) => ({ name: s.source, value: s.leads }));
+const barData = trafficSources.map((s) => ({ name: s.source.replace(" Ads", "").replace(" (SEO)", ""), leads: s.leads, closed: s.closed }));
+
 const badgeVariant = (type: string) => {
   switch (type) {
     case "top": return "default";
