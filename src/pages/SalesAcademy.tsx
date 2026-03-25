@@ -237,6 +237,30 @@ export default function SalesAcademy() {
           <p className="text-muted-foreground">שלוט באמנות המכירה — מהליד הראשון ועד הסגירה</p>
         </motion.div>
 
+        <AnimatePresence>
+          {showSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-8 rounded-xl border border-accent/30 bg-accent/5 p-5 flex items-start gap-4"
+            >
+              <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                <PartyPopper className="w-5 h-5 text-accent" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-foreground text-lg">ברוך הבא לאקדמיה! 🎉</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  התשלום בוצע בהצלחה — המנוי שלך פעיל ויש לך גישה מלאה לכל מודולי ההכשרה. התחל ללמוד עכשיו!
+                </p>
+              </div>
+              <button onClick={() => setShowSuccess(false)} className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-1">
+                <X className="w-5 h-5" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {isAdmin && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
             <AcademyAdminPanel />
