@@ -45,6 +45,12 @@ const greeting = { fontSize: '16px', color: '#1e293b', padding: '24px 25px 0', m
 const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', padding: '0 25px', margin: '0 0 20px' }
 const btnWrap = { textAlign: 'center' as const, padding: '0 25px', margin: '0 0 24px' }
 const button = { backgroundColor: '#D4AF37', color: '#1e1e1e', fontSize: '14px', fontWeight: '600' as const, borderRadius: '10px', padding: '12px 28px', textDecoration: 'none' }
+const codeStyle = {
+  fontFamily: 'Courier, monospace', fontSize: '28px', fontWeight: 'bold' as const,
+  color: '#D4AF37', textAlign: 'center' as const,
+  padding: '16px', margin: '0 25px 24px', backgroundColor: '#FFFFF0', borderRadius: '10px', letterSpacing: '6px', border: '1px solid #D4AF3733',
+}
+const textSmall = { fontSize: '12px', color: '#94a3b8', padding: '0 25px', margin: '0 0 16px', textAlign: 'center' as const }
 const hr = { borderColor: '#e2e8f0', margin: '0 25px' }
 const footer = { fontSize: '12px', color: '#999999', padding: '16px 25px', margin: '0' }
 const brandFooter = { fontSize: '11px', color: '#D4AF37', padding: '8px 25px 20px', margin: '0', textAlign: 'center' as const, fontWeight: '500' as const }
