@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { createCheckoutSession, STRIPE_TIERS } from "@/lib/stripe";
 import { motion, useInView } from "framer-motion";
 import { Check, X, Star, Clock, Calculator, MessageCircle, ArrowRight, Zap, Shield, CreditCard, Users, Brain, FileText, Smartphone, BarChart3, Sparkles, TrendingUp, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { PublicFooter } from "@/components/PublicFooter";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /* ───── countdown ───── */
 function useCountdown(hours: number) {
