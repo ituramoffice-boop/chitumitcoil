@@ -43,7 +43,7 @@ const sectionComponents: Record<string, React.FC> = {
 
 
 const Dashboard = () => {
-  const { user, role, loading } = useAuth();
+  const { user, role, profession, loading } = useAuth();
   const { section } = useParams<{ section?: string }>();
   const [adminMode, setAdminMode] = useState<"crm" | "admin">("crm");
 
