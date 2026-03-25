@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      academy_modules: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          duration: string | null
+          id: string
+          is_published: boolean
+          pdf_path: string | null
+          quiz_data: Json | null
+          sort_order: number
+          thumbnail_path: string | null
+          title: string
+          title_en: string | null
+          type: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration?: string | null
+          id?: string
+          is_published?: boolean
+          pdf_path?: string | null
+          quiz_data?: Json | null
+          sort_order?: number
+          thumbnail_path?: string | null
+          title: string
+          title_en?: string | null
+          type?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration?: string | null
+          id?: string
+          is_published?: boolean
+          pdf_path?: string | null
+          quiz_data?: Json | null
+          sort_order?: number
+          thumbnail_path?: string | null
+          title?: string
+          title_en?: string | null
+          type?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       activity_log: {
         Row: {
           activity_type: string
