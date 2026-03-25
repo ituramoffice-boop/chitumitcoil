@@ -750,13 +750,18 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Profit Intelligence */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
           <PerformanceStats leads={leads} />
           <PipelineTicker leads={leads} />
-        </div>
+        </motion.div>
 
         {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
