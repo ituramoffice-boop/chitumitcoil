@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3, Zap } from "lucide-react";
+import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3, Zap, AlertTriangle, UserCheck } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { format } from "date-fns";
 
@@ -74,6 +74,38 @@ const WhatsAppAIManager = () => {
       if (error) throw error;
       return (data || []) as WhatsAppLog[];
     },
+  });
+
+  // Load escalated clients (status = 'escalated')
+  const { data: escalated = [], isLoading: escalatedLoading, refetch: refetchEscalated } = useQuery({
+    queryKey: ["whatsapp-escalated"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("whatsapp_logs")
+        .select("*")
+        .eq("status", "escalated")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data || []) as WhatsAppLog[];
+    },
+  });
+
+  // Mark escalated as handled
+  const handleResolve = useMutation({
+    mutationFn: async (logId: string) => {
+      const { error } = await (supabase as any)
+        .from("whatsapp_logs")
+        .update({ status: "handled" })
+        .eq("id", logId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-escalated"] });
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-logs"] });
+      toast.success("סומן כטופל");
+    },
+    onError: (e: any) => toast.error("שגיאה: " + e.message),
   });
 
   // Compute stats from logs
@@ -302,7 +334,63 @@ const WhatsAppAIManager = () => {
         </CardContent>
       </Card>
 
-      {/* Webhook Info */}
+      {/* Escalated Clients */}
+      <Card className="border-border/50 border-destructive/30">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-destructive/10">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">לקוחות שהועברו לנציג אנושי</CardTitle>
+                <CardDescription>לקוחות שהבוט לא הצליח לטפל בהם — ממתינים לתגובה ידנית</CardDescription>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetchEscalated()}>
+              <RefreshCw className="w-4 h-4 ml-1" /> רענן
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {escalatedLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+          ) : escalated.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <UserCheck className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">אין לקוחות ממתינים — הכל טופל! 🎉</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[350px] overflow-y-auto">
+              {escalated.map((log) => (
+                <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                  <div className="p-1.5 rounded-md bg-destructive/10">
+                    <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-mono text-muted-foreground">{log.from_number}</span>
+                    <p className="text-sm text-foreground mt-0.5 break-words truncate">{log.message_body || "—"}</p>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    {format(new Date(log.created_at), "HH:mm dd/MM")}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => handleResolve.mutate(log.id)}
+                    disabled={handleResolve.isPending}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 ml-1" /> טופל
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
       <Card className="border-border/50 bg-secondary/30">
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
