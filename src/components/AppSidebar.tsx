@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Swords,
   Megaphone,
+  MessageSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { AppStoreBadges } from "@/components/AppStoreBadges";
