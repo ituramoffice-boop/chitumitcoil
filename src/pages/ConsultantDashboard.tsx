@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { CreditCard } from "lucide-react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1120,6 +1121,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
             </Tabs>
           </div>
         )}
+        <SubscriptionCard />
         <div className="glass-card p-5">
           <WorkspaceSettings />
         </div>
