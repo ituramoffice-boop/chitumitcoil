@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { createCheckoutSession, STRIPE_TIERS } from "@/lib/stripe";
 import { motion, useInView } from "framer-motion";
 import { Check, X, Star, Clock, Calculator, MessageCircle, ArrowRight, Zap, Shield, CreditCard, Users, Brain, FileText, Smartphone, BarChart3, Sparkles, TrendingUp, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { PublicFooter } from "@/components/PublicFooter";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /* ───── countdown ───── */
 function useCountdown(hours: number) {
@@ -147,10 +149,31 @@ const matrix = [
 export default function AdvisorPlans() {
   const { h, m, s, expired } = useCountdown(48);
   const [filesSlider, setFilesSlider] = useState([30]);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const navigate = useNavigate();
   const minutesPerFile = 25;
   const hourlyRate = 150;
   const hoursSaved = Math.round((filesSlider[0] * minutesPerFile) / 60);
   const moneySaved = hoursSaved * hourlyRate;
+
+  const handleCheckout = async (planId: string) => {
+    if (planId === "trial") {
+      navigate("/auth");
+      return;
+    }
+    const priceId = planId === "pro"
+      ? STRIPE_TIERS.professional.price_id
+      : STRIPE_TIERS.enterprise.price_id;
+    setCheckoutLoading(planId);
+    try {
+      const { url } = await createCheckoutSession(priceId);
+      if (url) window.location.href = url;
+    } catch (err: any) {
+      toast.error(err?.message || "שגיאה ביצירת הזמנה");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   const heroRef = useRef(null);
   const heroIn = useInView(heroRef, { once: true });
@@ -261,17 +284,16 @@ export default function AdvisorPlans() {
                   ) : (
                     <Button
                       variant={p.ctaStyle}
+                      disabled={checkoutLoading === p.id}
                       className={`w-full font-bold ${
                         p.glow
                           ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25"
                           : ""
                       }`}
-                      asChild
+                      onClick={() => handleCheckout(p.id)}
                     >
-                      <Link to="/auth">
-                        {p.cta}
-                        <ArrowRight className="w-4 h-4 mr-1" />
-                      </Link>
+                      {checkoutLoading === p.id ? "טוען..." : p.cta}
+                      {checkoutLoading !== p.id && <ArrowRight className="w-4 h-4 mr-1" />}
                     </Button>
                   )}
                 </Card>
