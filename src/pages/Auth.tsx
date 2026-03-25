@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Users, User, ArrowRight } from "lucide-react";
+import { Loader2, Users, User, ArrowRight, Home, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 
 type Mode = "login" | "signup";
 type RoleType = "consultant" | "client";
+type ProfessionType = "mortgage_advisor" | "insurance_agent";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -18,19 +19,24 @@ const Auth = () => {
 
   const [mode, setMode] = useState<Mode>("login");
   const [roleType, setRoleType] = useState<RoleType>(initialRole);
+  const [profession, setProfession] = useState<ProfessionType>("mortgage_advisor");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, role, profession: userProfession, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect logged-in users to appropriate dashboard
+  // Redirect logged-in users based on profession
   useEffect(() => {
     if (!authLoading && user && role) {
-      navigate("/dashboard", { replace: true });
+      if (userProfession === "insurance_agent") {
+        navigate("/insurance-dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     }
-  }, [authLoading, user, role, navigate]);
+  }, [authLoading, user, role, userProfession, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +48,10 @@ const Auth = () => {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: {
+              full_name: fullName,
+              profession: roleType === "consultant" ? profession : "mortgage_advisor",
+            },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -50,7 +59,6 @@ const Auth = () => {
 
         // If consultant signup, update role after signup
         if (roleType === "consultant" && data.user) {
-          // The trigger creates a default 'client' role, update it to 'consultant'
           await supabase
             .from("user_roles")
             .update({ role: "consultant" as any })
@@ -100,7 +108,7 @@ const Auth = () => {
             }`}
           >
             <Users className="w-4 h-4" />
-            יועץ משכנתאות
+            יועץ / סוכן
           </button>
           <button
             type="button"
@@ -115,6 +123,43 @@ const Auth = () => {
             לקוח
           </button>
         </div>
+
+        {/* Profession Selection — only for consultants on signup */}
+        {isConsultant && mode === "signup" && (
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">בחר תחום מקצועי</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setProfession("mortgage_advisor")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                  profession === "mortgage_advisor"
+                    ? "border-gold bg-gold/10 shadow-lg shadow-gold/20"
+                    : "border-border bg-card hover:border-gold/50"
+                }`}
+              >
+                <Home className={`w-6 h-6 ${profession === "mortgage_advisor" ? "text-gold" : "text-muted-foreground"}`} />
+                <span className={`text-sm font-semibold ${profession === "mortgage_advisor" ? "text-gold" : "text-foreground"}`}>
+                  יועץ משכנתאות
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProfession("insurance_agent")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                  profession === "insurance_agent"
+                    ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                    : "border-border bg-card hover:border-primary/50"
+                }`}
+              >
+                <Shield className={`w-6 h-6 ${profession === "insurance_agent" ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-sm font-semibold ${profession === "insurance_agent" ? "text-primary" : "text-foreground"}`}>
+                  סוכן ביטוח
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Info banner */}
         <div className="rounded-xl p-3 text-xs text-center border bg-gold/5 border-gold/20 text-gold">

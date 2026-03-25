@@ -60,6 +60,7 @@ import TeamManagement from "./pages/TeamManagement";
 import SalesAcademy from "./pages/SalesAcademy";
 import WhatsAppAIManager from "./pages/WhatsAppAIManager";
 import CampaignsDashboard from "./pages/CampaignsDashboard";
+import InsuranceDashboard from "./pages/InsuranceDashboard";
 
 const queryClient = new QueryClient();
 
