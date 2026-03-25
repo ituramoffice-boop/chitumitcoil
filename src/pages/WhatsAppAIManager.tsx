@@ -334,7 +334,63 @@ const WhatsAppAIManager = () => {
         </CardContent>
       </Card>
 
-      {/* Webhook Info */}
+      {/* Escalated Clients */}
+      <Card className="border-border/50 border-destructive/30">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-destructive/10">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">לקוחות שהועברו לנציג אנושי</CardTitle>
+                <CardDescription>לקוחות שהבוט לא הצליח לטפל בהם — ממתינים לתגובה ידנית</CardDescription>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetchEscalated()}>
+              <RefreshCw className="w-4 h-4 ml-1" /> רענן
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {escalatedLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+          ) : escalated.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <UserCheck className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">אין לקוחות ממתינים — הכל טופל! 🎉</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[350px] overflow-y-auto">
+              {escalated.map((log) => (
+                <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                  <div className="p-1.5 rounded-md bg-destructive/10">
+                    <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-mono text-muted-foreground">{log.from_number}</span>
+                    <p className="text-sm text-foreground mt-0.5 break-words truncate">{log.message_body || "—"}</p>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    {format(new Date(log.created_at), "HH:mm dd/MM")}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => handleResolve.mutate(log.id)}
+                    disabled={handleResolve.isPending}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 ml-1" /> טופל
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
       <Card className="border-border/50 bg-secondary/30">
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
