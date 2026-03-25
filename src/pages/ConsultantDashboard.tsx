@@ -247,7 +247,7 @@ function SubscriptionCard() {
 const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
   const { user, role, signOut } = useAuth();
   const { isDemoMode } = useDemo();
-  const { isAgency } = useWorkspace();
+  const { isAgency, isSubscribed } = useWorkspace();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
