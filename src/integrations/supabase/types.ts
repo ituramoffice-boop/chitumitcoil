@@ -576,6 +576,119 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_clients: {
+        Row: {
+          agent_id: string
+          birth_date: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          id_number: string | null
+          notes: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          id_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          id_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      insurance_policies: {
+        Row: {
+          agent_id: string
+          annual_premium: number | null
+          client_id: string
+          commission_amount: number | null
+          commission_rate: number | null
+          coverage_amount: number | null
+          created_at: string
+          end_date: string | null
+          id: string
+          insurance_company: string | null
+          monthly_premium: number | null
+          notes: string | null
+          policy_number: string | null
+          policy_type: string
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          annual_premium?: number | null
+          client_id: string
+          commission_amount?: number | null
+          commission_rate?: number | null
+          coverage_amount?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          insurance_company?: string | null
+          monthly_premium?: number | null
+          notes?: string | null
+          policy_number?: string | null
+          policy_type?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          annual_premium?: number | null
+          client_id?: string
+          commission_amount?: number | null
+          commission_rate?: number | null
+          coverage_amount?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          insurance_company?: string | null
+          monthly_premium?: number | null
+          notes?: string | null
+          policy_number?: string | null
+          policy_type?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_policies_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
