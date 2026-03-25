@@ -270,7 +270,22 @@ export default function AdvisorPricing() {
                         ? "border-accent/30 text-accent hover:bg-accent/10"
                         : ""
                     }`}
+                    disabled={checkoutLoading === tier.name}
                     asChild={tier.name === "Enterprise"}
+                    onClick={tier.name !== "Enterprise" ? async () => {
+                      const priceId = tier.name === "Starter"
+                        ? STRIPE_TIERS.starter.price_id
+                        : STRIPE_TIERS.professional.price_id;
+                      setCheckoutLoading(tier.name);
+                      try {
+                        const { url } = await createCheckoutSession(priceId);
+                        if (url) window.open(url, "_blank");
+                      } catch {
+                        toast.error("יש להתחבר כדי להירשם לתוכנית");
+                      } finally {
+                        setCheckoutLoading(null);
+                      }
+                    } : undefined}
                   >
                     {tier.name === "Enterprise" ? (
                       <a href="https://wa.me/972500000000?text=אשמח לשמוע על תוכנית Enterprise" target="_blank" rel="noopener noreferrer">
@@ -278,10 +293,14 @@ export default function AdvisorPricing() {
                         {tier.cta}
                       </a>
                     ) : (
-                      <Link to="/auth">
+                      <>
+                        {checkoutLoading === tier.name ? (
+                          <span className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full ml-1" />
+                        ) : (
+                          <ArrowRight className="w-4 h-4 mr-1" />
+                        )}
                         {tier.cta}
-                        <ArrowRight className="w-4 h-4 mr-1" />
-                      </Link>
+                      </>
                     )}
                   </Button>
                 </Card>
