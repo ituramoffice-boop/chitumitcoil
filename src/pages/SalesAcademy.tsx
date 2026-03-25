@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, FileText, HelpCircle, Lock, CheckCircle, Trophy, Star, BookOpen, ArrowRight, Download } from "lucide-react";
+import { Play, FileText, HelpCircle, Lock, CheckCircle, Trophy, Star, BookOpen, ArrowRight, Download, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAcademyModules, getPdfUrl, type AcademyModule } from "@/hooks/useAcademyModules";
+import { useAcademyProgress } from "@/hooks/useAcademyProgress";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import AcademyAdminPanel from "@/components/AcademyAdminPanel";
 
 // Fallback hardcoded modules when no DB content exists
@@ -182,6 +184,7 @@ function QuizModule({ mod }: { mod: any }) {
 export default function SalesAcademy() {
   const { user } = useAuth();
   const { data: dbModules = [], isLoading } = useAcademyModules();
+  const { isCompleted, getProgress, markComplete, unmarkComplete, completedCount } = useAcademyProgress();
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin", user?.id],
     queryFn: async () => {
@@ -196,6 +199,17 @@ export default function SalesAcademy() {
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const active = activeModule || modules[0]?.id;
   const activeMod = modules.find(m => m.id === active);
+  const progress = getProgress(modules.length);
+
+  const handleToggleComplete = (moduleId: string) => {
+    if (isCompleted(moduleId)) {
+      unmarkComplete(moduleId);
+      toast("סימון ההשלמה הוסר");
+    } else {
+      markComplete(moduleId);
+      toast.success("מודול סומן כהושלם! 🎉");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir="rtl">
@@ -222,21 +236,23 @@ export default function SalesAcademy() {
             {modules.map((mod, i) => {
               const Icon = typeIcons[mod.type] || Play;
               const isActive = active === mod.id;
+              const completed = isCompleted(mod.id);
               return (
                 <motion.div key={mod.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}>
                   <Card
                     onClick={() => setActiveModule(mod.id)}
-                    className={`p-4 cursor-pointer transition-all duration-200 ${isActive ? "border-accent/40 bg-accent/5 shadow-[0_0_20px_-5px_hsl(43_74%_52%/0.15)]" : "border-border bg-card/80 hover:border-accent/20"}`}
+                    className={`p-4 cursor-pointer transition-all duration-200 ${isActive ? "border-accent/40 bg-accent/5 shadow-[0_0_20px_-5px_hsl(43_74%_52%/0.15)]" : "border-border bg-card/80 hover:border-accent/20"} ${completed ? "ring-1 ring-green-500/30" : ""}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isActive ? "bg-accent/20 text-accent" : "bg-secondary text-muted-foreground"}`}>
-                        <Icon className="w-5 h-5" />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${completed ? "bg-green-500/20 text-green-500" : isActive ? "bg-accent/20 text-accent" : "bg-secondary text-muted-foreground"}`}>
+                        {completed ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-foreground">{mod.title}</p>
+                        <p className={`font-semibold text-sm ${completed ? "text-green-500" : "text-foreground"}`}>{mod.title}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{mod.duration}</p>
                       </div>
-                      {isActive && <CheckCircle className="w-5 h-5 text-accent shrink-0" />}
+                      {completed && <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />}
+                      {isActive && !completed && <CheckCircle className="w-5 h-5 text-accent shrink-0" />}
                     </div>
                   </Card>
                 </motion.div>
@@ -247,8 +263,13 @@ export default function SalesAcademy() {
                 <Star className="w-4 h-4 text-accent" />
                 <span className="text-sm font-semibold text-foreground">ההתקדמות שלך</span>
               </div>
-              <Progress value={33} className="h-2 mb-2" />
-              <p className="text-xs text-muted-foreground">1 מתוך {modules.length} מודולים הושלמו</p>
+              <Progress value={progress} className="h-2 mb-2" />
+              <p className="text-xs text-muted-foreground">{completedCount} מתוך {modules.length} מודולים הושלמו ({progress}%)</p>
+              {progress === 100 && (
+                <Badge className="mt-2 bg-green-500/10 text-green-500 border-green-500/20">
+                  <Trophy className="w-3 h-3 ml-1" /> סיימת את כל המודולים! 🎉
+                </Badge>
+              )}
             </Card>
           </div>
 
@@ -258,6 +279,28 @@ export default function SalesAcademy() {
                 {activeMod.type === "video" && <VideoModule mod={activeMod} />}
                 {activeMod.type === "pdf" && <PdfModule mod={activeMod} />}
                 {activeMod.type === "quiz" && <QuizModule mod={activeMod} />}
+
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    variant={isCompleted(activeMod.id) ? "outline" : "default"}
+                    onClick={() => handleToggleComplete(activeMod.id)}
+                    className={isCompleted(activeMod.id)
+                      ? "border-green-500/40 text-green-500 hover:bg-green-500/10"
+                      : "bg-accent hover:bg-accent/90 text-accent-foreground"}
+                  >
+                    {isCompleted(activeMod.id) ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 ml-1" />
+                        הושלם — לחץ לביטול
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4 ml-1" />
+                        סמן כהושלם
+                      </>
+                    )}
+                  </Button>
+                </div>
               </motion.div>
             )}
           </div>
