@@ -202,6 +202,17 @@ export default function SalesAcademy() {
   const activeMod = modules.find(m => m.id === active);
   const progress = getProgress(modules.length);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      setShowSuccess(true);
+      searchParams.delete("checkout");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
+
   const handleToggleComplete = (moduleId: string) => {
     if (isCompleted(moduleId)) {
       unmarkComplete(moduleId);
