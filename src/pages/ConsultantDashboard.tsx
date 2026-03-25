@@ -705,7 +705,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           </div>
         )}
 
-        <div className="glass-card p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="glass-card p-4"
+        >
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">משפך מכירות</h3>
