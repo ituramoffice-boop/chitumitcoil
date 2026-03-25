@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw } from "lucide-react";
+import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3 } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { format } from "date-fns";
 
