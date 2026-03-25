@@ -49,6 +49,7 @@ const baseNavItems = [
   { title: "תוצאות מכירות", url: "/dashboard/sales-results", icon: Trophy },
   { title: "הגדרות יועץ", url: "/dashboard/consultant-settings", icon: Settings },
   { title: "מגמות שוק", url: "/dashboard/market-trends", icon: TrendingUp },
+  { title: "אקדמיית מכירות", url: "/dashboard/academy", icon: GraduationCap },
 ];
 
 const agencyNavItems = [
