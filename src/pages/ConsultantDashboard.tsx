@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Zap, ArrowLeft } from "lucide-react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
