@@ -3,6 +3,7 @@ import {
   Upload,
   Calculator,
   FileBarChart,
+  GraduationCap,
   Users,
   UsersRound,
   BarChart3,
