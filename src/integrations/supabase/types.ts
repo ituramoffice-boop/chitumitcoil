@@ -865,6 +865,66 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_ai_config: {
+        Row: {
+          id: string
+          persona_mode: string
+          system_context: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          persona_mode?: string
+          system_context?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          persona_mode?: string
+          system_context?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_logs: {
+        Row: {
+          created_at: string
+          direction: string
+          from_number: string
+          id: string
+          message_body: string | null
+          message_type: string
+          metadata: Json | null
+          status: string
+          to_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          from_number: string
+          id?: string
+          message_body?: string | null
+          message_type?: string
+          metadata?: Json | null
+          status?: string
+          to_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          from_number?: string
+          id?: string
+          message_body?: string | null
+          message_type?: string
+          metadata?: Json | null
+          status?: string
+          to_number?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

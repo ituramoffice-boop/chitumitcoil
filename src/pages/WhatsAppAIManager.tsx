@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -20,6 +20,26 @@ const PERSONA_MODES = [
 
 type PersonaMode = typeof PERSONA_MODES[number]["key"];
 
+interface AIConfig {
+  id: string;
+  persona_mode: string;
+  system_context: string | null;
+  updated_by: string | null;
+  updated_at: string;
+}
+
+interface WhatsAppLog {
+  id: string;
+  from_number: string;
+  to_number: string | null;
+  message_body: string | null;
+  message_type: string;
+  direction: string;
+  status: string;
+  metadata: any;
+  created_at: string;
+}
+
 const WhatsAppAIManager = () => {
   const { user, role, loading } = useAuth();
   const queryClient = useQueryClient();
@@ -29,21 +49,22 @@ const WhatsAppAIManager = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Load existing config
-  const { data: config, isLoading: configLoading } = useQuery({
+  const { data: config } = useQuery({
     queryKey: ["whatsapp-ai-config"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("whatsapp_ai_config")
         .select("*")
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      if (data) {
-        setActiveMode(data.persona_mode as PersonaMode);
-        setSystemContext(data.system_context || "");
+      const cfg = data as AIConfig | null;
+      if (cfg) {
+        setActiveMode(cfg.persona_mode as PersonaMode);
+        setSystemContext(cfg.system_context || "");
       }
-      return data;
+      return cfg;
     },
   });
 
@@ -51,13 +72,13 @@ const WhatsAppAIManager = () => {
   const { data: logs = [], isLoading: logsLoading, refetch: refetchLogs } = useQuery({
     queryKey: ["whatsapp-logs"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("whatsapp_logs")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      return data;
+      return (data || []) as WhatsAppLog[];
     },
   });
 
@@ -66,15 +87,15 @@ const WhatsAppAIManager = () => {
     setIsSaving(true);
     try {
       if (config?.id) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("whatsapp_ai_config")
           .update({ persona_mode: activeMode, system_context: systemContext, updated_by: user.id, updated_at: new Date().toISOString() })
           .eq("id", config.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("whatsapp_ai_config")
-          .insert({ persona_mode: activeMode, system_context: systemContext, updated_by: user.id });
+          .insert([{ persona_mode: activeMode, system_context: systemContext, updated_by: user.id }]);
         if (error) throw error;
       }
       queryClient.invalidateQueries({ queryKey: ["whatsapp-ai-config"] });
@@ -93,14 +114,14 @@ const WhatsAppAIManager = () => {
     <div className="min-h-screen bg-background p-6 lg:p-10 space-y-8" dir="rtl">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-3 rounded-xl bg-green-500/10">
-          <MessageSquare className="w-7 h-7 text-green-500" />
+        <div className="p-3 rounded-xl bg-primary/10">
+          <MessageSquare className="w-7 h-7 text-primary" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">WhatsApp AI Manager</h1>
           <p className="text-sm text-muted-foreground">הגדרת הבוט החכם, מצב פעולה והקשר מערכתי</p>
         </div>
-        <Badge variant="outline" className="mr-auto border-green-500/30 text-green-500">
+        <Badge variant="outline" className="mr-auto border-primary/30 text-primary">
           <ShieldCheck className="w-3 h-3 ml-1" /> Admin Only
         </Badge>
       </div>
@@ -186,10 +207,10 @@ const WhatsAppAIManager = () => {
             </div>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {logs.map((log: any) => (
+              {logs.map((log) => (
                 <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/30">
-                  <div className={`mt-0.5 p-1.5 rounded-md ${log.direction === "inbound" ? "bg-green-500/10" : "bg-blue-500/10"}`}>
-                    <MessageSquare className={`w-3.5 h-3.5 ${log.direction === "inbound" ? "text-green-500" : "text-blue-500"}`} />
+                  <div className={`mt-0.5 p-1.5 rounded-md ${log.direction === "inbound" ? "bg-primary/10" : "bg-accent/10"}`}>
+                    <MessageSquare className={`w-3.5 h-3.5 ${log.direction === "inbound" ? "text-primary" : "text-accent-foreground"}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
