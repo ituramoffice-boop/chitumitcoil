@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
