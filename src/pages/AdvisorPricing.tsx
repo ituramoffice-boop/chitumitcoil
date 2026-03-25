@@ -151,6 +151,7 @@ const testimonials = [
 export default function AdvisorPricing() {
   const { h, m, s, expired } = useCountdown(48);
   const [hoursSlider, setHoursSlider] = useState([15]);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const hourlyRate = 150; // ₪ per hour
   const monthlySavings = hoursSlider[0] * hourlyRate * 4;
 
