@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -107,6 +107,35 @@ const WhatsAppAIManager = () => {
     },
     onError: (e: any) => toast.error("שגיאה: " + e.message),
   });
+
+  // Realtime: listen for escalated messages
+  useEffect(() => {
+    const channel = supabase
+      .channel("whatsapp-escalations")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "whatsapp_logs",
+          filter: "status=eq.escalated",
+        },
+        (payload: any) => {
+          const fromNumber = payload.new?.from_number || "לא ידוע";
+          toast.error(`⚠️ לקוח ${fromNumber} הועבר לנציג אנושי`, {
+            description: "הבוט לא הצליח לענות — נדרש טיפול ידני",
+            duration: 10000,
+          });
+          queryClient.invalidateQueries({ queryKey: ["whatsapp-escalated"] });
+          queryClient.invalidateQueries({ queryKey: ["whatsapp-logs"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Compute stats from logs
   const stats = (() => {
