@@ -142,7 +142,9 @@ async function getAIConfig(supabase: any): Promise<{ mode: string; extraContext:
 
 // Build the full system prompt with mode + extra context
 function buildSystemPrompt(mode: string, extraContext: string): string {
-  const basePrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS[DEFAULT_MODE];
+  const basePrompt = mode === "auto"
+    ? AUTO_ROUTING_PROMPT
+    : (SYSTEM_PROMPTS[mode] || AUTO_ROUTING_PROMPT);
   if (!extraContext) return basePrompt;
   return `${basePrompt}\n\nעדכונים ומידע נוסף מהמערכת:\n${extraContext}`;
 }
