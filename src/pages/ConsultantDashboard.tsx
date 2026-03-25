@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -583,7 +584,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <ChitumitLogo size={36} />
+            <motion.div
+              animate={{ filter: ["drop-shadow(0 0 8px hsl(43 74% 52% / 0.3))", "drop-shadow(0 0 20px hsl(43 74% 52% / 0.6))", "drop-shadow(0 0 8px hsl(43 74% 52% / 0.3))"] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <ChitumitLogo size={36} />
+            </motion.div>
             <div>
               <h1 className="text-xl font-bold text-gold">חיתומית</h1>
               <p className="text-[10px] text-muted-foreground">תהיה מאושר.</p>
