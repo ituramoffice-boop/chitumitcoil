@@ -1173,11 +1173,38 @@ function AlertTabButton({ active, onClick, icon: Icon, label, count, variant }: 
   );
 }
 
-function StatCard({ icon: Icon, title, value, variant }: {
+function AnimatedCounter({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setStarted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
+    const duration = 1200;
+    const start = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      setDisplay(Math.round(eased * value));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [started, value]);
+
+  return <span ref={ref}>{display}</span>;
+}
+
+function StatCard({ icon: Icon, title, value, variant, animated }: {
   icon: any;
   title: string;
   value: number;
   variant?: "primary" | "warning" | "success";
+  animated?: boolean;
 }) {
   const colors = {
     primary: "text-cyan-glow",
@@ -1194,7 +1221,9 @@ function StatCard({ icon: Icon, title, value, variant }: {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold gradient-header">{value}</p>
+          <p className="text-2xl font-bold gradient-header">
+            {animated ? <AnimatedCounter value={value} /> : value}
+          </p>
         </div>
         <div className="p-2 rounded-lg bg-secondary/80">
           <Icon className={cn("w-5 h-5", variant ? colors[variant] : "text-gold")} />
