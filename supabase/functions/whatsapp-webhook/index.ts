@@ -26,7 +26,16 @@ const SYSTEM_PROMPTS: Record<string, string> = {
 שעות פעילות: א-ה 09:00-18:00.`,
 };
 
-const DEFAULT_MODE = "consultant";
+const AUTO_ROUTING_PROMPT = `אתה עוזר AI חכם של חיתומית — פלטפורמת משכנתאות מתקדמת.
+יש לך 3 מצבי פעולה ואתה מחליט אוטומטית באיזה מהם להשתמש בהתבסס על תוכן ההודעה:
+
+🔹 מצב מכירות — כשהלקוח מתעניין ברכישה, משכנתא חדשה, מחירים או שירותים. תהיה משכנע, אסוף פרטים (שם, טלפון, סכום), וסיים עם קריאה לפעולה.
+🔹 מצב ייעוץ — כשהלקוח שואל שאלות מקצועיות על ריביות, מסלולים, LTV, החזרים, או מצבו הפיננסי. תהיה מקצועי ומדויק, אל תתחייב לתנאים ספציפיים.
+🔹 מצב תמיכה — כשהלקוח צריך עזרה טכנית, יש לו בעיה, או שואל שאלות כלליות. תהיה ידידותי ותמציתי, אם לא יודע — העבר לנציג אנושי.
+
+דבר בעברית טבעית. אל תציין באיזה מצב אתה — פשוט ענה בהתאם.`;
+
+const DEFAULT_MODE = "auto";
 
 // Extract message from various WhatsApp provider formats
 function extractMessage(body: any): { fromNumber: string; messageBody: string; messageType: string } {
@@ -133,7 +142,9 @@ async function getAIConfig(supabase: any): Promise<{ mode: string; extraContext:
 
 // Build the full system prompt with mode + extra context
 function buildSystemPrompt(mode: string, extraContext: string): string {
-  const basePrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS[DEFAULT_MODE];
+  const basePrompt = mode === "auto"
+    ? AUTO_ROUTING_PROMPT
+    : (SYSTEM_PROMPTS[mode] || AUTO_ROUTING_PROMPT);
   if (!extraContext) return basePrompt;
   return `${basePrompt}\n\nעדכונים ומידע נוסף מהמערכת:\n${extraContext}`;
 }

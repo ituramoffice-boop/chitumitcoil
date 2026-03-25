@@ -8,17 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3 } from "lucide-react";
+import { Loader2, MessageSquare, Bot, ShieldCheck, Headphones, TrendingUp, RefreshCw, Clock, CheckCircle2, BarChart3, Zap } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { format } from "date-fns";
 
-const PERSONA_MODES = [
-  { key: "sales", label: "מצב מכירות", icon: TrendingUp, description: "הבוט מתמקד בסגירת עסקאות וזיהוי הזדמנויות" },
-  { key: "consultant", label: "מצב ייעוץ", icon: Bot, description: "הבוט מספק מידע מקצועי ומלווה את הלקוח" },
-  { key: "support", label: "מצב תמיכה", icon: Headphones, description: "הבוט עונה על שאלות ומפנה לגורם המתאים" },
-] as const;
-
-type PersonaMode = typeof PERSONA_MODES[number]["key"];
+// No more manual persona modes — auto-routing handles it
 
 interface AIConfig {
   id: string;
@@ -44,7 +38,7 @@ const WhatsAppAIManager = () => {
   const { user, role, loading } = useAuth();
   const queryClient = useQueryClient();
 
-  const [activeMode, setActiveMode] = useState<PersonaMode>("consultant");
+  const [autoRouting, setAutoRouting] = useState(true);
   const [systemContext, setSystemContext] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -61,7 +55,7 @@ const WhatsAppAIManager = () => {
       if (error) throw error;
       const cfg = data as AIConfig | null;
       if (cfg) {
-        setActiveMode(cfg.persona_mode as PersonaMode);
+        setAutoRouting(cfg.persona_mode === "auto" || cfg.persona_mode === "consultant");
         setSystemContext(cfg.system_context || "");
       }
       return cfg;
@@ -123,16 +117,17 @@ const WhatsAppAIManager = () => {
     if (!user) return;
     setIsSaving(true);
     try {
+      const modeValue = autoRouting ? "auto" : "consultant";
       if (config?.id) {
         const { error } = await (supabase as any)
           .from("whatsapp_ai_config")
-          .update({ persona_mode: activeMode, system_context: systemContext, updated_by: user.id, updated_at: new Date().toISOString() })
+          .update({ persona_mode: modeValue, system_context: systemContext, updated_by: user.id, updated_at: new Date().toISOString() })
           .eq("id", config.id);
         if (error) throw error;
       } else {
         const { error } = await (supabase as any)
           .from("whatsapp_ai_config")
-          .insert([{ persona_mode: activeMode, system_context: systemContext, updated_by: user.id }]);
+          .insert([{ persona_mode: modeValue, system_context: systemContext, updated_by: user.id }]);
         if (error) throw error;
       }
       queryClient.invalidateQueries({ queryKey: ["whatsapp-ai-config"] });
@@ -202,35 +197,35 @@ const WhatsAppAIManager = () => {
         </Card>
       </div>
 
-      {/* Persona Mode Selection */}
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">מצב AI Persona</CardTitle>
-          <CardDescription>בחר את מצב הפעולה של הבוט — רק מצב אחד פעיל בכל רגע נתון</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {PERSONA_MODES.map(({ key, label, icon: Icon, description }) => (
-            <div
-              key={key}
-              className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${
-                activeMode === key
-                  ? "border-primary bg-primary/5 shadow-sm"
-                  : "border-border/50 hover:border-border"
-              }`}
-              onClick={() => setActiveMode(key)}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${activeMode === key ? "bg-primary/10" : "bg-secondary"}`}>
-                  <Icon className={`w-5 h-5 ${activeMode === key ? "text-primary" : "text-muted-foreground"}`} />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">{label}</p>
-                  <p className="text-xs text-muted-foreground">{description}</p>
-                </div>
+      {/* Autonomous AI Mode */}
+      <Card className={`border-border/50 transition-all ${autoRouting ? "ring-1 ring-primary/30" : ""}`}>
+        <CardContent className="pt-6 pb-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl transition-colors ${autoRouting ? "bg-primary/10" : "bg-secondary"}`}>
+                <Zap className={`w-6 h-6 ${autoRouting ? "text-primary" : "text-muted-foreground"}`} />
               </div>
-              <Switch checked={activeMode === key} onCheckedChange={() => setActiveMode(key)} />
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-foreground">Autonomous AI Mode (Auto-Routing)</h3>
+                <p className="text-sm text-muted-foreground max-w-lg">
+                  The AI will dynamically analyze incoming messages and automatically switch between Sales, Support, and Consulting modes based on the user's needs.
+                </p>
+              </div>
             </div>
-          ))}
+            <Switch
+              checked={autoRouting}
+              onCheckedChange={setAutoRouting}
+              className="scale-125"
+            />
+          </div>
+          {autoRouting && (
+            <div className="mt-4 flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="border-primary/30 text-primary text-xs"><TrendingUp className="w-3 h-3 ml-1" />Sales</Badge>
+              <Badge variant="outline" className="border-primary/30 text-primary text-xs"><Bot className="w-3 h-3 ml-1" />Consulting</Badge>
+              <Badge variant="outline" className="border-primary/30 text-primary text-xs"><Headphones className="w-3 h-3 ml-1" />Support</Badge>
+              <span className="text-[11px] text-muted-foreground mr-2">← ניתוב אוטומטי בין מצבים</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
