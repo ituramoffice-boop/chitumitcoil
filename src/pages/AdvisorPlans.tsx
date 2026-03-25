@@ -149,10 +149,31 @@ const matrix = [
 export default function AdvisorPlans() {
   const { h, m, s, expired } = useCountdown(48);
   const [filesSlider, setFilesSlider] = useState([30]);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const navigate = useNavigate();
   const minutesPerFile = 25;
   const hourlyRate = 150;
   const hoursSaved = Math.round((filesSlider[0] * minutesPerFile) / 60);
   const moneySaved = hoursSaved * hourlyRate;
+
+  const handleCheckout = async (planId: string) => {
+    if (planId === "trial") {
+      navigate("/auth");
+      return;
+    }
+    const priceId = planId === "pro"
+      ? STRIPE_TIERS.professional.price_id
+      : STRIPE_TIERS.enterprise.price_id;
+    setCheckoutLoading(planId);
+    try {
+      const { url } = await createCheckoutSession(priceId);
+      if (url) window.location.href = url;
+    } catch (err: any) {
+      toast.error(err?.message || "שגיאה ביצירת הזמנה");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   const heroRef = useRef(null);
   const heroIn = useInView(heroRef, { once: true });
