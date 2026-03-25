@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Megaphone, Users, DollarSign, TrendingUp, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -22,6 +23,11 @@ const trafficSources = [
   { source: "Organic (SEO)", leads: 164, closed: 31, cpa: "₪0", badge: "free" },
   { source: "Instagram", leads: 84, closed: 9, cpa: "₪41", badge: "active" },
 ];
+
+const PIE_COLORS = ["hsl(217, 91%, 60%)", "hsl(262, 83%, 58%)", "hsl(173, 80%, 40%)", "hsl(43, 96%, 56%)", "hsl(346, 77%, 50%)"];
+
+const pieData = trafficSources.map((s) => ({ name: s.source, value: s.leads }));
+const barData = trafficSources.map((s) => ({ name: s.source.replace(" Ads", "").replace(" (SEO)", ""), leads: s.leads, closed: s.closed }));
 
 const badgeVariant = (type: string) => {
   switch (type) {
@@ -76,6 +82,56 @@ const CampaignsDashboard = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Pie Chart */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">חלוקת לידים לפי מקור</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  dataKey="value"
+                  stroke="none"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {pieData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Bar Chart */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">לידים מול עסקאות שנסגרו</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+                <Bar dataKey="leads" name="לידים" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="closed" name="עסקאות" fill="hsl(173, 80%, 40%)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Traffic Sources Table */}
