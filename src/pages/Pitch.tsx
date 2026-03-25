@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { PublicFooter } from "@/components/PublicFooter";
+import { DemoVideoModal } from "@/components/DemoVideoModal";
 
 /* ── Animated Section ── */
 function AnimSection({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -432,6 +433,7 @@ function CompRow({ label, old_, new_ }: { label: string; old_: string; new_: str
 /* ═══════════════════════════════ PAGE ═══════════════════════════════ */
 export default function Pitch() {
   const navigate = useNavigate();
+  const [demoOpen, setDemoOpen] = useState(false);
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -668,6 +670,13 @@ export default function Pitch() {
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium mb-4">
               <Play className="w-4 h-4" /> ראה את זה בפעולה
             </span>
+            <button
+              onClick={() => setDemoOpen(true)}
+              className="flex items-center gap-2 mx-auto mt-4 px-6 py-3 rounded-full bg-gold/10 border border-gold/30 text-gold font-bold text-sm hover:bg-gold/20 transition-all hover:scale-105 hover:shadow-[0_0_30px_hsl(43,74%,52%,0.3)]"
+            >
+              <Play className="w-4 h-4" />
+              ראה את זה בפעולה
+            </button>
             <h2 className="text-3xl md:text-4xl font-extrabold">
               60 שניות — מ<span className="text-gold">גולש אנונימי</span> ל<span className="text-success">ליד חם ב-CRM</span>
             </h2>
@@ -723,6 +732,9 @@ export default function Pitch() {
 
       {/* ═══════ FOOTER ═══════ */}
       <PublicFooter />
+
+      {/* Demo Video Modal */}
+      <DemoVideoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
     </div>
   );
 }
