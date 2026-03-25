@@ -698,6 +698,7 @@ export type Database = {
           logo_url: string | null
           phone: string | null
           plan: string
+          profession: string
           updated_at: string
           user_id: string
           whatsapp_phone: string | null
@@ -712,6 +713,7 @@ export type Database = {
           logo_url?: string | null
           phone?: string | null
           plan?: string
+          profession?: string
           updated_at?: string
           user_id: string
           whatsapp_phone?: string | null
@@ -726,6 +728,7 @@ export type Database = {
           logo_url?: string | null
           phone?: string | null
           plan?: string
+          profession?: string
           updated_at?: string
           user_id?: string
           whatsapp_phone?: string | null
