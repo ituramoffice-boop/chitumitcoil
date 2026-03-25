@@ -59,6 +59,7 @@ import LeadManagement from "./pages/LeadManagement";
 import TeamManagement from "./pages/TeamManagement";
 import SalesAcademy from "./pages/SalesAcademy";
 import WhatsAppAIManager from "./pages/WhatsAppAIManager";
+import CampaignsDashboard from "./pages/CampaignsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -189,11 +190,16 @@ const App = () => {
                     <WarRoom />
                   </ProtectedRoute>
                 } />
-                <Route path="/admin/whatsapp-ai" element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <WhatsAppAIManager />
-                  </ProtectedRoute>
-                } />
+                 <Route path="/admin/whatsapp-ai" element={
+                   <ProtectedRoute allowedRoles={["admin"]}>
+                     <WhatsAppAIManager />
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/admin/campaigns" element={
+                   <ProtectedRoute allowedRoles={["admin"]}>
+                     <CampaignsDashboard />
+                   </ProtectedRoute>
+                 } />
                <Route path="/ceo-report" element={
                  <ProtectedRoute allowedRoles={["admin"]}>
                    <CEOReport />
