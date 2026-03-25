@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SubscriptionRoute } from "@/components/SubscriptionRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -115,11 +116,11 @@ const App = () => {
                    <Dashboard />
                  </ProtectedRoute>
                } />
-               <Route path="/dashboard/academy" element={
-                 <ProtectedRoute allowedRoles={["consultant", "admin"]}>
-                   <SalesAcademy />
-                 </ProtectedRoute>
-               } />
+                <Route path="/dashboard/academy" element={
+                  <SubscriptionRoute allowedRoles={["consultant", "admin"]}>
+                    <SalesAcademy />
+                  </SubscriptionRoute>
+                } />
                <Route path="/dashboard/:section" element={
                  <ProtectedRoute allowedRoles={["consultant", "admin"]}>
                    <Dashboard />
