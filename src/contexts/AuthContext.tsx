@@ -4,11 +4,13 @@ import type { User, Session } from "@supabase/supabase-js";
 import { useDemo } from "@/contexts/DemoContext";
 
 type AppRole = "consultant" | "client" | "admin";
+type Profession = "mortgage_advisor" | "insurance_agent";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   role: AppRole | null;
+  profession: Profession | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
