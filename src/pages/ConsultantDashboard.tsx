@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -622,26 +622,49 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
       <main className="container mx-auto px-6 lg:px-10 py-10 space-y-8">
         {/* AI Co-Pilot Smart Summary */}
-        <SmartSummaryWidget
-          greeting={summary.greeting}
-          newDocsCollected={documents.filter(d => {
-            const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
-            return age < 1;
-          }).length}
-          pendingLeads={stats.new}
-          expiringCount={alertCounts.expiring}
-          missingDocsCount={alertCounts.missing_docs}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <SmartSummaryWidget
+            greeting={summary.greeting}
+            newDocsCollected={documents.filter(d => {
+              const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
+              return age < 1;
+            }).length}
+            pendingLeads={stats.new}
+            expiringCount={alertCounts.expiring}
+            missingDocsCount={alertCounts.missing_docs}
+          />
+        </motion.div>
 
         {/* Revenue Forecast HUD */}
-        <RevenueForecaster leads={leads} />
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <RevenueForecaster leads={leads} />
+        </motion.div>
 
-        {/* Stats Row */}
+        {/* Stats Row — Staggered Reveal with Animated Counters */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={Users} title="סה״כ לידים" value={stats.total} />
-          <StatCard icon={Plus} title="חדשים" value={stats.new} variant="primary" />
-          <StatCard icon={Clock} title="בטיפול" value={stats.inProgress} variant="warning" />
-          <StatCard icon={CheckCircle2} title="אושרו" value={stats.approved} variant="success" />
+          {[
+            { icon: Users, title: "סה״כ לידים", value: stats.total, variant: undefined as any, delay: 0.3 },
+            { icon: Plus, title: "חדשים", value: stats.new, variant: "primary" as const, delay: 0.4 },
+            { icon: Clock, title: "בטיפול", value: stats.inProgress, variant: "warning" as const, delay: 0.5 },
+            { icon: CheckCircle2, title: "אושרו", value: stats.approved, variant: "success" as const, delay: 0.6 },
+          ].map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, delay: card.delay, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <StatCard icon={card.icon} title={card.title} value={card.value} variant={card.variant} animated />
+            </motion.div>
+          ))}
         </div>
 
         {/* Free Plan Usage Bar & Upgrade CTA */}
@@ -682,7 +705,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
           </div>
         )}
 
-        <div className="glass-card p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="glass-card p-4"
+        >
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">משפך מכירות</h3>
@@ -722,13 +750,18 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Profit Intelligence */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
           <PerformanceStats leads={leads} />
           <PipelineTicker leads={leads} />
-        </div>
+        </motion.div>
 
         {/* Critical Alerts + Lead Source */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1150,11 +1183,38 @@ function AlertTabButton({ active, onClick, icon: Icon, label, count, variant }: 
   );
 }
 
-function StatCard({ icon: Icon, title, value, variant }: {
+function AnimatedCounter({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setStarted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
+    const duration = 1200;
+    const start = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      setDisplay(Math.round(eased * value));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [started, value]);
+
+  return <span ref={ref}>{display}</span>;
+}
+
+function StatCard({ icon: Icon, title, value, variant, animated }: {
   icon: any;
   title: string;
   value: number;
   variant?: "primary" | "warning" | "success";
+  animated?: boolean;
 }) {
   const colors = {
     primary: "text-cyan-glow",
@@ -1171,7 +1231,9 @@ function StatCard({ icon: Icon, title, value, variant }: {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold gradient-header">{value}</p>
+          <p className="text-2xl font-bold gradient-header">
+            {animated ? <AnimatedCounter value={value} /> : value}
+          </p>
         </div>
         <div className="p-2 rounded-lg bg-secondary/80">
           <Icon className={cn("w-5 h-5", variant ? colors[variant] : "text-gold")} />
