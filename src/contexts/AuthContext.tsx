@@ -19,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   role: null,
+  profession: null,
   loading: true,
   signOut: async () => {},
 });
@@ -39,31 +40,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRole = async (userId: string) => {
+  const fetchRoleAndProfession = async (userId: string) => {
     try {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .single();
-      if (data) setRole(data.role as AppRole);
+      const [roleRes, profileRes] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", userId).single(),
+        supabase.from("profiles").select("profession").eq("user_id", userId).single(),
+      ]);
+      if (roleRes.data) setRole(roleRes.data.role as AppRole);
+      if (profileRes.data) setProfession((profileRes.data as any).profession as Profession);
     } catch (e) {
-      console.error("Failed to fetch role:", e);
+      console.error("Failed to fetch role/profession:", e);
     }
   };
 
   useEffect(() => {
     let mounted = true;
 
-    // First get the current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRole(session.user.id).finally(() => {
+        fetchRoleAndProfession(session.user.id).finally(() => {
           if (mounted) setLoading(false);
         });
       } else {
@@ -73,18 +74,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mounted) setLoading(false);
     });
 
-    // Then listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          fetchRole(session.user.id).finally(() => {
+          fetchRoleAndProfession(session.user.id).finally(() => {
             if (mounted) setLoading(false);
           });
         } else {
           setRole(null);
+          setProfession(null);
           setLoading(false);
         }
       }
@@ -101,15 +102,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setRole(null);
+    setProfession(null);
   };
 
   // Demo mode overrides
   const effectiveUser = isDemoMode ? DEMO_USER : user;
   const effectiveRole = isDemoMode ? (demoRole as AppRole) : role;
+  const effectiveProfession = isDemoMode ? ("mortgage_advisor" as Profession) : profession;
   const effectiveLoading = isDemoMode ? false : loading;
 
   return (
-    <AuthContext.Provider value={{ user: effectiveUser, session, role: effectiveRole, loading: effectiveLoading, signOut }}>
+    <AuthContext.Provider value={{ user: effectiveUser, session, role: effectiveRole, profession: effectiveProfession, loading: effectiveLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
