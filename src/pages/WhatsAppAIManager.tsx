@@ -76,6 +76,38 @@ const WhatsAppAIManager = () => {
     },
   });
 
+  // Load escalated clients (status = 'escalated')
+  const { data: escalated = [], isLoading: escalatedLoading, refetch: refetchEscalated } = useQuery({
+    queryKey: ["whatsapp-escalated"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("whatsapp_logs")
+        .select("*")
+        .eq("status", "escalated")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data || []) as WhatsAppLog[];
+    },
+  });
+
+  // Mark escalated as handled
+  const handleResolve = useMutation({
+    mutationFn: async (logId: string) => {
+      const { error } = await (supabase as any)
+        .from("whatsapp_logs")
+        .update({ status: "handled" })
+        .eq("id", logId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-escalated"] });
+      queryClient.invalidateQueries({ queryKey: ["whatsapp-logs"] });
+      toast.success("סומן כטופל");
+    },
+    onError: (e: any) => toast.error("שגיאה: " + e.message),
+  });
+
   // Compute stats from logs
   const stats = (() => {
     const todayStart = new Date();
