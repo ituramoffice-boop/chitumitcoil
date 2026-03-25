@@ -247,7 +247,7 @@ function SubscriptionCard() {
 const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void }) => {
   const { user, role, signOut } = useAuth();
   const { isDemoMode } = useDemo();
-  const { isAgency } = useWorkspace();
+  const { isAgency, isSubscribed } = useWorkspace();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -703,6 +703,40 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
       </header>
 
       <main className="container mx-auto px-6 lg:px-10 py-10 space-y-8">
+        {/* Free Plan Upgrade Banner */}
+        {!isSubscribed && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-xl border border-accent/30 bg-gradient-to-l from-accent/10 via-accent/5 to-transparent p-4 md:p-5"
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-foreground text-sm">אתה בתוכנית החינמית — מוגבל ל-10 לידים</p>
+                <p className="text-xs text-muted-foreground mt-0.5">שדרג לתוכנית מקצועית וקבל לידים ללא הגבלה, חילוץ מסמכים AI, ו-CRM מלא</p>
+              </div>
+              <Button
+                onClick={async () => {
+                  try {
+                    const { createCheckoutSession, STRIPE_TIERS } = await import("@/lib/stripe");
+                    const { url } = await createCheckoutSession(STRIPE_TIERS.professional.price_id);
+                    if (url) window.open(url, "_blank");
+                  } catch {
+                    toast.error("יש להתחבר כדי לשדרג");
+                  }
+                }}
+                className="bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 gap-1.5"
+              >
+                <Zap className="w-4 h-4" />
+                שדרג עכשיו
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
         {/* AI Co-Pilot Smart Summary */}
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.97 }}
