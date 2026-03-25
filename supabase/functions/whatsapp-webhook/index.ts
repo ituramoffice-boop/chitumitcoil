@@ -241,39 +241,86 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Fetch AI config (persona mode + system context)
+    // 3. Check consecutive failures — escalate if threshold reached
+    const priorFailures = await getConsecutiveFailures(supabase, fromNumber);
+    if (priorFailures >= CONSECUTIVE_FAIL_THRESHOLD) {
+      console.log(`Escalating to human agent for ${fromNumber} (${priorFailures} consecutive failures)`);
+
+      await supabase.from("whatsapp_logs").insert({
+        from_number: fromNumber,
+        message_body: ESCALATION_MESSAGE,
+        message_type: "text",
+        direction: "outbound",
+        status: "escalated",
+        metadata: { reason: "consecutive_failures", failure_count: priorFailures },
+      });
+
+      // Create a notification for the admin/consultant
+      // Find an admin to notify
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin")
+        .limit(1);
+
+      if (adminRoles?.[0]?.user_id) {
+        await supabase.from("notifications").insert({
+          user_id: adminRoles[0].user_id,
+          title: "⚠️ WhatsApp — העברה לנציג אנושי",
+          body: `הלקוח ${fromNumber} הועבר לטיפול אנושי לאחר ${priorFailures} כישלונות רצופים של הבוט.`,
+          type: "warning",
+          link: "/admin/whatsapp-ai",
+        });
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        ai_response: ESCALATION_MESSAGE,
+        escalated: true,
+        persona_mode: "escalated",
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // 4. Fetch AI config (persona mode + system context)
     const aiConfig = await getAIConfig(supabase);
     console.log(`AI mode: ${aiConfig.mode}`);
 
-    // 4. Build system prompt
+    // 5. Build system prompt
     const systemPrompt = buildSystemPrompt(aiConfig.mode, aiConfig.extraContext);
 
-    // 5. Fetch conversation history for context
+    // 6. Fetch conversation history for context
     const conversationHistory = await getConversationHistory(supabase, fromNumber);
 
-    // 6. Call AI
+    // 7. Call AI
     const aiResponse = await callAI(systemPrompt, conversationHistory, messageBody);
     console.log(`AI response (${aiConfig.mode}): ${aiResponse.slice(0, 200)}`);
 
-    // 7. Log AI response as outbound
+    // 8. Determine if this is a fallback response
+    const isFailure = isFallbackResponse(aiResponse);
+
+    // 9. Log AI response as outbound
     const { error: outboundError } = await supabase.from("whatsapp_logs").insert({
       from_number: fromNumber,
       message_body: aiResponse,
       message_type: "text",
       direction: "outbound",
-      status: "sent",
-      metadata: { persona_mode: aiConfig.mode, model: "google/gemini-3-flash-preview" },
+      status: isFailure ? "fallback" : "sent",
+      metadata: { persona_mode: aiConfig.mode, model: "google/gemini-3-flash-preview", is_fallback: isFailure },
     });
 
     if (outboundError) {
       console.error("DB insert error (outbound):", outboundError);
     }
 
-    // 8. Return AI response (WhatsApp provider integration will send it)
+    // 10. Return AI response
     return new Response(JSON.stringify({
       success: true,
       ai_response: aiResponse,
       persona_mode: aiConfig.mode,
+      is_fallback: isFailure,
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
