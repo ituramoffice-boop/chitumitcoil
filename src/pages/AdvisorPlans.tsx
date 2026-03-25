@@ -284,17 +284,16 @@ export default function AdvisorPlans() {
                   ) : (
                     <Button
                       variant={p.ctaStyle}
+                      disabled={checkoutLoading === p.id}
                       className={`w-full font-bold ${
                         p.glow
                           ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25"
                           : ""
                       }`}
-                      asChild
+                      onClick={() => handleCheckout(p.id)}
                     >
-                      <Link to="/auth">
-                        {p.cta}
-                        <ArrowRight className="w-4 h-4 mr-1" />
-                      </Link>
+                      {checkoutLoading === p.id ? "טוען..." : p.cta}
+                      {checkoutLoading !== p.id && <ArrowRight className="w-4 h-4 mr-1" />}
                     </Button>
                   )}
                 </Card>
