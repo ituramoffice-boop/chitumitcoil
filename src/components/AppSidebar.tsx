@@ -60,6 +60,7 @@ const agencyNavItems = [
 const adminNavItems = [
   { title: "חדר מלחמה", url: "/admin/war-room", icon: Swords },
   { title: "מרכז שיווק", url: "/master-admin/marketing", icon: Megaphone },
+  { title: "WhatsApp AI", url: "/admin/whatsapp-ai", icon: MessageSquare },
 ];
 
 export function AppSidebar() {
