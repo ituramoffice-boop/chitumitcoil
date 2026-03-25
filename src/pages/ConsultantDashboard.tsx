@@ -721,6 +721,7 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <Button
                 onClick={async () => {
                   try {
+                    const { createCheckoutSession, STRIPE_TIERS } = await import("@/lib/stripe");
                     const { url } = await createCheckoutSession(STRIPE_TIERS.professional.price_id);
                     if (url) window.open(url, "_blank");
                   } catch {
