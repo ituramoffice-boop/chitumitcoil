@@ -55,6 +55,50 @@ function extractMessage(body: any): { fromNumber: string; messageBody: string; m
   };
 }
 
+const FALLBACK_PHRASES = [
+  "מצטער, המערכת אינה זמינה",
+  "אירעה שגיאה",
+  "המערכת עמוסה",
+  "לא הצלחתי לעבד",
+  "נציג אנושי ייצור איתך קשר",
+  "אירעה שגיאה טכנית",
+];
+
+const ESCALATION_MESSAGE = `שלום 👋
+נראה שאני מתקשה לעזור לך כרגע.
+אני מעביר אותך לנציג אנושי שייצור איתך קשר בהקדם האפשרי.
+תודה על הסבלנות! 🙏`;
+
+const CONSECUTIVE_FAIL_THRESHOLD = 3;
+
+// Check if a message is a fallback/error response
+function isFallbackResponse(message: string): boolean {
+  return FALLBACK_PHRASES.some((phrase) => message.includes(phrase));
+}
+
+// Count consecutive AI failures for a given number
+async function getConsecutiveFailures(supabase: any, fromNumber: string): Promise<number> {
+  const { data } = await supabase
+    .from("whatsapp_logs")
+    .select("direction, message_body, status")
+    .eq("from_number", fromNumber)
+    .eq("direction", "outbound")
+    .order("created_at", { ascending: false })
+    .limit(CONSECUTIVE_FAIL_THRESHOLD);
+
+  if (!data || data.length === 0) return 0;
+
+  let failures = 0;
+  for (const log of data) {
+    if (log.status === "fallback" || isFallbackResponse(log.message_body || "")) {
+      failures++;
+    } else {
+      break; // streak broken
+    }
+  }
+  return failures;
+}
+
 // Fetch recent conversation history for context
 async function getConversationHistory(supabase: any, fromNumber: string, limit = 10): Promise<Array<{ role: string; content: string }>> {
   const { data } = await supabase
@@ -66,7 +110,6 @@ async function getConversationHistory(supabase: any, fromNumber: string, limit =
 
   if (!data || data.length === 0) return [];
 
-  // Reverse to chronological order and map to chat format
   return data.reverse().map((log: any) => ({
     role: log.direction === "inbound" ? "user" : "assistant",
     content: log.message_body || "",
