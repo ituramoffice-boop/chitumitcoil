@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { createCheckoutSession, STRIPE_TIERS } from "@/lib/stripe";
 import { motion, useInView } from "framer-motion";
 import { Check, X, Star, Clock, Calculator, MessageCircle, ArrowRight, Zap, Shield, Users, Brain, FileText, Smartphone, BarChart3, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
