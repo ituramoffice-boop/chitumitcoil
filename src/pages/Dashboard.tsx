@@ -57,6 +57,9 @@ const Dashboard = () => {
 
   if (!user) return <Navigate to="/auth" replace />;
 
+  // Insurance agents get their own dashboard
+  if (profession === "insurance_agent") return <Navigate to="/insurance-dashboard" replace />;
+
   // Client gets simplified view
   if (role === "client") return <ClientDashboard />;
 
