@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -622,26 +622,49 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
       <main className="container mx-auto px-6 lg:px-10 py-10 space-y-8">
         {/* AI Co-Pilot Smart Summary */}
-        <SmartSummaryWidget
-          greeting={summary.greeting}
-          newDocsCollected={documents.filter(d => {
-            const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
-            return age < 1;
-          }).length}
-          pendingLeads={stats.new}
-          expiringCount={alertCounts.expiring}
-          missingDocsCount={alertCounts.missing_docs}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <SmartSummaryWidget
+            greeting={summary.greeting}
+            newDocsCollected={documents.filter(d => {
+              const age = (Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24);
+              return age < 1;
+            }).length}
+            pendingLeads={stats.new}
+            expiringCount={alertCounts.expiring}
+            missingDocsCount={alertCounts.missing_docs}
+          />
+        </motion.div>
 
         {/* Revenue Forecast HUD */}
-        <RevenueForecaster leads={leads} />
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <RevenueForecaster leads={leads} />
+        </motion.div>
 
-        {/* Stats Row */}
+        {/* Stats Row — Staggered Reveal with Animated Counters */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={Users} title="סה״כ לידים" value={stats.total} />
-          <StatCard icon={Plus} title="חדשים" value={stats.new} variant="primary" />
-          <StatCard icon={Clock} title="בטיפול" value={stats.inProgress} variant="warning" />
-          <StatCard icon={CheckCircle2} title="אושרו" value={stats.approved} variant="success" />
+          {[
+            { icon: Users, title: "סה״כ לידים", value: stats.total, variant: undefined as any, delay: 0.3 },
+            { icon: Plus, title: "חדשים", value: stats.new, variant: "primary" as const, delay: 0.4 },
+            { icon: Clock, title: "בטיפול", value: stats.inProgress, variant: "warning" as const, delay: 0.5 },
+            { icon: CheckCircle2, title: "אושרו", value: stats.approved, variant: "success" as const, delay: 0.6 },
+          ].map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, delay: card.delay, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <StatCard icon={card.icon} title={card.title} value={card.value} variant={card.variant} animated />
+            </motion.div>
+          ))}
         </div>
 
         {/* Free Plan Usage Bar & Upgrade CTA */}
