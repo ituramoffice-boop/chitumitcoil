@@ -119,6 +119,7 @@ const WhatsAppAIManager = () => {
     return { messagesToday, responseRate, avgResponseSec };
   })();
 
+  const saveConfig = async () => {
     if (!user) return;
     setIsSaving(true);
     try {
