@@ -29,6 +29,7 @@ const SECTION_COMPONENTS: Record<Section, React.FC> = {
 };
 
 const InsuranceDashboard = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [section, setSection] = useState<Section>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -81,6 +82,19 @@ const InsuranceDashboard = () => {
               {item.label}
             </button>
           ))}
+
+          <div className="mt-4 pt-4 border-t border-border/30">
+            {EXTERNAL_NAV.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer text-primary hover:bg-primary/10"
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Logout */}
