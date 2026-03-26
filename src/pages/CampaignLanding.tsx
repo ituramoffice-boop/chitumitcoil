@@ -832,6 +832,44 @@ export default function CampaignLanding() {
               </motion.div>
             )}
 
+            {phase === "wow_alerts" && (
+              <motion.div key="wow_alerts" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5 py-4">
+                <div className="text-center space-y-2">
+                  <div className="w-14 h-14 rounded-full bg-destructive/20 mx-auto flex items-center justify-center">
+                    <Sparkles className="w-7 h-7 text-destructive" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">ממצאים חשובים!</h3>
+                  <p className="text-sm text-muted-foreground">הנה מה שגילינו בתלוש שלך:</p>
+                </div>
+                <div className="space-y-2">
+                  {wowAlerts.map((alert, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.2 }}
+                      className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2"
+                    >
+                      <span className="text-lg shrink-0">⚠️</span>
+                      <p className="text-sm text-foreground font-medium">{alert}</p>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center space-y-1">
+                  <p className="text-2xl font-black text-accent">
+                    ₪{((toolData.ai_analysis as any)?.total_monthly_waste || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">בזבוז חודשי שזיהינו</p>
+                </div>
+                <Button
+                  className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
+                  onClick={() => setPhase("capture")}
+                >
+                  קבל דוח מלא + ייעוץ חינם <ArrowRight className="w-5 h-5 mr-2" />
+                </Button>
+              </motion.div>
+            )}
+
             {phase === "done" && (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-4 py-6">
                 <div className="w-16 h-16 rounded-full bg-green-500/20 mx-auto flex items-center justify-center">
