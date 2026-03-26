@@ -65,6 +65,7 @@ import LeadMagnetsHub from "./pages/LeadMagnetsHub";
 import ProAuth from "./pages/ProAuth";
 import SmartCheck from "./pages/SmartCheck";
 import CampaignLanding from "./pages/CampaignLanding";
+import AgentCRMDashboard from "./pages/AgentCRMDashboard";
 
 const queryClient = new QueryClient();
 
