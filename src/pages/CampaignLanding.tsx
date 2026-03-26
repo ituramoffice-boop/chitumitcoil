@@ -191,8 +191,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         .upload(filePath, file, { contentType: file.type });
       if (uploadError) throw uploadError;
 
-      // 2) Convert to base64 image for AI
-      let base64: string;
+      // 2) Convert to base64 image(s) for AI
       let mimeType: string;
 
       let images: { base64: string; mime_type: string }[] = [];
