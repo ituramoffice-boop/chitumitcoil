@@ -230,6 +230,11 @@ const Index = () => {
                     <div><p className="text-sm font-semibold text-foreground">פורטל יועצים</p><p className="text-[10px] text-muted-foreground">CRM, ניתוח תיקים, לידים</p></div>
                   </button>
                   <div className="border-t border-border/50" />
+                  <button onClick={() => { navigate("/auth?role=consultant&profession=insurance_agent"); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-emerald-500/10 transition-colors text-right">
+                    <div className="p-2 rounded-lg bg-emerald-500/10"><Shield className="w-4 h-4 text-emerald-500" /></div>
+                    <div><p className="text-sm font-semibold text-foreground">סוכן ביטוח</p><p className="text-[10px] text-muted-foreground">פוליסות, לקוחות, דוחות</p></div>
+                  </button>
+                  <div className="border-t border-border/50" />
                   <button onClick={() => { navigate("/auth?role=client"); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-primary/10 transition-colors text-right">
                     <div className="p-2 rounded-lg bg-primary/10"><User className="w-4 h-4 text-primary" /></div>
                     <div><p className="text-sm font-semibold text-foreground">אזור אישי</p><p className="text-[10px] text-muted-foreground">מעקב תיק, מסמכים, סטטוס</p></div>
