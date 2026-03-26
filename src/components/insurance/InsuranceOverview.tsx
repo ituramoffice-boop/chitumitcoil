@@ -2,14 +2,16 @@ import { useState } from "react";
 import {
   Shield, Users, FileText, TrendingUp, DollarSign, AlertTriangle,
   Brain, Radar, ShoppingCart, MessageSquare, Zap, Target,
-  ArrowUpRight, Clock, Phone, Sparkles, ChevronRight,
+  ArrowUpRight, Clock, Phone, Sparkles, ChevronRight, Copy, Check, X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useInsuranceClients, useInsurancePolicies } from "@/hooks/useInsuranceData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /* ═══════ Realistic Mock Data ═══════ */
 
@@ -47,6 +49,8 @@ export function InsuranceOverview() {
   const { data: clients, isLoading: loadingClients } = useInsuranceClients();
   const { data: policies, isLoading: loadingPolicies } = useInsurancePolicies();
   const [generatingPitch, setGeneratingPitch] = useState<number | null>(null);
+  const [pitchResult, setPitchResult] = useState<{ name: string; pitch: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const loading = loadingClients || loadingPolicies;
 
@@ -60,17 +64,44 @@ export function InsuranceOverview() {
     (p) => p.status === "active" && p.end_date && new Date(p.end_date) <= in30 && new Date(p.end_date) > now
   ).length;
 
+  const handleGeneratePitch = async (id: number) => {
+    const row = MOCK_GAP_DATA.find((r) => r.id === id);
+    if (!row) return;
+    setGeneratingPitch(id);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-ai-pitch", {
+        body: {
+          clientName: row.name,
+          mortgageStatus: row.mortgageStatus,
+          missingCoverage: row.missingCoverage,
+          score: row.score,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setPitchResult({ name: row.name, pitch: data.pitch });
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "שגיאה ביצירת הפיץ'");
+    } finally {
+      setGeneratingPitch(null);
+    }
+  };
+
+  const handleCopyPitch = () => {
+    if (!pitchResult) return;
+    navigator.clipboard.writeText(pitchResult.pitch);
+    setCopied(true);
+    toast.success("הפיץ' הועתק!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const kpis = [
     { label: "פוליסות פעילות", value: activePolicies.length, icon: FileText, color: "text-primary", bgColor: "bg-primary/10" },
     { label: "חידושים ב-30 יום", value: renewalCount || MOCK_RETENTION.length, icon: AlertTriangle, color: "text-amber-400", bgColor: "bg-amber-400/10" },
     { label: "הכנסת Cross-Sell", value: totalPremium || 12840, prefix: "₪", icon: DollarSign, color: "text-gold", bgColor: "bg-gold/10" },
     { label: "ציון הזדמנות AI", value: 87, suffix: "/100", icon: Brain, color: "text-cyan-400", bgColor: "bg-cyan-400/10" },
   ];
-
-  const handleGeneratePitch = (id: number) => {
-    setGeneratingPitch(id);
-    setTimeout(() => setGeneratingPitch(null), 2000);
-  };
 
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
   const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
@@ -292,6 +323,68 @@ export function InsuranceOverview() {
           </Card>
         </motion.div>
       </div>
+
+      {/* ══════════ AI Pitch Result Modal ══════════ */}
+      <AnimatePresence>
+        {pitchResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setPitchResult(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-primary/30 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+            >
+              <div className="p-5 border-b border-border/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-cyan-400/10">
+                    <Sparkles className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground text-sm">AI Pitch — {pitchResult.name}</h3>
+                    <p className="text-[10px] text-muted-foreground">נוצר אוטומטית ע״י הבינה המלאכותית</p>
+                  </div>
+                </div>
+                <Button size="icon" variant="ghost" onClick={() => setPitchResult(null)} className="h-8 w-8">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="p-5">
+                <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
+                  {pitchResult.pitch}
+                </p>
+              </div>
+              <div className="p-4 border-t border-border/30 flex gap-2 justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyPitch}
+                  className="gap-1.5 text-xs"
+                >
+                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied ? "הועתק!" : "העתק"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const text = encodeURIComponent(pitchResult.pitch);
+                    window.open(`https://wa.me/?text=${text}`, "_blank");
+                  }}
+                  className="gap-1.5 text-xs bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
+                >
+                  <MessageSquare className="w-3 h-3" /> שלח בוואטסאפ
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
