@@ -65,6 +65,7 @@ import LeadMagnetsHub from "./pages/LeadMagnetsHub";
 import ProAuth from "./pages/ProAuth";
 import SmartCheck from "./pages/SmartCheck";
 import CampaignLanding from "./pages/CampaignLanding";
+import AgentCRMDashboard from "./pages/AgentCRMDashboard";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,7 @@ const App = () => {
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="/smart-check" element={<SmartCheck />} />
                 <Route path="/campaign/:funnelType" element={<CampaignLanding />} />
+                <Route path="/crm/dashboard" element={<AgentCRMDashboard />} />
 
                 {/* Client routes */}
                 <Route path="/client-dashboard" element={
