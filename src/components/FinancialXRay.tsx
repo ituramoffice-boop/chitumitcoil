@@ -209,7 +209,7 @@ function buildInsights(
   return insights;
 }
 
-export function FinancialXRay({ leadId }: FinancialXRayProps) {
+export function FinancialXRay({ leadId, clientName }: FinancialXRayProps) {
   const [consentsVerified, setConsentsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [scanning, setScanning] = useState(false);
