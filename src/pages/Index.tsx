@@ -199,6 +199,15 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/insurance-dashboard")}
+              className="border-gold/30 text-gold hover:bg-gold/10 gap-1.5 text-sm h-9 px-3 sm:px-4"
+            >
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">אזור ביטוח</span>
+            </Button>
             <ThemeToggle />
             <div className="relative" ref={menuRef}>
               <Button
