@@ -47,7 +47,7 @@ import MarketingAssetsHub from "./pages/MarketingAssetsHub";
 import JoinTheElite from "./pages/JoinTheElite";
 import WarRoom from "./pages/WarRoom";
 import VIPEntrance from "./pages/VIPEntrance";
-import { DemoBanner } from "@/components/DemoBanner";
+import { DemoBanner, DemoBannerSpacer } from "@/components/DemoBanner";
 
 // Protected pages
 import AdminDashboard from "./pages/AdminDashboard";
@@ -221,6 +221,7 @@ const App = () => {
 
                <Route path="*" element={<NotFound />} />
              </Routes>
+             <DemoBannerSpacer />
              <AccessibilityBadge />
              <MobileBottomNav />
              <PWAInstallPrompt />
