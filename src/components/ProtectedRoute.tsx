@@ -1,5 +1,6 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemo } from "@/contexts/DemoContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,6 +9,13 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, allowedRoles = ["consultant", "admin"] }: ProtectedRouteProps) {
   const { user, role, loading } = useAuth();
+  const { isDemoMode } = useDemo();
+  const [searchParams] = useSearchParams();
+  const isDemo = isDemoMode || searchParams.get("demo") === "true";
+
+  if (isDemo) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
