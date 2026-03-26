@@ -169,6 +169,69 @@ export default function LeadMagnetsHub() {
           </div>
         </div>
 
+        {/* Campaign Funnels – Google Ads landing pages */}
+        <div className="mb-8">
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <Megaphone className="h-5 w-5 text-primary" />
+            דפי נחיתה לקמפיינים
+          </h2>
+          <p className="text-xs text-muted-foreground mb-4">שתף קישורים ייחודיים עם פרמטר ה-ref שלך — כל ליד יגיע ישירות ל-CRM</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { key: "mortgage", label: "מחשבון משכנתא", icon: Calculator, color: "from-amber-500/20 to-amber-600/10" },
+              { key: "payslip", label: "סריקת תלוש שכר", icon: FileText, color: "from-emerald-500/20 to-emerald-600/10" },
+              { key: "har-habituach", label: "בדיקת הר הביטוח", icon: Fingerprint, color: "from-purple-500/20 to-purple-600/10" },
+              { key: "masleka", label: "בדיקת מסלקה", icon: PiggyBank, color: "from-blue-500/20 to-blue-600/10" },
+              { key: "savings", label: "ניתוח חיסכון", icon: BarChart3, color: "from-cyan-500/20 to-cyan-600/10" },
+              { key: "price-compare", label: "השוואת מחירים", icon: Search, color: "from-rose-500/20 to-rose-600/10" },
+            ].map((funnel) => {
+              const campaignUrl = `${window.location.origin}/campaign/${funnel.key}?ref=${userId}`;
+              return (
+                <div
+                  key={funnel.key}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-border/40 bg-card/80 p-3 hover:border-primary/40 transition-all"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`p-2 rounded-lg bg-gradient-to-br ${funnel.color} shrink-0`}>
+                      <funnel.icon className="h-4 w-4 text-foreground" />
+                    </div>
+                    <span className="text-sm font-medium truncate">{funnel.label}</span>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        navigator.clipboard.writeText(campaignUrl);
+                        toast.success("קישור הקמפיין הועתק!", { description: funnel.label });
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`בדוק את זה: ${campaignUrl}`)}`, "_blank")}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => window.open(`/campaign/${funnel.key}?ref=${userId}`, "_blank")}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Grid: 5 small widgets + 1 large CPA widget */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {widgets.map((w) => (
