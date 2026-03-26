@@ -5,6 +5,22 @@ import { X, Shield, Eye, LogIn } from "lucide-react";
 import { ChitumitLogo } from "@/components/ChitumitLogo";
 import { useAuth } from "@/contexts/AuthContext";
 
+export function useDemoBannerVisible() {
+  const { isDemoMode } = useDemo();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  return isDemoMode || (searchParams.get("demo") === "true" && !user);
+}
+
+export function DemoBannerSpacer() {
+  const { isDemoMode } = useDemo();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isUrlDemo = searchParams.get("demo") === "true" && !user;
+  if (isUrlDemo && !isDemoMode) return <div className="h-10" />;
+  return null;
+}
+
 export function DemoBanner() {
   const { isDemoMode, demoRole, disableDemo } = useDemo();
   const { user } = useAuth();
