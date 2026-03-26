@@ -317,7 +317,7 @@ function LeadCaptureModal({
         </label>
 
         <Button
-          className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
+          className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-accent transition-opacity"
           disabled={name.length < 2 || phone.length < 9 || !consent}
           onClick={() => onSubmit(name, phone)}
         >
