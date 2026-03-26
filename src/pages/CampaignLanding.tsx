@@ -671,9 +671,25 @@ export default function CampaignLanding() {
   const [progress, setProgress] = useState(0);
   const [toolData, setToolData] = useState<Record<string, unknown>>({});
 
-  // Trigger AI loading
+  // Trigger AI loading (for non-payslip funnels) or handle payslip result
   const handleToolSubmit = useCallback((data: Record<string, unknown>) => {
     setToolData(data);
+
+    // If payslip already analyzed (has ai_analysis), skip loading and show wow_alerts
+    if (data.ai_analysis) {
+      const analysis = data.ai_analysis as any;
+      const alerts = analysis.wow_alerts || [];
+      if (alerts.length > 0) {
+        setWowAlerts(alerts);
+        setPhase("wow_alerts");
+        return;
+      }
+      // No wow_alerts, go straight to capture
+      setPhase("capture");
+      return;
+    }
+
+    // For other funnels, show fake loading animation
     setPhase("loading");
     setProgress(0);
     setStepIdx(0);
