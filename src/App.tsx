@@ -108,7 +108,8 @@ const App = () => {
                <Route path="/reset-password" element={<ResetPassword />} />
                <Route path="/terms" element={<Terms />} />
                <Route path="/privacy" element={<Privacy />} />
-               <Route path="/unsubscribe" element={<Unsubscribe />} />
+                <Route path="/unsubscribe" element={<Unsubscribe />} />
+                <Route path="/smart-check" element={<SmartCheck />} />
 
                 {/* Client routes */}
                 <Route path="/client-dashboard" element={
