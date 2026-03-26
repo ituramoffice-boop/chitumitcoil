@@ -245,12 +245,63 @@ function PlaceholderWidget({ label, onSubmit }: { label: string; onSubmit: (data
 }
 
 // ── WhatsApp Chat Mockup ───────────────────────────────────
+const WA_MESSAGES: { type: "in" | "out"; text: React.ReactNode; time: string; delay: number }[] = [
+  {
+    type: "in",
+    time: "10:42",
+    delay: 0.3,
+    text: (
+      <>
+        🤖 <span className="font-semibold text-accent">דוח חיתומית AI</span> - הניתוח הושלם!
+        <br /><br />
+        היי ישראל, זיהינו כפל ביטוחי (מגדל והראל) עם פוטנציאל חיסכון של <span className="font-bold text-green-400">450 ש״ח בחודש</span>. 💸 התיק הועבר לסוכן שלך.
+      </>
+    ),
+  },
+  {
+    type: "out",
+    time: "10:43",
+    delay: 1.2,
+    text: <>רגע, באמת? על מה אני משלם כפול?</>,
+  },
+  {
+    type: "in",
+    time: "10:43",
+    delay: 2.2,
+    text: (
+      <>
+        על סעיף <span className="font-semibold">"תרופות מחוץ לסל"</span> בשתי הפוליסות. דני הסוכן שלך יכול לעזור לך לבטל את הכפילות.
+        <br /><br />
+        הוא פנוי מחר ב-<span className="font-semibold">10:00</span> או ב-<span className="font-semibold">14:00</span> לשיחה קצרה. מתי נוח לך?
+      </>
+    ),
+  },
+  {
+    type: "out",
+    time: "10:44",
+    delay: 3.4,
+    text: <>10:00 מצוין לי.</>,
+  },
+  {
+    type: "in",
+    time: "10:44",
+    delay: 4.4,
+    text: (
+      <>
+        מעולה! הפגישה נקבעה ביומן. 📅
+        <br />
+        הנה הקישור לתיק המאובטח שלך בינתיים...
+      </>
+    ),
+  },
+];
+
 function WhatsAppMockup() {
   return (
     <div className="rounded-2xl overflow-hidden border border-[#2a3942] shadow-2xl w-full max-w-[320px] mx-auto">
       {/* Status bar */}
       <div className="bg-[#1f2c34] px-3 py-1.5 flex items-center justify-between text-[10px] text-gray-400">
-        <span>9:41</span>
+        <span>10:42</span>
         <div className="flex items-center gap-1">
           <div className="w-3.5 h-2 border border-gray-400 rounded-sm relative">
             <div className="absolute inset-0.5 bg-green-400 rounded-[1px]" style={{ width: '70%' }} />
@@ -268,35 +319,38 @@ function WhatsAppMockup() {
         </div>
       </div>
       {/* Chat body */}
-      <div className="bg-[#0b141a] p-3 min-h-[180px] flex flex-col justify-end" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'200\' height=\'200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'a\' patternUnits=\'userSpaceOnUse\' width=\'20\' height=\'20\'%3E%3Ccircle cx=\'10\' cy=\'10\' r=\'0.5\' fill=\'%23ffffff08\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'200\' height=\'200\' fill=\'url(%23a)\'/%3E%3C/svg%3E")' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="bg-[#202c33] rounded-lg rounded-tr-none p-3 max-w-[90%] self-end relative"
-        >
-          <p className="text-[12.5px] leading-[1.6] text-[#e9edef] text-right" dir="rtl">
-            🤖 <span className="font-semibold text-accent">דוח חיתומית AI</span> - הניתוח הושלם!
-            <br /><br />
-            היי ישראל, זיהינו כפל ביטוחי בריאות (מגדל והראל).
-            <br />
-            פוטנציאל חיסכון: <span className="font-bold text-green-400">450 ש״ח בחודש!</span> 💸
-            <br /><br />
-            התיק שלך אובטח (256-bit) והועבר לסוכן. הוא ייצור קשר בקרוב.
-          </p>
-          <div className="flex items-center justify-start gap-1 mt-1.5">
-            <span className="text-[10px] text-[#8696a0]">09:41</span>
-            <span className="text-[11px] text-blue-400">✓✓</span>
-          </div>
-          {/* Bubble tail */}
-          <div className="absolute -top-0 -right-2 w-0 h-0 border-l-8 border-l-[#202c33] border-t-8 border-t-transparent border-b-8 border-b-transparent" style={{ transform: 'rotate(180deg)', right: '-6px', top: '0px' }} />
-        </motion.div>
+      <div className="bg-[#0b141a] p-2.5 h-[340px] overflow-y-auto flex flex-col gap-1.5 scroll-smooth" dir="rtl"
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'200\' height=\'200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'a\' patternUnits=\'userSpaceOnUse\' width=\'20\' height=\'20\'%3E%3Ccircle cx=\'10\' cy=\'10\' r=\'0.5\' fill=\'%23ffffff06\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'200\' height=\'200\' fill=\'url(%23a)\'/%3E%3C/svg%3E")' }}
+      >
+        {WA_MESSAGES.map((msg, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 12, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: msg.delay, duration: 0.35, ease: "easeOut" }}
+            className={`max-w-[85%] rounded-lg p-2.5 relative ${
+              msg.type === "in"
+                ? "bg-[#202c33] self-end rounded-tr-none"
+                : "bg-[#005c4b] self-start rounded-tl-none"
+            }`}
+          >
+            <p className="text-[12px] leading-[1.55] text-[#e9edef] text-right">
+              {msg.text}
+            </p>
+            <div className={`flex items-center gap-1 mt-1 ${msg.type === "out" ? "justify-end" : "justify-start"}`}>
+              <span className="text-[9px] text-[#8696a0]">{msg.time}</span>
+              {msg.type === "out" && (
+                <span className="text-[10px] text-[#53bdeb]">✓✓</span>
+              )}
+            </div>
+          </motion.div>
+        ))}
       </div>
       {/* Input bar */}
       <div className="bg-[#1f2c34] px-3 py-2 flex items-center gap-2 border-t border-[#2a3942]">
         <div className="flex-1 bg-[#2a3942] rounded-full px-4 py-1.5 text-[12px] text-[#8696a0]">הקלד הודעה</div>
-        <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-          <ArrowRight className="w-4 h-4 text-black rotate-180" />
+        <div className="w-8 h-8 rounded-full bg-[#00a884] flex items-center justify-center">
+          <ArrowRight className="w-4 h-4 text-white rotate-180" />
         </div>
       </div>
     </div>
