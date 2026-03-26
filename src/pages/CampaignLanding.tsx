@@ -149,9 +149,9 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
       toast.error("הקובץ גדול מדי – עד 10MB");
       return;
     }
-    const allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      toast.error("פורמט לא נתמך – PDF, JPG, PNG בלבד");
+    const imageTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!imageTypes.includes(file.type)) {
+      toast.error("יש להעלות תמונה של התלוש (JPG, PNG) – לא PDF");
       return;
     }
 
@@ -199,7 +199,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
   const handleFileSelect = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".pdf,.jpg,.jpeg,.png,.webp";
+    input.accept = ".jpg,.jpeg,.png,.webp";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) processFile(file);
@@ -239,7 +239,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
           <div className="space-y-3">
             <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
             <p className="text-foreground font-semibold">גררו תלוש לכאן או לחצו להעלאה</p>
-            <p className="text-xs text-muted-foreground">PDF, JPG, PNG – עד 10MB</p>
+            <p className="text-xs text-muted-foreground">JPG, PNG – עד 10MB • צלמו את התלוש או שמרו כתמונה</p>
           </div>
         )}
       </div>
