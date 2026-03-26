@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Users, Calendar, Settings, Phone, Video, FileText,
   Shield, Bot, Clock, ChevronLeft, Sparkles, Eye, MessageCircle,
-  TrendingUp, Zap, Star, CheckCheck
+  TrendingUp, Zap, Star, CheckCheck, X, Download, Lock,
+  CreditCard, Heart, Building2, User, Mail, Hash, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const NAV_ITEMS = [
   { icon: Home, label: "ראשי", active: true },
@@ -114,8 +116,206 @@ function WhatsAppLiveLog() {
   );
 }
 
+const LEAD_PROFILE = {
+  name: "ישראל ישראלי",
+  id: "324-567890",
+  phone: "054-1234567",
+  email: "israel@email.co.il",
+  age: 38,
+  city: "תל אביב",
+  income: "₪22,000",
+  employer: "חברת הייטק בע״מ",
+  source: "משפך מסלקה",
+  capturedAt: "24/03/2026 10:38",
+};
+
+const LEAD_DOCUMENTS = [
+  { name: "תלוש_שכר_03_2026.pdf", type: "תלוש שכר", size: "245 KB", status: "verified" as const, scannedAt: "10:39" },
+  { name: "דוח_מסלקה_פנסיונית.pdf", type: "דו״ח מסלקה", size: "1.2 MB", status: "verified" as const, scannedAt: "10:39" },
+  { name: "אישור_העסקה.pdf", type: "אישור מעסיק", size: "89 KB", status: "verified" as const, scannedAt: "10:40" },
+  { name: "דוח_BDI_אשראי.pdf", type: "דו״ח אשראי", size: "340 KB", status: "pending" as const, scannedAt: "—" },
+];
+
+const INSURANCE_FINDINGS = [
+  { company: "מגדל", type: "ביטוח בריאות", premium: "₪320/חודש", flag: "כפילות" },
+  { company: "הראל", type: "ביטוח בריאות", premium: "₪290/חודש", flag: "כפילות" },
+  { company: "מגדל", type: "ביטוח חיים", premium: "₪180/חודש", flag: null },
+  { company: "כלל", type: "פנסיה", premium: "₪1,200/חודש", flag: null },
+];
+
+function FullFileModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-3xl bg-[#0d1225] border-white/10 text-white p-0 overflow-hidden max-h-[90vh]" dir="rtl">
+        {/* Header */}
+        <div className="p-6 pb-4 border-b border-white/[0.06] flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-amber-600 flex items-center justify-center text-black text-lg font-bold">
+              י.י
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">{LEAD_PROFILE.name}</h2>
+              <p className="text-white/40 text-sm">{LEAD_PROFILE.phone} • {LEAD_PROFILE.email}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+              <Lock size={10} /> מוצפן AES-256
+            </span>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto max-h-[calc(90vh-100px)] p-6 space-y-6">
+          {/* Personal Info Grid */}
+          <div>
+            <h3 className="text-sm font-semibold text-[hsl(var(--primary))] mb-3 flex items-center gap-2">
+              <User size={14} /> פרטים אישיים
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {[
+                { icon: Hash, label: "ת.ז", value: LEAD_PROFILE.id },
+                { icon: User, label: "גיל", value: LEAD_PROFILE.age },
+                { icon: Building2, label: "עיר", value: LEAD_PROFILE.city },
+                { icon: CreditCard, label: "הכנסה חודשית", value: LEAD_PROFILE.income },
+                { icon: Building2, label: "מעסיק", value: LEAD_PROFILE.employer },
+                { icon: Zap, label: "מקור ליד", value: LEAD_PROFILE.source },
+              ].map((item, i) => (
+                <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 text-white/40 text-[10px] mb-1">
+                    <item.icon size={10} />
+                    {item.label}
+                  </div>
+                  <p className="text-white/80 text-sm font-medium">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Documents */}
+          <div>
+            <h3 className="text-sm font-semibold text-[hsl(var(--primary))] mb-3 flex items-center gap-2">
+              <FileText size={14} /> מסמכים סרוקים ({LEAD_DOCUMENTS.filter(d => d.status === "verified").length}/{LEAD_DOCUMENTS.length})
+            </h3>
+            <div className="space-y-2">
+              {LEAD_DOCUMENTS.map((doc, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 hover:border-white/10 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                      doc.status === "verified" ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"
+                    }`}>
+                      <FileText size={16} />
+                    </div>
+                    <div>
+                      <p className="text-white/80 text-sm font-medium">{doc.type}</p>
+                      <p className="text-white/30 text-[10px]">{doc.name} • {doc.size}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {doc.status === "verified" ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                        <CheckCheck size={10} /> מאומת {doc.scannedAt}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                        ממתין
+                      </span>
+                    )}
+                    <button className="opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-white/60">
+                      <Download size={14} />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Insurance Findings */}
+          <div>
+            <h3 className="text-sm font-semibold text-[hsl(var(--primary))] mb-3 flex items-center gap-2">
+              <Shield size={14} /> ממצאי ביטוח — ניתוח מסלקה
+            </h3>
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+              <div className="grid grid-cols-4 gap-2 px-4 py-2 text-[10px] text-white/30 font-medium border-b border-white/[0.06]">
+                <span>חברה</span>
+                <span>סוג</span>
+                <span>פרמיה</span>
+                <span>סטטוס</span>
+              </div>
+              {INSURANCE_FINDINGS.map((row, i) => (
+                <div key={i} className={`grid grid-cols-4 gap-2 px-4 py-3 text-sm items-center ${
+                  i < INSURANCE_FINDINGS.length - 1 ? "border-b border-white/[0.04]" : ""
+                }`}>
+                  <span className="text-white/70">{row.company}</span>
+                  <span className="text-white/60 text-xs">{row.type}</span>
+                  <span className="text-white/80 font-medium text-xs">{row.premium}</span>
+                  <span>
+                    {row.flag ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-1 w-fit">
+                        <AlertTriangle size={10} /> {row.flag}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/60 w-fit block">תקין</span>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15 flex items-center gap-3">
+              <Heart size={16} className="text-emerald-400 shrink-0" />
+              <p className="text-emerald-400/80 text-xs leading-relaxed">
+                <span className="font-bold">חיסכון מזוהה:</span> ביטול כפל בריאות חוסך ללקוח{" "}
+                <span className="text-emerald-300 font-bold">₪5,400 בשנה</span> (450 ש״ח × 12 חודשים)
+              </p>
+            </div>
+          </div>
+
+          {/* AI Timeline */}
+          <div>
+            <h3 className="text-sm font-semibold text-[hsl(var(--primary))] mb-3 flex items-center gap-2">
+              <Bot size={14} /> ציר זמן AI
+            </h3>
+            <div className="space-y-0 relative">
+              <div className="absolute right-[15px] top-2 bottom-2 w-px bg-white/[0.06]" />
+              {[
+                { time: "10:38", text: "ליד נקלט ממשפך מסלקה", icon: Zap },
+                { time: "10:39", text: "תלוש שכר + מסלקה נסרקו (Document AI)", icon: FileText },
+                { time: "10:40", text: "AI זיהה כפל ביטוחי — הודעת WhatsApp נשלחה", icon: MessageCircle },
+                { time: "10:42", text: "הלקוח אישר פגישה ל-10:00 מחר", icon: Calendar },
+                { time: "10:42", text: "פגישת Zoom נקבעה אוטומטית ביומן הסוכן", icon: Video },
+              ].map((ev, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex items-start gap-3 py-2 relative z-10"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[hsl(var(--primary))]/10 border border-[hsl(var(--primary))]/20 flex items-center justify-center shrink-0">
+                    <ev.icon size={14} className="text-[hsl(var(--primary))]" />
+                  </div>
+                  <div className="pt-1">
+                    <p className="text-white/70 text-xs">{ev.text}</p>
+                    <p className="text-white/30 text-[10px]">{ev.time}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function AgentCRMDashboard() {
   const [activeNav, setActiveNav] = useState(0);
+  const [showFullFile, setShowFullFile] = useState(false);
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#0a0e1a] text-white flex">
@@ -302,7 +502,7 @@ export default function AgentCRMDashboard() {
               <Video size={18} className="ml-2" />
               היכנס לפגישה
             </Button>
-            <Button variant="outline" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5 rounded-xl h-12 px-8 text-base">
+            <Button onClick={() => setShowFullFile(true)} variant="outline" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5 rounded-xl h-12 px-8 text-base">
               <Eye size={18} className="ml-2" />
               צפה בתיק המלא
             </Button>
@@ -356,6 +556,7 @@ export default function AgentCRMDashboard() {
           </div>
         </motion.div>
       </main>
+      <FullFileModal open={showFullFile} onClose={() => setShowFullFile(false)} />
     </div>
   );
 }
