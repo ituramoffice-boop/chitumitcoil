@@ -147,10 +147,19 @@ export default function LeadMagnetsHub() {
                     onClick={() => copyLink(w.id)}
                   >
                     <Copy className="h-3.5 w-3.5 ml-1" />
-                    העתק קישור ללקוח
+                    העתק קישור
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-xs">
-                    <ExternalLink className="h-3.5 w-3.5" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                    onClick={() => {
+                      const url = `${window.location.origin}/widget/${w.id}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, "_blank");
+                    }}
+                  >
+                    <Send className="h-3.5 w-3.5 ml-1" />
+                    WhatsApp
                   </Button>
                 </div>
               </CardContent>
