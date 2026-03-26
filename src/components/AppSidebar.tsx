@@ -17,6 +17,7 @@ import {
   Swords,
   Megaphone,
   MessageSquare,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { AppStoreBadges } from "@/components/AppStoreBadges";
