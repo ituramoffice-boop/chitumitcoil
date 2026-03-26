@@ -61,6 +61,7 @@ import SalesAcademy from "./pages/SalesAcademy";
 import WhatsAppAIManager from "./pages/WhatsAppAIManager";
 import CampaignsDashboard from "./pages/CampaignsDashboard";
 import InsuranceDashboard from "./pages/InsuranceDashboard";
+import ProAuth from "./pages/ProAuth";
 
 const queryClient = new QueryClient();
 
