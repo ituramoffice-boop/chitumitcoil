@@ -39,6 +39,7 @@ serve(async (req) => {
 {
   "personal": {
     "full_name": "שם מלא",
+    "phone": "מספר טלפון אם מופיע",
     "employer": "שם מעסיק",
     "gross_salary": 0,
     "net_salary": 0,
