@@ -415,6 +415,7 @@ function LeadCaptureModal({
               <div className="relative">
                 <User className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
+                  id="campaign-lead-name"
                   placeholder="שם מלא"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -424,6 +425,7 @@ function LeadCaptureModal({
               <div className="relative">
                 <Phone className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
                 <Input
+                  id="campaign-lead-phone"
                   placeholder="טלפון נייד"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -435,6 +437,7 @@ function LeadCaptureModal({
 
             <label className="flex items-start gap-2.5 cursor-pointer text-right">
               <Checkbox
+                id="campaign-lead-consent"
                 checked={consent}
                 onCheckedChange={(v) => setConsent(v === true)}
                 className="mt-0.5 shrink-0"
