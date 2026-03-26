@@ -26,17 +26,50 @@ serve(async (req) => {
       throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    const systemPrompt = `אתה מומחה לביטוח ישראלי. נתח את תלוש השכר הזה וזהה:
-1) כפל ביטוחי (במיוחד בריאות/ניתוחים)
-2) סכום החיסכון החודשי האפשרי
-3) המלצות.
-החזר JSON בלבד בפורמט הבא:
+    const systemPrompt = `אתה מומחה לביטוח ופנסיה ישראלי עם 20 שנות ניסיון.
+נתח את תלוש השכר ותחזיר JSON בלבד עם המבנה הבא:
+
 {
-  "duplications": [{"type": "סוג הכפל", "details": "פרטים", "monthly_cost": 0}],
-  "potential_monthly_savings": 0,
-  "recommendations": ["המלצה 1", "המלצה 2"],
-  "summary": "תקציר קצר"
-}`;
+  "personal": {
+    "full_name": "שם מלא",
+    "employer": "שם מעסיק",
+    "gross_salary": 0,
+    "net_salary": 0,
+    "pension_salary": 0
+  },
+  "insurance_doubles": [
+    {
+      "type": "סוג הכפל",
+      "company1": "חברה א",
+      "company2": "חברה ב",
+      "monthly_waste": 0,
+      "description": "תיאור"
+    }
+  ],
+  "pension_issues": {
+    "employer_deposit_percent": 0,
+    "employee_deposit_percent": 0,
+    "missing_employer_percent": 0,
+    "monthly_loss": 0,
+    "uninsured_components": []
+  },
+  "opportunities": [
+    {
+      "type": "disability_insurance|pension|study_fund|other",
+      "title": "כותרת",
+      "potential_commission": "גבוה|בינוני|נמוך",
+      "description": "תיאור קצר לסוכן"
+    }
+  ],
+  "wow_alerts": [
+    "הלקוח משלם X ש״ח מיותרים על כפל ביטוח",
+    "חוסר פנסיוני משמעותי - פוטנציאל עמלה גבוה"
+  ],
+  "total_monthly_waste": 0,
+  "agent_summary": "סיכום קצר לסוכן על ההזדמנות"
+}
+
+אם שדה לא נמצא בתלוש, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
 
     const userContent: any[] = [
       { type: "text", text: text || "נתח את תלוש השכר המצורף." },
