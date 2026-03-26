@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
   ScanLine, Shield, CreditCard, Landmark, Brain, AlertTriangle,
-  Sparkles, ArrowRight, TrendingUp, Eye, Zap, CircleDollarSign,
-  Activity, ChevronRight,
+  Sparkles, Lock, Unlock, CheckCircle2, Clock, Send,
+  Activity, ChevronRight, Eye, Fingerprint,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,19 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 
+/* ── Consent Badges ── */
+interface ConsentItem {
+  id: string;
+  label: string;
+}
+
+const CONSENTS: ConsentItem[] = [
+  { id: "poa", label: "ייפוי כוח" },
+  { id: "har", label: "הסכמת הר הביטוח" },
+  { id: "openbanking", label: "Open Banking API" },
+];
+
+/* ── Insights data ── */
 const INSIGHTS = [
   {
     id: "masleka",
@@ -17,7 +30,6 @@ const INSIGHTS = [
     icon: Landmark,
     color: "text-cyan-400",
     borderColor: "border-cyan-400/30",
-    glowColor: "shadow-cyan-400/10",
     bgColor: "bg-cyan-400/5",
     iconBg: "bg-cyan-400/10",
     severity: "opportunity" as const,
@@ -33,7 +45,6 @@ const INSIGHTS = [
     icon: Shield,
     color: "text-amber-400",
     borderColor: "border-amber-400/30",
-    glowColor: "shadow-amber-400/10",
     bgColor: "bg-amber-400/5",
     iconBg: "bg-amber-400/10",
     severity: "warning" as const,
@@ -49,7 +60,6 @@ const INSIGHTS = [
     icon: CreditCard,
     color: "text-red-400",
     borderColor: "border-red-400/30",
-    glowColor: "shadow-red-400/10",
     bgColor: "bg-red-400/5",
     iconBg: "bg-red-400/10",
     severity: "alert" as const,
@@ -68,12 +78,24 @@ const SCAN_SOURCES = [
 ];
 
 export function FinancialXRay() {
+  const [consentsVerified, setConsentsVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanned, setScanned] = useState(false);
   const [activeScan, setActiveScan] = useState<string | null>(null);
 
+  const handleSimulateSignature = () => {
+    if (verifying || consentsVerified) return;
+    setVerifying(true);
+    setTimeout(() => {
+      setVerifying(false);
+      setConsentsVerified(true);
+    }, 1600);
+  };
+
   const handleScan = () => {
+    if (!consentsVerified) return;
     setScanning(true);
     setScanProgress(0);
     setActiveScan("all");
@@ -100,7 +122,7 @@ export function FinancialXRay() {
 
   return (
     <Card className="bg-card/60 border-border/40 backdrop-blur-sm overflow-hidden relative">
-      {/* Decorative scan-line effect when scanning */}
+      {/* Scan-line effect */}
       {scanning && (
         <motion.div
           className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent z-10"
@@ -128,28 +150,121 @@ export function FinancialXRay() {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {/* ── Action Buttons ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {SCAN_SOURCES.map((src) => (
+        {/* ── Regulatory Consent Manager ── */}
+        <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-4">
+          <div className="flex items-center gap-2">
+            <Fingerprint className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Regulatory Consent Manager</h3>
+          </div>
+
+          {/* Consent badges */}
+          <div className="flex flex-wrap gap-2">
+            {CONSENTS.map((c, i) => (
+              <motion.div
+                key={c.id}
+                animate={consentsVerified ? { scale: [1, 1.08, 1] } : {}}
+                transition={{ delay: i * 0.15, duration: 0.35 }}
+              >
+                <Badge
+                  variant="outline"
+                  className={`gap-1.5 py-1 px-2.5 text-[10px] transition-all duration-500 ${
+                    consentsVerified
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                      : "border-amber-500/30 bg-amber-500/5 text-amber-400"
+                  }`}
+                >
+                  {consentsVerified ? (
+                    <CheckCircle2 className="w-3 h-3" />
+                  ) : verifying ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    >
+                      <Clock className="w-3 h-3" />
+                    </motion.div>
+                  ) : (
+                    <Clock className="w-3 h-3" />
+                  )}
+                  {c.label}
+                  <span className="font-bold">
+                    {consentsVerified ? "✓ Verified" : "Pending"}
+                  </span>
+                </Badge>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2">
             <Button
-              key={src.id}
-              onClick={handleScan}
-              disabled={scanning}
-              className={`h-auto py-4 px-4 flex flex-col items-center gap-2 bg-gradient-to-br ${src.color} text-white border-0 hover:opacity-90 transition-all relative overflow-hidden group`}
+              size="sm"
+              className="h-9 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 hover:opacity-90"
+              disabled={consentsVerified}
             >
-              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <src.icon className="w-6 h-6" />
-              <span className="text-xs font-medium text-center leading-tight">{src.label}</span>
-              {scanning && activeScan === "all" && (
-                <motion.div
-                  className="absolute bottom-0 left-0 h-0.5 bg-white/60"
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 2.5 }}
-                />
-              )}
+              <Send className="w-3.5 h-3.5" />
+              שלח קישור הסכמה (WhatsApp)
             </Button>
-          ))}
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9 gap-2 border-primary/30 text-primary hover:bg-primary/10"
+              onClick={handleSimulateSignature}
+              disabled={verifying || consentsVerified}
+            >
+              <Fingerprint className="w-3.5 h-3.5" />
+              {verifying ? "מאמת חתימה..." : consentsVerified ? "הסכמות אומתו ✓" : "סמלץ חתימת לקוח"}
+            </Button>
+          </div>
+        </div>
+
+        {/* ── Sync Buttons (locked / unlocked) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {SCAN_SOURCES.map((src) => {
+            const locked = !consentsVerified;
+            return (
+              <motion.div
+                key={src.id}
+                animate={
+                  consentsVerified && !scanned
+                    ? { boxShadow: ["0 0 0px rgba(0,255,200,0)", "0 0 14px rgba(0,255,200,0.25)", "0 0 0px rgba(0,255,200,0)"] }
+                    : {}
+                }
+                transition={{ duration: 2, repeat: Infinity }}
+                className="rounded-xl"
+              >
+                <Button
+                  onClick={handleScan}
+                  disabled={locked || scanning}
+                  className={`w-full h-auto py-4 px-4 flex flex-col items-center gap-2 border-0 transition-all relative overflow-hidden group rounded-xl ${
+                    locked
+                      ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-60"
+                      : `bg-gradient-to-br ${src.color} text-white hover:opacity-90`
+                  }`}
+                >
+                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <src.icon className="w-6 h-6" />
+                    {locked && (
+                      <Lock className="w-3 h-3 absolute -bottom-1 -right-1 text-muted-foreground" />
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-center leading-tight">{src.label}</span>
+                  {locked && (
+                    <span className="text-[9px] text-muted-foreground/60">דרושה הסכמת לקוח</span>
+                  )}
+                  {scanning && activeScan === "all" && !locked && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 h-0.5 bg-white/60"
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 2.5 }}
+                    />
+                  )}
+                </Button>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* ── Scanning Animation ── */}
@@ -182,11 +297,7 @@ export function FinancialXRay() {
         {/* ── AI Discovery Dashboard ── */}
         <AnimatePresence>
           {scanned && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-3"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-gold" />
                 <h3 className="text-sm font-bold text-foreground">AI Discovery Dashboard</h3>
@@ -199,9 +310,8 @@ export function FinancialXRay() {
                   variants={fadeUp}
                   initial="hidden"
                   animate="show"
-                  className={`rounded-xl border ${insight.borderColor} ${insight.bgColor} p-4 relative overflow-hidden group hover:shadow-lg hover:${insight.glowColor} transition-all`}
+                  className={`rounded-xl border ${insight.borderColor} ${insight.bgColor} p-4 relative overflow-hidden group transition-all`}
                 >
-                  {/* Subtle glow line */}
                   <div className={`absolute top-0 right-0 w-1 h-full bg-gradient-to-b ${
                     insight.severity === "opportunity" ? "from-cyan-400 to-transparent" :
                     insight.severity === "warning" ? "from-amber-400 to-transparent" :
@@ -212,7 +322,6 @@ export function FinancialXRay() {
                     <div className={`p-2 rounded-lg ${insight.iconBg} flex-shrink-0 mt-0.5`}>
                       <insight.icon className={`w-4 h-4 ${insight.color}`} />
                     </div>
-
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                         <Badge variant="outline" className={`text-[9px] ${insight.borderColor} ${insight.color}`}>
@@ -227,10 +336,8 @@ export function FinancialXRay() {
                           AI Alert
                         </Badge>
                       </div>
-
                       <p className="text-sm font-semibold text-foreground mb-1">{insight.title}</p>
                       <p className="text-xs text-muted-foreground leading-relaxed mb-3">{insight.description}</p>
-
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className={`px-2.5 py-1 rounded-lg ${insight.bgColor} border ${insight.borderColor}`}>
@@ -238,12 +345,7 @@ export function FinancialXRay() {
                           </div>
                           <span className="text-[10px] text-muted-foreground">{insight.metricLabel}</span>
                         </div>
-
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className={`h-7 text-[11px] ${insight.color} hover:${insight.bgColor} gap-1`}
-                        >
+                        <Button size="sm" variant="ghost" className={`h-7 text-[11px] ${insight.color} gap-1`}>
                           {insight.action}
                           <ChevronRight className="w-3 h-3" />
                         </Button>
@@ -260,7 +362,11 @@ export function FinancialXRay() {
         {!scanning && !scanned && (
           <div className="text-center py-6 border border-dashed border-border/40 rounded-xl">
             <Eye className="w-8 h-8 mx-auto text-muted-foreground/30 mb-2" />
-            <p className="text-xs text-muted-foreground">לחץ על אחד הכפתורים למעלה כדי להפעיל סריקת AI</p>
+            <p className="text-xs text-muted-foreground">
+              {consentsVerified
+                ? "לחץ על אחד הכפתורים למעלה כדי להפעיל סריקת AI"
+                : "יש לאמת הסכמות לקוח לפני הפעלת הסריקה"}
+            </p>
           </div>
         )}
       </CardContent>
