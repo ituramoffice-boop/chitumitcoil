@@ -64,6 +64,7 @@ import InsuranceDashboard from "./pages/InsuranceDashboard";
 import LeadMagnetsHub from "./pages/LeadMagnetsHub";
 import ProAuth from "./pages/ProAuth";
 import SmartCheck from "./pages/SmartCheck";
+import CampaignLanding from "./pages/CampaignLanding";
 
 const queryClient = new QueryClient();
 
