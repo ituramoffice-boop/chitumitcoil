@@ -16,10 +16,11 @@ type ProfessionType = "mortgage_advisor" | "insurance_agent";
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const initialRole = (searchParams.get("role") as RoleType) || "client";
+  const initialProfession = (searchParams.get("profession") as ProfessionType) || "mortgage_advisor";
 
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>(initialRole === "client" ? "login" : "signup");
   const [roleType, setRoleType] = useState<RoleType>(initialRole);
-  const [profession, setProfession] = useState<ProfessionType>("mortgage_advisor");
+  const [profession, setProfession] = useState<ProfessionType>(initialProfession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
