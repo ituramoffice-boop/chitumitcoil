@@ -173,7 +173,7 @@ function FullFileModal({ open, onClose }: { open: boolean; onClose: () => void }
             <h3 className="text-sm font-semibold text-[hsl(var(--primary))] mb-3 flex items-center gap-2">
               <User size={14} /> פרטים אישיים
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { icon: Hash, label: "ת.ז", value: LEAD_PROFILE.id },
                 { icon: User, label: "גיל", value: LEAD_PROFILE.age },
@@ -243,14 +243,14 @@ function FullFileModal({ open, onClose }: { open: boolean; onClose: () => void }
               <Shield size={14} /> ממצאי ביטוח — ניתוח מסלקה
             </h3>
             <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
-              <div className="grid grid-cols-4 gap-2 px-4 py-2 text-[10px] text-white/30 font-medium border-b border-white/[0.06]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 px-4 py-2 text-[10px] text-white/30 font-medium border-b border-white/[0.06]">
                 <span>חברה</span>
                 <span>סוג</span>
                 <span>פרמיה</span>
                 <span>סטטוס</span>
               </div>
               {INSURANCE_FINDINGS.map((row, i) => (
-                <div key={i} className={`grid grid-cols-4 gap-2 px-4 py-3 text-sm items-center ${
+                <div key={i} className={`grid grid-cols-2 sm:grid-cols-4 gap-2 px-4 py-3 text-sm items-center ${
                   i < INSURANCE_FINDINGS.length - 1 ? "border-b border-white/[0.04]" : ""
                 }`}>
                   <span className="text-white/70">{row.company}</span>
