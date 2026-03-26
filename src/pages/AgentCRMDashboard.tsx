@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Users, Calendar, Settings, Phone, Video, FileText,
   Shield, Bot, Clock, ChevronLeft, Sparkles, Eye, MessageCircle,
-  TrendingUp, Zap, Star, CheckCheck
+  TrendingUp, Zap, Star, CheckCheck, X, Download, Lock,
+  CreditCard, Heart, Building2, User, Mail, Hash, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const NAV_ITEMS = [
   { icon: Home, label: "ראשי", active: true },
