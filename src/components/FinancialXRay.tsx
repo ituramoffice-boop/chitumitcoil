@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   ScanLine, Shield, CreditCard, Landmark, Brain, AlertTriangle,
-  Sparkles, Lock, CheckCircle2, Clock, Send,
+  Sparkles, Lock, CheckCircle2, Clock, Send, FileDown,
   Activity, ChevronRight, Eye, Fingerprint,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { exportXRayToPdf } from "@/components/XRayPdfExport";
 
 /* ── Types ── */
 interface FinancialXRayProps {
   leadId?: string;
+  clientName?: string;
 }
 
 interface Insight {
@@ -207,7 +209,7 @@ function buildInsights(
   return insights;
 }
 
-export function FinancialXRay({ leadId }: FinancialXRayProps) {
+export function FinancialXRay({ leadId, clientName }: FinancialXRayProps) {
   const [consentsVerified, setConsentsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -423,6 +425,18 @@ export function FinancialXRay({ leadId }: FinancialXRayProps) {
                     <Activity className="w-2.5 h-2.5" /> נתונים אמיתיים
                   </Badge>
                 )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[10px] gap-1 mr-auto border-gold/30 text-gold hover:bg-gold/10"
+                  onClick={() => exportXRayToPdf(
+                    insights.map(i => ({ source: i.source, severity: i.severity, title: i.title, description: i.description, metric: i.metric, metricLabel: i.metricLabel })),
+                    clientName
+                  )}
+                >
+                  <FileDown className="w-3 h-3" />
+                  ייצוא PDF
+                </Button>
               </div>
 
               {insights.map((insight, i) => (
