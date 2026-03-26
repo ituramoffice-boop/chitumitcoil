@@ -198,6 +198,7 @@ const ConversationalLeadCapture = ({
                   <div className="relative">
                     <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <Input
+                      id="lead-full-name"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       placeholder="ישראל ישראלי"
@@ -265,6 +266,7 @@ const ConversationalLeadCapture = ({
                 <div className="relative">
                   <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                   <Input
+                    id="lead-phone"
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="050-1234567"
@@ -277,6 +279,7 @@ const ConversationalLeadCapture = ({
                 <div className="relative">
                   <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                   <Input
+                    id="lead-email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="email@example.com (אופציונלי)"
