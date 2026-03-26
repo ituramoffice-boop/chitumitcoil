@@ -61,6 +61,7 @@ import SalesAcademy from "./pages/SalesAcademy";
 import WhatsAppAIManager from "./pages/WhatsAppAIManager";
 import CampaignsDashboard from "./pages/CampaignsDashboard";
 import InsuranceDashboard from "./pages/InsuranceDashboard";
+import LeadMagnetsHub from "./pages/LeadMagnetsHub";
 import ProAuth from "./pages/ProAuth";
 
 const queryClient = new QueryClient();
@@ -115,10 +116,15 @@ const App = () => {
                   </ProtectedRoute>
                 } />
 
-                {/* Insurance Agent route */}
+                {/* Insurance Agent routes */}
                 <Route path="/insurance-dashboard" element={
                   <ProtectedRoute allowedRoles={["consultant", "admin"]}>
                     <InsuranceDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/lead-magnets" element={
+                  <ProtectedRoute allowedRoles={["consultant", "admin"]}>
+                    <LeadMagnetsHub />
                   </ProtectedRoute>
                 } />
 

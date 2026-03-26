@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, FileText, Users, BarChart3, LogOut, Menu, X } from "lucide-react";
+import { Shield, LayoutDashboard, FileText, Users, BarChart3, LogOut, Menu, X, Megaphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { InsuranceOverview } from "@/components/insurance/InsuranceOverview";
 import { InsurancePolicies } from "@/components/insurance/InsurancePolicies";
 import { InsuranceClients } from "@/components/insurance/InsuranceClients";
@@ -14,6 +15,10 @@ const NAV_ITEMS: { key: Section; label: string; icon: typeof LayoutDashboard }[]
   { key: "policies", label: "פוליסות", icon: FileText },
   { key: "clients", label: "לקוחות", icon: Users },
   { key: "reports", label: "דוחות", icon: BarChart3 },
+];
+
+const EXTERNAL_NAV = [
+  { label: "Lead Magnets", icon: Megaphone, path: "/lead-magnets" },
 ];
 
 const SECTION_COMPONENTS: Record<Section, React.FC> = {
