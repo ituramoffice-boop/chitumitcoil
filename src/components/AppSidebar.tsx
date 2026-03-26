@@ -115,6 +115,27 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Insurance */}
+        <SidebarGroup>
+          <SidebarGroupLabel>ביטוח</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/insurance-dashboard"
+                    className="hover:bg-muted/50"
+                    activeClassName="bg-gold/10 text-gold font-medium"
+                  >
+                    <Shield className="ml-2 h-4 w-4" />
+                    {!collapsed && <span>אזור ביטוח</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Admin tools */}
         <SidebarGroup>
           <SidebarGroupLabel>כלי ניהול</SidebarGroupLabel>
