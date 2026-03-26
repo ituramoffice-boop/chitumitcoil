@@ -221,6 +221,7 @@ const App = () => {
 
                <Route path="*" element={<NotFound />} />
              </Routes>
+             <DemoBannerSpacer />
              <AccessibilityBadge />
              <MobileBottomNav />
              <PWAInstallPrompt />
