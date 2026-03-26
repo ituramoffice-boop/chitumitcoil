@@ -320,7 +320,11 @@ function LeadCaptureModal({
 export default function CampaignLanding() {
   const { funnelType } = useParams<{ funnelType: string }>();
   const [searchParams] = useSearchParams();
-  const consultantId = searchParams.get("ref");
+  const rawRef = searchParams.get("ref");
+
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const isValidRef = rawRef ? UUID_RE.test(rawRef) : false;
+  const consultantId = isValidRef ? rawRef : null;
 
   const config = FUNNEL_CONFIG[funnelType || ""] || FUNNEL_CONFIG.mortgage;
   const FunnelIcon = config.icon;
@@ -392,6 +396,14 @@ export default function CampaignLanding() {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
+      {/* Invalid ref warning */}
+      {rawRef && !isValidRef && (
+        <div className="bg-destructive/10 border-b border-destructive/30 py-3 px-4">
+          <p className="max-w-lg mx-auto text-center text-sm text-destructive font-medium">
+            ⚠️ קישור ההפניה אינו תקין — הנתונים לא ישויכו ליועץ. אנא בקש קישור עדכני.
+          </p>
+        </div>
+      )}
       {/* Trust bar */}
       <div className="bg-secondary/50 border-b border-border py-2 px-4">
         <div className="max-w-lg mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground">
