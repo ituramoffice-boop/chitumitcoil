@@ -135,25 +135,29 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
   );
 }
 
-// ── PDF to Image converter ─────────────────────────────────
-async function pdfToBase64Image(file: File): Promise<string> {
+// ── PDF to Image converter (all pages) ─────────────────────
+async function pdfToBase64Images(file: File): Promise<string[]> {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const page = await pdf.getPage(1);
+  const totalPages = pdf.numPages;
+  const images: string[] = [];
 
-  const scale = 2; // high-res for AI readability
-  const viewport = page.getViewport({ scale });
-  const canvas = document.createElement("canvas");
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  const ctx = canvas.getContext("2d")!;
+  for (let i = 1; i <= totalPages; i++) {
+    const page = await pdf.getPage(i);
+    const scale = 2;
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d")!;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    images.push(canvas.toDataURL("image/png").split(",")[1]);
+  }
 
-  await page.render({ canvasContext: ctx, viewport }).promise;
-  // Return base64 without prefix
-  return canvas.toDataURL("image/png").split(",")[1];
+  return images;
 }
 
 // ── Payslip Hook Widget ────────────────────────────────────
@@ -191,13 +195,13 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
       let base64: string;
       let mimeType: string;
 
+      let images: { base64: string; mime_type: string }[] = [];
+
       if (file.type === "application/pdf") {
-        // Convert first PDF page to PNG image
-        base64 = await pdfToBase64Image(file);
-        mimeType = "image/png";
+        const pdfImages = await pdfToBase64Images(file);
+        images = pdfImages.map((b64) => ({ base64: b64, mime_type: "image/png" }));
       } else {
-        // Already an image – read as base64
-        base64 = await new Promise<string>((resolve, reject) => {
+        const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             const result = reader.result as string;
@@ -206,12 +210,12 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
-        mimeType = file.type;
+        images = [{ base64, mime_type: file.type }];
       }
 
-      // 3) Call analyze-payslip edge function
+      // 3) Call analyze-payslip edge function with all pages
       const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
-        body: { base64, mime_type: mimeType },
+        body: { images },
       });
       if (fnError) throw fnError;
 
