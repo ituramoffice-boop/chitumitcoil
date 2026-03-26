@@ -467,12 +467,16 @@ function WhatsAppMockup() {
 function LeadCaptureModal({
   open,
   onSubmit,
+  initialName = "ישראל ישראלי",
+  initialPhone = "050-1234567",
 }: {
   open: boolean;
   onSubmit: (name: string, phone: string) => void;
+  initialName?: string;
+  initialPhone?: string;
 }) {
-  const [name, setName] = useState("ישראל ישראלי");
-  const [phone, setPhone] = useState("050-1234567");
+  const [name, setName] = useState(initialName);
+  const [phone, setPhone] = useState(initialPhone);
   const [consent, setConsent] = useState(false);
   const [modalPhase, setModalPhase] = useState<"form" | "syncing" | "success">("form");
 
@@ -705,6 +709,8 @@ export default function CampaignLanding() {
   const [stepIdx, setStepIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [toolData, setToolData] = useState<Record<string, unknown>>({});
+  const [prefillName, setPrefillName] = useState("ישראל ישראלי");
+  const [prefillPhone, setPrefillPhone] = useState("050-1234567");
 
   // Trigger AI loading (for non-payslip funnels) or handle payslip result
   const handleToolSubmit = useCallback((data: Record<string, unknown>) => {
@@ -713,6 +719,11 @@ export default function CampaignLanding() {
     // If payslip already analyzed (has ai_analysis), skip loading and show wow_alerts
     if (data.ai_analysis) {
       const analysis = data.ai_analysis as any;
+
+      // Pre-fill lead form from AI extraction
+      if (analysis.personal?.full_name) setPrefillName(analysis.personal.full_name);
+      if (analysis.personal?.phone) setPrefillPhone(analysis.personal.phone);
+
       const alerts = analysis.wow_alerts || [];
       if (alerts.length > 0) {
         setWowAlerts(alerts);
@@ -929,7 +940,7 @@ export default function CampaignLanding() {
       </div>
 
       {/* Lead capture modal */}
-      <LeadCaptureModal open={phase === "capture"} onSubmit={handleLeadSubmit} />
+      <LeadCaptureModal open={phase === "capture"} onSubmit={handleLeadSubmit} initialName={prefillName} initialPhone={prefillPhone} />
     </div>
   );
 }
