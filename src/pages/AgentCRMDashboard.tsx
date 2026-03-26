@@ -502,7 +502,7 @@ export default function AgentCRMDashboard() {
               <Video size={18} className="ml-2" />
               היכנס לפגישה
             </Button>
-            <Button variant="outline" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5 rounded-xl h-12 px-8 text-base">
+            <Button onClick={() => setShowFullFile(true)} variant="outline" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5 rounded-xl h-12 px-8 text-base">
               <Eye size={18} className="ml-2" />
               צפה בתיק המלא
             </Button>
