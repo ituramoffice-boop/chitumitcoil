@@ -316,13 +316,18 @@ function LeadCaptureModal({
           </span>
         </label>
 
-        <Button
-          className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
-          disabled={name.length < 2 || phone.length < 9 || !consent}
-          onClick={() => onSubmit(name, phone)}
-        >
-          שלח לי את הדוח <ArrowRight className="w-5 h-5 mr-2" />
-        </Button>
+        {(() => {
+          const isDisabled = name.length < 2 || phone.length < 9 || !consent;
+          return (
+            <Button
+              className={`w-full h-12 text-lg font-bold transition-all ${isDisabled ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50' : 'bg-accent hover:bg-accent/90 text-accent-foreground'}`}
+              disabled={isDisabled}
+              onClick={() => onSubmit(name, phone)}
+            >
+              שלח לי את הדוח <ArrowRight className="w-5 h-5 mr-2" />
+            </Button>
+          );
+        })()}
 
         <p className="text-[10px] text-muted-foreground text-center">
           <Lock className="w-3 h-3 inline ml-1" />
