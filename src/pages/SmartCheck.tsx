@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, createContext, useContext } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -6,14 +7,38 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Shield, Lock, Calculator, Search, FileText, Smartphone,
   BarChart3, Brain, Upload, CheckCircle2, Sparkles, ArrowRight,
-  Eye, FileUp, Fingerprint
+  Eye, FileUp, Fingerprint, User, Phone, Mail
 } from "lucide-react";
 
-// ── Illusion-of-Work loading sequence ──────────────────────────
+// ── Types ──────────────────────────────────────────────────────
+interface ContactInfo {
+  fullName: string;
+  phone: string;
+  email: string;
+  consent: boolean;
+}
+
+interface LeadContextType {
+  contactInfo: ContactInfo | null;
+  setContactInfo: (info: ContactInfo) => void;
+  consultantId: string | null;
+  submitLead: (source: string, metadata?: Record<string, unknown>) => Promise<boolean>;
+}
+
+const LeadContext = createContext<LeadContextType>({
+  contactInfo: null,
+  setContactInfo: () => {},
+  consultantId: null,
+  submitLead: async () => false,
+});
+
+// ── Loading steps ──────────────────────────────────────────────
 const loadingSteps = [
   { text: "מצפין חיבור מאובטח…", icon: Lock },
   { text: "AI מחלץ נתונים פיננסיים…", icon: Brain },
@@ -113,12 +138,121 @@ function SuccessState({ onReset }: { onReset: () => void }) {
   );
 }
 
+// ── Contact Info Form (inline gate) ────────────────────────────
+function ContactGate({ onSubmit, children }: { onSubmit: () => void; children: React.ReactNode }) {
+  const { contactInfo, setContactInfo } = useContext(LeadContext);
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+
+  if (contactInfo) return <>{children}</>;
+
+  const isValid = name.trim().length >= 2 && phone.trim().length >= 9 && consent;
+
+  const handleSubmit = () => {
+    if (!isValid) return;
+    setContactInfo({ fullName: name.trim(), phone: phone.trim(), email: email.trim(), consent });
+    onSubmit();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5"
+    >
+      <div className="text-center space-y-1">
+        <h3 className="text-base font-bold text-foreground">השאר פרטים לקבלת התוצאות</h3>
+        <p className="text-xs text-muted-foreground">הפרטים שלך מוגנים ומשמשים ליצירת קשר בלבד</p>
+      </div>
+
+      <div className="space-y-3">
+        <div className="relative">
+          <User className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="שם מלא *"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="pr-10"
+          />
+        </div>
+        <div className="relative">
+          <Phone className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="טלפון *"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/[^\d\-+]/g, "").slice(0, 15))}
+            className="pr-10"
+            dir="ltr"
+          />
+        </div>
+        <div className="relative">
+          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="אימייל (לא חובה)"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="pr-10"
+            dir="ltr"
+          />
+        </div>
+        <label className="flex items-start gap-2 cursor-pointer">
+          <Checkbox checked={consent} onCheckedChange={(c) => setConsent(c === true)} className="mt-0.5" />
+          <span className="text-xs text-muted-foreground leading-relaxed">
+            אני מאשר/ת קבלת פנייה מיועץ מקצועי בנוגע לתוצאות הבדיקה *
+          </span>
+        </label>
+      </div>
+
+      <Button className="w-full" onClick={handleSubmit} disabled={!isValid}>
+        <Shield className="h-4 w-4 ml-2" />
+        קבל תוצאות מאובטחות
+      </Button>
+    </motion.div>
+  );
+}
+
+// ── Wrapper hook for tab submissions ───────────────────────────
+function useTabSubmit(source: string, metadata?: Record<string, unknown>) {
+  const { contactInfo, submitLead } = useContext(LeadContext);
+  const seq = useLoadingSequence();
+  const [showGate, setShowGate] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
+    if (!contactInfo) {
+      setShowGate(true);
+      return;
+    }
+    seq.start();
+    await submitLead(source, metadata);
+  }, [contactInfo, seq, submitLead, source, metadata]);
+
+  const handleGateComplete = useCallback(() => {
+    // Contact info was just set — start the sequence on next render
+    setShowGate(false);
+    seq.start();
+    // Submit will happen after loading via effect
+  }, [seq]);
+
+  // Submit lead after gate completion when loading starts
+  useEffect(() => {
+    if (seq.running && seq.progress === 0) {
+      submitLead(source, metadata);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seq.running]);
+
+  return { seq, showGate, handleSubmit, handleGateComplete };
+}
+
 // ── Mortgage Calculator Tab ────────────────────────────────────
 function MortgageCalcTab() {
   const [amount, setAmount] = useState([1200000]);
   const [years, setYears] = useState([25]);
   const [rate, setRate] = useState([4.5]);
-  const seq = useLoadingSequence();
 
   const monthlyPayment = (() => {
     const P = amount[0];
@@ -127,6 +261,11 @@ function MortgageCalcTab() {
     return Math.round((P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
   })();
 
+  const { seq, showGate, handleSubmit, handleGateComplete } = useTabSubmit(
+    "smart-check-mortgage",
+    { mortgage_amount: amount[0], years: years[0], rate: rate[0], monthly_payment: monthlyPayment }
+  );
+
   return (
     <div className="relative space-y-6">
       <AnimatePresence>
@@ -134,6 +273,10 @@ function MortgageCalcTab() {
       </AnimatePresence>
       {seq.done ? (
         <SuccessState onReset={seq.reset} />
+      ) : showGate ? (
+        <ContactGate onSubmit={handleGateComplete}>
+          <div />
+        </ContactGate>
       ) : (
         <>
           <div className="space-y-4">
@@ -161,7 +304,7 @@ function MortgageCalcTab() {
             <p className="text-xs text-muted-foreground">החזר חודשי משוער</p>
             <p className="text-3xl font-bold text-primary mt-1">{monthlyPayment.toLocaleString()} ₪</p>
           </div>
-          <Button className="w-full" onClick={seq.start}>
+          <Button className="w-full" onClick={handleSubmit}>
             <Calculator className="h-4 w-4 ml-2" />
             חשב ושלח לייעוץ מקצועי
           </Button>
@@ -174,7 +317,7 @@ function MortgageCalcTab() {
 // ── Lost Savings Tab ───────────────────────────────────────────
 function LostSavingsTab() {
   const [idNum, setIdNum] = useState("");
-  const seq = useLoadingSequence();
+  const { seq, showGate, handleSubmit, handleGateComplete } = useTabSubmit("smart-check-savings");
 
   return (
     <div className="relative space-y-6">
@@ -183,6 +326,8 @@ function LostSavingsTab() {
       </AnimatePresence>
       {seq.done ? (
         <SuccessState onReset={seq.reset} />
+      ) : showGate ? (
+        <ContactGate onSubmit={handleGateComplete}><div /></ContactGate>
       ) : (
         <>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -198,7 +343,7 @@ function LostSavingsTab() {
               dir="ltr"
             />
           </div>
-          <Button className="w-full" onClick={seq.start} disabled={idNum.length < 9}>
+          <Button className="w-full" onClick={handleSubmit} disabled={idNum.length < 9}>
             <Search className="h-4 w-4 ml-2" />
             סרוק חסכונות אבודים
           </Button>
@@ -210,8 +355,8 @@ function LostSavingsTab() {
 
 // ── Pension Order Tab ──────────────────────────────────────────
 function PensionOrderTab() {
-  const seq = useLoadingSequence();
   const [signed, setSigned] = useState(false);
+  const { seq, showGate, handleSubmit, handleGateComplete } = useTabSubmit("smart-check-pension");
 
   return (
     <div className="relative space-y-6">
@@ -220,6 +365,8 @@ function PensionOrderTab() {
       </AnimatePresence>
       {seq.done ? (
         <SuccessState onReset={() => { seq.reset(); setSigned(false); }} />
+      ) : showGate ? (
+        <ContactGate onSubmit={handleGateComplete}><div /></ContactGate>
       ) : (
         <>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -246,7 +393,7 @@ function PensionOrderTab() {
               </div>
             )}
           </div>
-          <Button className="w-full" onClick={seq.start} disabled={!signed}>
+          <Button className="w-full" onClick={handleSubmit} disabled={!signed}>
             <FileText className="h-4 w-4 ml-2" />
             שלח טופס הרשאה
           </Button>
@@ -261,7 +408,7 @@ function HarHaBituachTab() {
   const [phone, setPhone] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
-  const seq = useLoadingSequence();
+  const { seq, showGate, handleSubmit, handleGateComplete } = useTabSubmit("smart-check-har-habituach");
 
   return (
     <div className="relative space-y-6">
@@ -270,6 +417,8 @@ function HarHaBituachTab() {
       </AnimatePresence>
       {seq.done ? (
         <SuccessState onReset={() => { seq.reset(); setOtpSent(false); setOtp(""); }} />
+      ) : showGate ? (
+        <ContactGate onSubmit={handleGateComplete}><div /></ContactGate>
       ) : (
         <>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -310,7 +459,7 @@ function HarHaBituachTab() {
                   dir="ltr"
                 />
               </div>
-              <Button className="w-full" onClick={seq.start} disabled={otp.length < 4}>
+              <Button className="w-full" onClick={handleSubmit} disabled={otp.length < 4}>
                 <Shield className="h-4 w-4 ml-2" />
                 אמת ופתח סריקה
               </Button>
@@ -325,7 +474,7 @@ function HarHaBituachTab() {
 // ── Price Compare Tab ──────────────────────────────────────────
 function PriceCompareTab() {
   const [age, setAge] = useState("");
-  const seq = useLoadingSequence();
+  const { seq, showGate, handleSubmit, handleGateComplete } = useTabSubmit("smart-check-price-compare");
 
   return (
     <div className="relative space-y-6">
@@ -334,6 +483,8 @@ function PriceCompareTab() {
       </AnimatePresence>
       {seq.done ? (
         <SuccessState onReset={seq.reset} />
+      ) : showGate ? (
+        <ContactGate onSubmit={handleGateComplete}><div /></ContactGate>
       ) : (
         <>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -348,7 +499,7 @@ function PriceCompareTab() {
               onChange={(e) => setAge(e.target.value)}
             />
           </div>
-          <Button className="w-full" onClick={seq.start} disabled={!age}>
+          <Button className="w-full" onClick={handleSubmit} disabled={!age}>
             <BarChart3 className="h-4 w-4 ml-2" />
             השווה מחירים עכשיו
           </Button>
@@ -362,7 +513,7 @@ function PriceCompareTab() {
 function PayslipScannerTab() {
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const seq = useLoadingSequence();
+  const { seq, showGate, handleSubmit, handleGateComplete } = useTabSubmit("smart-check-payslip-ai");
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -389,6 +540,8 @@ function PayslipScannerTab() {
       </AnimatePresence>
       {seq.done ? (
         <SuccessState onReset={() => { seq.reset(); setFile(null); }} />
+      ) : showGate ? (
+        <ContactGate onSubmit={handleGateComplete}><div /></ContactGate>
       ) : (
         <>
           <div className="flex items-center gap-2 mb-2">
@@ -401,7 +554,6 @@ function PayslipScannerTab() {
             גרור תלוש שכר או מסמך פנסיוני – ה-AI שלנו ינתח ויזהה פערים בתוך שניות.
           </p>
 
-          {/* Drop zone */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -439,7 +591,7 @@ function PayslipScannerTab() {
 
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
-            onClick={seq.start}
+            onClick={handleSubmit}
             disabled={!file}
           >
             <Brain className="h-4 w-4 ml-2" />
@@ -452,7 +604,7 @@ function PayslipScannerTab() {
   );
 }
 
-// ── Main Page ──────────────────────────────────────────────────
+// ── Tabs config ────────────────────────────────────────────────
 const tabs = [
   { id: "mortgage", label: "מחשבון משכנתא", icon: Calculator, component: MortgageCalcTab },
   { id: "savings", label: "חסכונות אבודים", icon: Search, component: LostSavingsTab },
@@ -462,77 +614,119 @@ const tabs = [
   { id: "payslip", label: "סורק AI", icon: Brain, component: PayslipScannerTab },
 ];
 
+// ── Main Page ──────────────────────────────────────────────────
 export default function SmartCheck() {
+  const [searchParams] = useSearchParams();
+  const consultantId = searchParams.get("ref");
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+
+  const submitLead = useCallback(async (source: string, metadata?: Record<string, unknown>) => {
+    if (!contactInfo) return false;
+
+    // Need a consultant_id for the RLS insert policy
+    const targetConsultantId = consultantId;
+    if (!targetConsultantId) {
+      // No referral — still show success but don't insert (no consultant to assign to)
+      console.log("Smart Check submission (no ref):", { contactInfo, source, metadata });
+      return true;
+    }
+
+    try {
+      const { error } = await supabase.from("leads").insert({
+        full_name: contactInfo.fullName,
+        phone: contactInfo.phone,
+        email: contactInfo.email || null,
+        consultant_id: targetConsultantId,
+        lead_source: source,
+        marketing_consent: contactInfo.consent,
+        notes: metadata ? JSON.stringify(metadata) : null,
+        status: "new" as const,
+        mortgage_amount: metadata?.mortgage_amount ? Number(metadata.mortgage_amount) : null,
+      });
+
+      if (error) {
+        console.error("Lead insert error:", error);
+        // Still show success to user — don't break UX
+      }
+    } catch (err) {
+      console.error("Lead submit error:", err);
+    }
+
+    return true;
+  }, [contactInfo, consultantId]);
+
   return (
-    <div className="min-h-screen bg-background text-foreground" dir="rtl">
-      <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Trust header */}
-        <div className="text-center space-y-3">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center gap-2"
-          >
-            <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">בדיקה חכמה מאובטחת</h1>
-          </motion.div>
-          <p className="text-sm text-muted-foreground">בדיקה פיננסית בדרגת בנק – ללא התחייבות</p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Badge variant="outline" className="border-primary/30 text-primary text-xs px-3 py-1">
-              <Lock className="h-3 w-3 ml-1" />
-              הצפנה 256-bit
-            </Badge>
-            <Badge variant="outline" className="border-primary/30 text-primary text-xs px-3 py-1">
-              <Eye className="h-3 w-3 ml-1" />
-              ניתוח AI מאובטח
-            </Badge>
-            <Badge variant="outline" className="border-primary/30 text-primary text-xs px-3 py-1">
-              <Shield className="h-3 w-3 ml-1" />
-              Bank-Grade Security
-            </Badge>
+    <LeadContext.Provider value={{ contactInfo, setContactInfo, consultantId, submitLead }}>
+      <div className="min-h-screen bg-background text-foreground" dir="rtl">
+        <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
+          {/* Trust header */}
+          <div className="text-center space-y-3">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-center gap-2"
+            >
+              <Shield className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">בדיקה חכמה מאובטחת</h1>
+            </motion.div>
+            <p className="text-sm text-muted-foreground">בדיקה פיננסית בדרגת בנק – ללא התחייבות</p>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Badge variant="outline" className="border-primary/30 text-primary text-xs px-3 py-1">
+                <Lock className="h-3 w-3 ml-1" />
+                הצפנה 256-bit
+              </Badge>
+              <Badge variant="outline" className="border-primary/30 text-primary text-xs px-3 py-1">
+                <Eye className="h-3 w-3 ml-1" />
+                ניתוח AI מאובטח
+              </Badge>
+              <Badge variant="outline" className="border-primary/30 text-primary text-xs px-3 py-1">
+                <Shield className="h-3 w-3 ml-1" />
+                Bank-Grade Security
+              </Badge>
+            </div>
           </div>
-        </div>
 
-        {/* Main card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm shadow-xl shadow-black/10 overflow-hidden"
-        >
-          <Tabs defaultValue="payslip" dir="rtl">
-            <div className="border-b border-border/40 overflow-x-auto">
-              <TabsList className="w-full h-auto p-1 bg-transparent gap-0 flex-nowrap justify-start">
+          {/* Main card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm shadow-xl shadow-black/10 overflow-hidden"
+          >
+            <Tabs defaultValue="payslip" dir="rtl">
+              <div className="border-b border-border/40 overflow-x-auto">
+                <TabsList className="w-full h-auto p-1 bg-transparent gap-0 flex-nowrap justify-start">
+                  {tabs.map((t) => (
+                    <TabsTrigger
+                      key={t.id}
+                      value={t.id}
+                      className="flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg"
+                    >
+                      <t.icon className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">{t.label}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+
+              <div className="p-5 min-h-[340px]">
                 {tabs.map((t) => (
-                  <TabsTrigger
-                    key={t.id}
-                    value={t.id}
-                    className="flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg"
-                  >
-                    <t.icon className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{t.label}</span>
-                  </TabsTrigger>
+                  <TabsContent key={t.id} value={t.id} className="mt-0">
+                    <t.component />
+                  </TabsContent>
                 ))}
-              </TabsList>
-            </div>
+              </div>
+            </Tabs>
+          </motion.div>
 
-            <div className="p-5 min-h-[340px]">
-              {tabs.map((t) => (
-                <TabsContent key={t.id} value={t.id} className="mt-0">
-                  <t.component />
-                </TabsContent>
-              ))}
-            </div>
-          </Tabs>
-        </motion.div>
-
-        {/* Footer trust */}
-        <p className="text-center text-xs text-muted-foreground/60">
-          המידע שלך מוגן בהצפנת AES-256 ומעובד בשרתים מאובטחים בלבד.
-          <br />
-          Powered by Chitumit AI · ISO 27001
-        </p>
+          {/* Footer trust */}
+          <p className="text-center text-xs text-muted-foreground/60">
+            המידע שלך מוגן בהצפנת AES-256 ומעובד בשרתים מאובטחים בלבד.
+            <br />
+            Powered by Chitumit AI · ISO 27001
+          </p>
+        </div>
       </div>
-    </div>
+    </LeadContext.Provider>
   );
 }

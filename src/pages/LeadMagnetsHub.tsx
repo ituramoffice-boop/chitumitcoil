@@ -11,6 +11,7 @@ import {
   Users, ArrowRight, CheckCircle2, XCircle
 } from "lucide-react";
 import { useDemo } from "@/contexts/DemoContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { DemoBanner, DemoBannerSpacer } from "@/components/DemoBanner";
 
 const widgets = [
@@ -81,6 +82,11 @@ export default function LeadMagnetsHub() {
   const { isDemoMode } = useDemo();
   const isDemo = isDemoMode || searchParams.get("demo") === "true";
 
+  // Get user ID for referral links
+  const { user } = useAuth();
+  const userId = user?.id || "demo";
+  const smartCheckUrl = `${window.location.origin}/smart-check?ref=${userId}`;
+
   const copyLink = (widgetId: string) => {
     const url = `${window.location.origin}/widget/${widgetId}`;
     navigator.clipboard.writeText(url);
@@ -144,7 +150,7 @@ export default function LeadMagnetsHub() {
               size="sm"
               className="text-xs"
               onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/smart-check`);
+                navigator.clipboard.writeText(smartCheckUrl);
                 toast.success("הקישור הועתק!");
               }}
             >
@@ -155,7 +161,7 @@ export default function LeadMagnetsHub() {
               variant="outline"
               size="sm"
               className="text-xs text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
-              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`${window.location.origin}/smart-check`)}`, "_blank")}
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(smartCheckUrl)}`, "_blank")}
             >
               <Send className="h-3.5 w-3.5 ml-1" />
               WhatsApp
