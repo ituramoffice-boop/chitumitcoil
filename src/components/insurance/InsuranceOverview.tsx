@@ -96,6 +96,13 @@ export function InsuranceOverview() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const kpis = [
+    { label: "פוליסות פעילות", value: activePolicies.length, icon: FileText, color: "text-primary", bgColor: "bg-primary/10" },
+    { label: "חידושים ב-30 יום", value: renewalCount || MOCK_RETENTION.length, icon: AlertTriangle, color: "text-amber-400", bgColor: "bg-amber-400/10" },
+    { label: "הכנסת Cross-Sell", value: totalPremium || 12840, prefix: "₪", icon: DollarSign, color: "text-gold", bgColor: "bg-gold/10" },
+    { label: "ציון הזדמנות AI", value: 87, suffix: "/100", icon: Brain, color: "text-cyan-400", bgColor: "bg-cyan-400/10" },
+  ];
+
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
   const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
