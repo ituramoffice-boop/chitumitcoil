@@ -320,7 +320,11 @@ function LeadCaptureModal({
 export default function CampaignLanding() {
   const { funnelType } = useParams<{ funnelType: string }>();
   const [searchParams] = useSearchParams();
-  const consultantId = searchParams.get("ref");
+  const rawRef = searchParams.get("ref");
+
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const isValidRef = rawRef ? UUID_RE.test(rawRef) : false;
+  const consultantId = isValidRef ? rawRef : null;
 
   const config = FUNNEL_CONFIG[funnelType || ""] || FUNNEL_CONFIG.mortgage;
   const FunnelIcon = config.icon;
