@@ -56,15 +56,6 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-
-        // If consultant signup, update role after signup
-        if (roleType === "consultant" && data.user) {
-          await supabase
-            .from("user_roles")
-            .update({ role: "consultant" as any })
-            .eq("user_id", data.user.id);
-        }
-
         toast.success("נרשמת בהצלחה! בדוק את המייל לאימות.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
