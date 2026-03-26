@@ -138,23 +138,102 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
 // ── Payslip Hook Widget ────────────────────────────────────
 function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  const [fileName, setFileName] = useState("");
+
+  const processFile = useCallback(async (file: File) => {
+    if (!file) return;
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("הקובץ גדול מדי – עד 10MB");
+      return;
+    }
+    const allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      toast.error("פורמט לא נתמך – PDF, JPG, PNG בלבד");
+      return;
+    }
+
+    setUploading(true);
+    setFileName(file.name);
+
+    try {
+      // 1) Upload to Supabase Storage
+      const filePath = `${crypto.randomUUID()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("payslips")
+        .upload(filePath, file, { contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      // 2) Convert to base64 for AI analysis
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]); // strip data:...;base64,
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // 3) Call analyze-payslip edge function
+      const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
+        body: { base64, mime_type: file.type },
+      });
+      if (fnError) throw fnError;
+
+      const analysis = data?.analysis || data;
+      setUploaded(true);
+      setUploading(false);
+
+      // Pass analysis + file info back
+      onSubmit({ tool: "payslip_scan", file_path: filePath, ai_analysis: analysis });
+    } catch (err: any) {
+      console.error("Payslip upload error:", err);
+      setUploading(false);
+      toast.error("שגיאה בניתוח התלוש – נסו שנית");
+    }
+  }, [onSubmit]);
+
+  const handleFileSelect = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.jpg,.jpeg,.png,.webp";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) processFile(file);
+    };
+    input.click();
+  }, [processFile]);
 
   return (
     <div className="space-y-4">
       <div
         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
-          dragging ? "border-accent bg-accent/10 scale-[1.02]" : uploaded ? "border-green-500 bg-green-500/10" : "border-border hover:border-accent/50"
+          dragging ? "border-accent bg-accent/10 scale-[1.02]" : uploaded ? "border-green-500 bg-green-500/10" : uploading ? "border-accent/50 bg-accent/5" : "border-border hover:border-accent/50"
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); setUploaded(true); }}
-        onClick={() => setUploaded(true)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          const file = e.dataTransfer.files?.[0];
+          if (file) processFile(file);
+        }}
+        onClick={() => !uploading && !uploaded && handleFileSelect()}
       >
-        {uploaded ? (
+        {uploading ? (
+          <div className="space-y-2">
+            <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
+            <p className="text-accent font-bold">מנתח את התלוש...</p>
+            <p className="text-xs text-muted-foreground">{fileName}</p>
+          </div>
+        ) : uploaded ? (
           <div className="space-y-2">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-green-400 font-bold">תלוש הועלה בהצלחה</p>
+            <p className="text-green-400 font-bold">תלוש נותח בהצלחה!</p>
+            <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -164,13 +243,6 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
           </div>
         )}
       </div>
-      <Button
-        className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
-        disabled={!uploaded}
-        onClick={() => onSubmit({ tool: "payslip_scan" })}
-      >
-        <Brain className="w-5 h-5 ml-2" /> סרוק עם AI
-      </Button>
     </div>
   );
 }
