@@ -122,6 +122,7 @@ export function InsurancePolicies() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
