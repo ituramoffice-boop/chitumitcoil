@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Download } from "lucide-react";
+import { exportPoliciesToPdf } from "./PolicyPdfExport";
 import { toast } from "sonner";
 
 const POLICY_TYPES: Record<string, string> = {
