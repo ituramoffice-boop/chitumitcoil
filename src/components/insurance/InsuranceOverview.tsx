@@ -323,6 +323,68 @@ export function InsuranceOverview() {
           </Card>
         </motion.div>
       </div>
+
+      {/* ══════════ AI Pitch Result Modal ══════════ */}
+      <AnimatePresence>
+        {pitchResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setPitchResult(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-primary/30 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+            >
+              <div className="p-5 border-b border-border/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-cyan-400/10">
+                    <Sparkles className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground text-sm">AI Pitch — {pitchResult.name}</h3>
+                    <p className="text-[10px] text-muted-foreground">נוצר אוטומטית ע״י הבינה המלאכותית</p>
+                  </div>
+                </div>
+                <Button size="icon" variant="ghost" onClick={() => setPitchResult(null)} className="h-8 w-8">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="p-5">
+                <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
+                  {pitchResult.pitch}
+                </p>
+              </div>
+              <div className="p-4 border-t border-border/30 flex gap-2 justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyPitch}
+                  className="gap-1.5 text-xs"
+                >
+                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied ? "הועתק!" : "העתק"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const text = encodeURIComponent(pitchResult.pitch);
+                    window.open(`https://wa.me/?text=${text}`, "_blank");
+                  }}
+                  className="gap-1.5 text-xs bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
+                >
+                  <MessageSquare className="w-3 h-3" /> שלח בוואטסאפ
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
