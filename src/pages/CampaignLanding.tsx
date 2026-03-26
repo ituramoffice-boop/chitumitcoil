@@ -666,7 +666,8 @@ export default function CampaignLanding() {
   const FunnelIcon = config.icon;
 
   // States
-  const [phase, setPhase] = useState<"widget" | "loading" | "capture" | "done">("widget");
+  const [phase, setPhase] = useState<"widget" | "loading" | "wow_alerts" | "capture" | "done">("widget");
+  const [wowAlerts, setWowAlerts] = useState<string[]>([]);
   const [stepIdx, setStepIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [toolData, setToolData] = useState<Record<string, unknown>>({});
