@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -9,6 +10,8 @@ import {
   Copy, ExternalLink, AlertTriangle, Send, Sparkles, TrendingUp,
   Users, ArrowRight, CheckCircle2, XCircle
 } from "lucide-react";
+import { useDemo } from "@/contexts/DemoContext";
+import { DemoBanner, DemoBannerSpacer } from "@/components/DemoBanner";
 
 const widgets = [
   {
