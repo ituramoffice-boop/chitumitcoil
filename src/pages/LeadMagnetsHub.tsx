@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import {
   Calculator, Search, FileText, Shield, BarChart3, Brain,
   Copy, ExternalLink, AlertTriangle, Send, Sparkles, TrendingUp,
-  Users, ArrowRight, CheckCircle2, XCircle
+  Users, ArrowRight, CheckCircle2, XCircle, Fingerprint, PiggyBank, Megaphone
 } from "lucide-react";
 import { useDemo } from "@/contexts/DemoContext";
 import { useAuth } from "@/contexts/AuthContext";
