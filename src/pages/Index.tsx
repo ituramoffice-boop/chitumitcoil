@@ -529,7 +529,7 @@ const Index = () => {
             </div>
           </FadeSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 max-w-6xl mx-auto">
             {[
               {
                 icon: FileText,
@@ -557,6 +557,15 @@ const Index = () => {
                 href: "/self-check",
                 color: "gold",
                 badge: "AI מתקדם",
+              },
+              {
+                icon: Brain,
+                title: "בדיקה חכמה מאובטחת",
+                desc: "6 כלים פיננסיים בממשק אחד — סריקת חסכונות, השוואת ביטוח, ניתוח תלושים ועוד.",
+                cta: "התחל בדיקה",
+                href: "/smart-check",
+                color: "cyan-glow",
+                badge: "חדש!",
               },
             ].map((card, i) => (
               <FadeSection key={i} delay={i * 0.1}>

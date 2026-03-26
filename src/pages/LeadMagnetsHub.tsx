@@ -129,6 +129,40 @@ export default function LeadMagnetsHub() {
           </div>
         </div>
 
+        {/* Smart Check link for agents */}
+        <div className="mb-8 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <Brain className="h-5 w-5 text-emerald-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">דף הלקוח: בדיקה חכמה מאובטחת</p>
+              <p className="text-xs text-muted-foreground mt-0.5">שתף את הקישור הזה עם לקוחות – הם ימלאו ואתה תקבל ליד חם</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/smart-check`);
+                toast.success("הקישור הועתק!");
+              }}
+            >
+              <Copy className="h-3.5 w-3.5 ml-1" />
+              העתק קישור
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+              onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`${window.location.origin}/smart-check`)}`, "_blank")}
+            >
+              <Send className="h-3.5 w-3.5 ml-1" />
+              WhatsApp
+            </Button>
+          </div>
+        </div>
+
         {/* Grid: 5 small widgets + 1 large CPA widget */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {widgets.map((w) => (
