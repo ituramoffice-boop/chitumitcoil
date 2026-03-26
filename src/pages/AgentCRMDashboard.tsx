@@ -114,7 +114,7 @@ function WhatsAppLiveLog() {
   );
 }
 
-
+export default function AgentCRMDashboard() {
   const [activeNav, setActiveNav] = useState(0);
 
   return (
