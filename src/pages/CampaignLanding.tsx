@@ -621,16 +621,14 @@ export default function CampaignLanding() {
   // Save lead
   const handleLeadSubmit = useCallback(async (name: string, phone: string) => {
     try {
-      if (consultantId) {
-        await supabase.from("leads").insert({
-          full_name: name,
-          phone,
-          consultant_id: consultantId,
-          lead_source: `campaign_${funnelType}`,
-          status: "new" as const,
-          notes: JSON.stringify(toolData),
-        });
-      }
+      await supabase.from("leads").insert({
+        full_name: name,
+        phone,
+        consultant_id: consultantId ?? null,
+        lead_source: `campaign_${funnelType}`,
+        status: "new" as const,
+        notes: JSON.stringify(toolData),
+      });
       setPhase("done");
       toast.success("הדוח בדרך אליך!");
     } catch {
