@@ -58,12 +58,20 @@ export function InsurancePolicies() {
           <h2 className="text-2xl font-bold text-foreground">ניהול פוליסות</h2>
           <p className="text-sm text-muted-foreground">{DEMO_POLICIES.length} פוליסות בתיק</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary">
-              <Plus className="w-4 h-4 ml-1" />
-              פוליסה חדשה
-            </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => exportPoliciesToPdf(filtered, "סוכן חיתומית")}
+          >
+            <Download className="w-4 h-4 ml-1" />
+            ייצוא PDF
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary">
+                <Plus className="w-4 h-4 ml-1" />
+                פוליסה חדשה
+              </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
