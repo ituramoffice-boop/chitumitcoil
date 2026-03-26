@@ -135,6 +135,27 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
   );
 }
 
+// ── PDF to Image converter ─────────────────────────────────
+async function pdfToBase64Image(file: File): Promise<string> {
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const page = await pdf.getPage(1);
+
+  const scale = 2; // high-res for AI readability
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement("canvas");
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext("2d")!;
+
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  // Return base64 without prefix
+  return canvas.toDataURL("image/png").split(",")[1];
+}
+
 // ── Payslip Hook Widget ────────────────────────────────────
 function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
   const [dragging, setDragging] = useState(false);
@@ -149,9 +170,9 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
       toast.error("הקובץ גדול מדי – עד 10MB");
       return;
     }
-    const imageTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!imageTypes.includes(file.type)) {
-      toast.error("יש להעלות תמונה של התלוש (JPG, PNG) – לא PDF");
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("פורמט לא נתמך – PDF, JPG, PNG בלבד");
       return;
     }
 
@@ -159,27 +180,38 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
     setFileName(file.name);
 
     try {
-      // 1) Upload to Supabase Storage
+      // 1) Upload original to Supabase Storage
       const filePath = `${crypto.randomUUID()}_${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("payslips")
         .upload(filePath, file, { contentType: file.type });
       if (uploadError) throw uploadError;
 
-      // 2) Convert to base64 for AI analysis
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          resolve(result.split(",")[1]); // strip data:...;base64,
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // 2) Convert to base64 image for AI
+      let base64: string;
+      let mimeType: string;
+
+      if (file.type === "application/pdf") {
+        // Convert first PDF page to PNG image
+        base64 = await pdfToBase64Image(file);
+        mimeType = "image/png";
+      } else {
+        // Already an image – read as base64
+        base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(",")[1]);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        mimeType = file.type;
+      }
 
       // 3) Call analyze-payslip edge function
       const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
-        body: { base64, mime_type: file.type },
+        body: { base64, mime_type: mimeType },
       });
       if (fnError) throw fnError;
 
@@ -187,7 +219,6 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
       setUploaded(true);
       setUploading(false);
 
-      // Pass analysis + file info back
       onSubmit({ tool: "payslip_scan", file_path: filePath, ai_analysis: analysis });
     } catch (err: any) {
       console.error("Payslip upload error:", err);
@@ -199,7 +230,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
   const handleFileSelect = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".jpg,.jpeg,.png,.webp";
+    input.accept = ".pdf,.jpg,.jpeg,.png,.webp";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) processFile(file);
@@ -239,7 +270,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
           <div className="space-y-3">
             <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
             <p className="text-foreground font-semibold">גררו תלוש לכאן או לחצו להעלאה</p>
-            <p className="text-xs text-muted-foreground">JPG, PNG – עד 10MB • צלמו את התלוש או שמרו כתמונה</p>
+            <p className="text-xs text-muted-foreground">PDF, JPG, PNG – עד 10MB</p>
           </div>
         )}
       </div>
