@@ -556,6 +556,7 @@ export default function AgentCRMDashboard() {
           </div>
         </motion.div>
       </main>
+      <FullFileModal open={showFullFile} onClose={() => setShowFullFile(false)} />
     </div>
   );
 }
