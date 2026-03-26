@@ -15,6 +15,7 @@ import { exportXRayToPdf } from "@/components/XRayPdfExport";
 /* ── Types ── */
 interface FinancialXRayProps {
   leadId?: string;
+  clientName?: string;
 }
 
 interface Insight {
