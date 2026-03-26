@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -477,6 +477,8 @@ function LeadCaptureModal({
 }) {
   const [name, setName] = useState(initialName);
   const [phone, setPhone] = useState(initialPhone);
+  useEffect(() => { setName(initialName); }, [initialName]);
+  useEffect(() => { setPhone(initialPhone); }, [initialPhone]);
   const [consent, setConsent] = useState(false);
   const [modalPhase, setModalPhase] = useState<"form" | "syncing" | "success">("form");
 
