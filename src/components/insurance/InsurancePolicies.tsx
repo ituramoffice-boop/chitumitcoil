@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Download } from "lucide-react";
+import { exportPoliciesToPdf } from "./PolicyPdfExport";
 import { toast } from "sonner";
 
 const POLICY_TYPES: Record<string, string> = {
@@ -57,12 +58,20 @@ export function InsurancePolicies() {
           <h2 className="text-2xl font-bold text-foreground">ניהול פוליסות</h2>
           <p className="text-sm text-muted-foreground">{DEMO_POLICIES.length} פוליסות בתיק</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary">
-              <Plus className="w-4 h-4 ml-1" />
-              פוליסה חדשה
-            </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => exportPoliciesToPdf(filtered, "סוכן חיתומית")}
+          >
+            <Download className="w-4 h-4 ml-1" />
+            ייצוא PDF
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary">
+                <Plus className="w-4 h-4 ml-1" />
+                פוליסה חדשה
+              </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
@@ -113,6 +122,7 @@ export function InsurancePolicies() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
