@@ -111,6 +111,7 @@ const App = () => {
                <Route path="/privacy" element={<Privacy />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="/smart-check" element={<SmartCheck />} />
+                <Route path="/campaign/:funnelType" element={<CampaignLanding />} />
 
                 {/* Client routes */}
                 <Route path="/client-dashboard" element={
