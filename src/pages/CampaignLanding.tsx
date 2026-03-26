@@ -251,8 +251,9 @@ function LeadCaptureModal({
   open: boolean;
   onSubmit: (name: string, phone: string) => void;
 }) {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("ישראל ישראלי");
+  const [phone, setPhone] = useState("050-1234567");
+  const [consent, setConsent] = useState(false);
 
   if (!open) return null;
 
@@ -273,11 +274,15 @@ function LeadCaptureModal({
           </div>
           <h3 className="text-xl font-bold text-foreground">הניתוח הושלם!</h3>
           <p className="text-sm text-muted-foreground">
-            הכניסו שם וטלפון כדי לקבל את הדוח המלא ישירות לוואטסאפ
+            אמתו את הנתונים שחולצו ולחצו לקבלת הדוח המלא
           </p>
         </div>
 
         <div className="space-y-3">
+          <p className="text-xs text-accent font-medium flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5" />
+            AI Extracted
+          </p>
           <div className="relative">
             <User className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
             <Input
@@ -299,9 +304,20 @@ function LeadCaptureModal({
           </div>
         </div>
 
+        <label className="flex items-start gap-2.5 cursor-pointer text-right">
+          <Checkbox
+            checked={consent}
+            onCheckedChange={(v) => setConsent(v === true)}
+            className="mt-0.5 shrink-0"
+          />
+          <span className="text-xs text-muted-foreground leading-relaxed">
+            אני מאשר/ת שהנתונים שחולצו נכונים, ומסכים/ה לתקנון ולקבלת דיוור, עדכונים והצעות שיווקיות
+          </span>
+        </label>
+
         <Button
           className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
-          disabled={name.length < 2 || phone.length < 9}
+          disabled={name.length < 2 || phone.length < 9 || !consent}
           onClick={() => onSubmit(name, phone)}
         >
           שלח לי את הדוח <ArrowRight className="w-5 h-5 mr-2" />
