@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -9,6 +10,8 @@ import {
   Copy, ExternalLink, AlertTriangle, Send, Sparkles, TrendingUp,
   Users, ArrowRight, CheckCircle2, XCircle
 } from "lucide-react";
+import { useDemo } from "@/contexts/DemoContext";
+import { DemoBanner, DemoBannerSpacer } from "@/components/DemoBanner";
 
 const widgets = [
   {
@@ -74,6 +77,9 @@ const payslipData = [
 
 export default function LeadMagnetsHub() {
   const [autoReconcile, setAutoReconcile] = useState(false);
+  const [searchParams] = useSearchParams();
+  const { isDemoMode } = useDemo();
+  const isDemo = isDemoMode || searchParams.get("demo") === "true";
 
   const copyLink = (widgetId: string) => {
     const url = `${window.location.origin}/widget/${widgetId}`;
@@ -90,6 +96,8 @@ export default function LeadMagnetsHub() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir="rtl">
+      {isDemo && <DemoBanner />}
+      {isDemo && <DemoBannerSpacer />}
       {/* Header */}
       <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
