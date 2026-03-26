@@ -113,7 +113,11 @@ const App = () => {
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="/smart-check" element={<SmartCheck />} />
                 <Route path="/campaign/:funnelType" element={<CampaignLanding />} />
-                <Route path="/crm/dashboard" element={<AgentCRMDashboard />} />
+                <Route path="/crm/dashboard" element={
+                  <ProtectedRoute allowedRoles={["consultant", "admin"]}>
+                    <AgentCRMDashboard />
+                  </ProtectedRoute>
+                } />
 
                 {/* Client routes */}
                 <Route path="/client-dashboard" element={
