@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Users, Calendar, Settings, Phone, Video, FileText,
   Shield, Bot, Clock, ChevronLeft, Sparkles, Eye, MessageCircle,
@@ -25,6 +25,94 @@ const QUEUE_LEADS = [
   { name: "רונית כהן", time: "14:00 היום", score: 87, tag: "ביטוח חיים" },
   { name: "אבי לוי", time: "16:30 היום", score: 72, tag: "פנסיה" },
 ];
+const WA_CHAT = [
+  { type: "in" as const, text: "🤖 דוח חיתומית AI הושלם! זיהינו כפל ביטוחי בריאות. פוטנציאל חיסכון: 450 ש״ח.", time: "10:40", delay: 0 },
+  { type: "out" as const, text: "רגע, על מה אני משלם כפול?", time: "10:41", delay: 2.5 },
+  { type: "in" as const, text: "על סעיף \"תרופות מחוץ לסל\". הסוכן פנוי מחר ב-10:00. מתי נוח?", time: "10:41", delay: 5 },
+  { type: "out" as const, text: "10:00 מצוין לי.", time: "10:42", delay: 7.5 },
+  { type: "in" as const, text: "מעולה! 📅 הפגישה נקבעה ביומן.", time: "10:42", delay: 10 },
+];
+
+function TypingIndicator() {
+  return (
+    <div className="flex items-center gap-1 px-3 py-2 bg-[#202c33] rounded-xl w-fit">
+      {[0, 1, 2].map(i => (
+        <motion.div
+          key={i}
+          className="w-1.5 h-1.5 rounded-full bg-white/40"
+          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+          transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function WhatsAppLiveLog() {
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [showTyping, setShowTyping] = useState(false);
+
+  useEffect(() => {
+    if (visibleCount >= WA_CHAT.length) return;
+
+    // Show typing indicator before next message
+    const nextMsg = WA_CHAT[visibleCount];
+    const typingDelay = visibleCount === 0 ? 800 : nextMsg.delay * 1000 - 800;
+
+    const typingTimer = setTimeout(() => {
+      if (nextMsg.type === "in") setShowTyping(true);
+    }, Math.max(typingDelay, visibleCount === 0 ? 800 : (WA_CHAT[visibleCount - 1]?.delay ?? 0) * 1000 + 400));
+
+    const msgTimer = setTimeout(() => {
+      setShowTyping(false);
+      setVisibleCount(c => c + 1);
+    }, nextMsg.delay * 1000 + (visibleCount === 0 ? 1200 : 1200));
+
+    return () => { clearTimeout(typingTimer); clearTimeout(msgTimer); };
+  }, [visibleCount]);
+
+  return (
+    <div className="bg-[#0b141a] border border-white/[0.06] rounded-2xl p-4 overflow-hidden">
+      <div className="flex items-center gap-2 mb-3">
+        <MessageCircle size={14} className="text-emerald-400" />
+        <span className="text-white/50 text-[11px] font-medium">WhatsApp Bot Log</span>
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-auto" />
+      </div>
+      <div className="space-y-2 max-h-[140px] overflow-y-auto">
+        <AnimatePresence>
+          {WA_CHAT.slice(0, visibleCount).map((msg, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className={`flex ${msg.type === "out" ? "justify-start" : "justify-end"}`}
+            >
+              <div className={`rounded-xl px-3 py-1.5 max-w-[85%] ${
+                msg.type === "in" ? "bg-[#202c33]" : "bg-[#005c4b]"
+              }`}>
+                <p className="text-white/80 text-[11px] leading-relaxed">{msg.text}</p>
+                <p className="text-white/30 text-[9px] mt-0.5 flex items-center gap-1 justify-end">
+                  {msg.time}
+                  {msg.type === "out" && <span className="text-blue-400">✓✓</span>}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {showTyping && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-end"
+          >
+            <TypingIndicator />
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AgentCRMDashboard() {
   const [activeNav, setActiveNav] = useState(0);
@@ -203,21 +291,8 @@ export default function AgentCRMDashboard() {
                 </div>
               </div>
 
-              {/* WhatsApp Log */}
-              <div className="bg-[#0b141a] border border-white/[0.06] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle size={14} className="text-emerald-400" />
-                  <span className="text-white/50 text-[11px] font-medium">WhatsApp Bot Log</span>
-                </div>
-                <div className="bg-[#202c33] rounded-xl px-3 py-2">
-                  <p className="text-white/70 text-xs leading-relaxed">
-                    סטטוס בוט: הלקוח אישר פגישה ל-10:00 ✓
-                  </p>
-                  <p className="text-white/30 text-[10px] mt-1 flex items-center gap-1">
-                    <span className="text-blue-400">✓✓</span> 10:42
-                  </p>
-                </div>
-              </div>
+              {/* WhatsApp Log - Live Chat Simulation */}
+              <WhatsAppLiveLog />
             </div>
           </div>
 
