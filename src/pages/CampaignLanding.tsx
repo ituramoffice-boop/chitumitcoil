@@ -244,6 +244,65 @@ function PlaceholderWidget({ label, onSubmit }: { label: string; onSubmit: (data
   );
 }
 
+// ── WhatsApp Chat Mockup ───────────────────────────────────
+function WhatsAppMockup() {
+  return (
+    <div className="rounded-2xl overflow-hidden border border-[#2a3942] shadow-2xl w-full max-w-[320px] mx-auto">
+      {/* Status bar */}
+      <div className="bg-[#1f2c34] px-3 py-1.5 flex items-center justify-between text-[10px] text-gray-400">
+        <span>9:41</span>
+        <div className="flex items-center gap-1">
+          <div className="w-3.5 h-2 border border-gray-400 rounded-sm relative">
+            <div className="absolute inset-0.5 bg-green-400 rounded-[1px]" style={{ width: '70%' }} />
+          </div>
+        </div>
+      </div>
+      {/* Chat header */}
+      <div className="bg-[#1f2c34] px-3 py-2.5 flex items-center gap-3 border-b border-[#2a3942]">
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-yellow-600 flex items-center justify-center text-xs font-bold text-black shrink-0">
+          ח
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-[#e9edef] truncate">Chitumit AI</p>
+          <p className="text-[10px] text-[#8696a0]">online</p>
+        </div>
+      </div>
+      {/* Chat body */}
+      <div className="bg-[#0b141a] p-3 min-h-[180px] flex flex-col justify-end" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'200\' height=\'200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cdefs%3E%3Cpattern id=\'a\' patternUnits=\'userSpaceOnUse\' width=\'20\' height=\'20\'%3E%3Ccircle cx=\'10\' cy=\'10\' r=\'0.5\' fill=\'%23ffffff08\'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\'200\' height=\'200\' fill=\'url(%23a)\'/%3E%3C/svg%3E")' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="bg-[#202c33] rounded-lg rounded-tr-none p-3 max-w-[90%] self-end relative"
+        >
+          <p className="text-[12.5px] leading-[1.6] text-[#e9edef] text-right" dir="rtl">
+            🤖 <span className="font-semibold text-accent">דוח חיתומית AI</span> - הניתוח הושלם!
+            <br /><br />
+            היי ישראל, זיהינו כפל ביטוחי בריאות (מגדל והראל).
+            <br />
+            פוטנציאל חיסכון: <span className="font-bold text-green-400">450 ש״ח בחודש!</span> 💸
+            <br /><br />
+            התיק שלך אובטח (256-bit) והועבר לסוכן. הוא ייצור קשר בקרוב.
+          </p>
+          <div className="flex items-center justify-start gap-1 mt-1.5">
+            <span className="text-[10px] text-[#8696a0]">09:41</span>
+            <span className="text-[11px] text-blue-400">✓✓</span>
+          </div>
+          {/* Bubble tail */}
+          <div className="absolute -top-0 -right-2 w-0 h-0 border-l-8 border-l-[#202c33] border-t-8 border-t-transparent border-b-8 border-b-transparent" style={{ transform: 'rotate(180deg)', right: '-6px', top: '0px' }} />
+        </motion.div>
+      </div>
+      {/* Input bar */}
+      <div className="bg-[#1f2c34] px-3 py-2 flex items-center gap-2 border-t border-[#2a3942]">
+        <div className="flex-1 bg-[#2a3942] rounded-full px-4 py-1.5 text-[12px] text-[#8696a0]">הקלד הודעה</div>
+        <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+          <ArrowRight className="w-4 h-4 text-black rotate-180" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Lead Capture Modal ─────────────────────────────────────
 function LeadCaptureModal({
   open,
@@ -255,6 +314,16 @@ function LeadCaptureModal({
   const [name, setName] = useState("ישראל ישראלי");
   const [phone, setPhone] = useState("050-1234567");
   const [consent, setConsent] = useState(false);
+  const [modalPhase, setModalPhase] = useState<"form" | "syncing" | "success">("form");
+
+  const handleSubmit = useCallback(() => {
+    setModalPhase("syncing");
+    // Simulate CRM sync
+    setTimeout(() => {
+      onSubmit(name, phone);
+      setModalPhase("success");
+    }, 1800);
+  }, [name, phone, onSubmit]);
 
   if (!open) return null;
 
@@ -262,78 +331,194 @@ function LeadCaptureModal({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
     >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        className="w-full max-w-md rounded-2xl border border-accent/30 bg-card p-6 shadow-2xl space-y-5"
-      >
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-full bg-green-500/20 mx-auto flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-green-400" />
-          </div>
-          <h3 className="text-xl font-bold text-foreground">הניתוח הושלם!</h3>
-          <p className="text-sm text-muted-foreground">
-            אמתו את הנתונים שחולצו ולחצו לקבלת הדוח המלא
-          </p>
-        </div>
+      <AnimatePresence mode="wait">
+        {/* ── Phase 1: Form ── */}
+        {modalPhase === "form" && (
+          <motion.div
+            key="form"
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-md rounded-2xl border border-accent/30 bg-card p-6 shadow-2xl space-y-5"
+          >
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 rounded-full bg-green-500/20 mx-auto flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">הניתוח הושלם!</h3>
+              <p className="text-sm text-muted-foreground">
+                אמתו את הנתונים שחולצו ולחצו לקבלת הדוח המלא
+              </p>
+            </div>
 
-        <div className="space-y-3">
-          <p className="text-xs text-accent font-medium flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            AI Extracted
-          </p>
-          <div className="relative">
-            <User className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="שם מלא"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="pr-10 h-12 bg-secondary border-border"
-            />
-          </div>
-          <div className="relative">
-            <Phone className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="טלפון נייד"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="pr-10 h-12 bg-secondary border-border"
-              type="tel"
-            />
-          </div>
-        </div>
+            <div className="space-y-3">
+              <p className="text-xs text-accent font-medium flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                AI Extracted
+              </p>
+              <div className="relative">
+                <User className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="שם מלא"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="pr-10 h-12 bg-secondary border-border"
+                />
+              </div>
+              <div className="relative">
+                <Phone className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="טלפון נייד"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="pr-10 h-12 bg-secondary border-border"
+                  type="tel"
+                />
+              </div>
+            </div>
 
-        <label className="flex items-start gap-2.5 cursor-pointer text-right">
-          <Checkbox
-            checked={consent}
-            onCheckedChange={(v) => setConsent(v === true)}
-            className="mt-0.5 shrink-0"
-          />
-          <span className="text-xs text-muted-foreground leading-relaxed">
-            אני מאשר/ת שהנתונים שחולצו נכונים, ומסכים/ה לתקנון ולקבלת דיוור, עדכונים והצעות שיווקיות
-          </span>
-        </label>
+            <label className="flex items-start gap-2.5 cursor-pointer text-right">
+              <Checkbox
+                checked={consent}
+                onCheckedChange={(v) => setConsent(v === true)}
+                className="mt-0.5 shrink-0"
+              />
+              <span className="text-xs text-muted-foreground leading-relaxed">
+                אני מאשר/ת שהנתונים שחולצו נכונים, ומסכים/ה לתקנון ולקבלת דיוור, עדכונים והצעות שיווקיות
+              </span>
+            </label>
 
-        {(() => {
-          const isDisabled = name.length < 2 || phone.length < 9 || !consent;
-          return (
-            <Button
-              className={`w-full h-12 text-lg font-bold transition-all ${isDisabled ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50' : 'bg-accent hover:bg-accent/90 text-accent-foreground'}`}
-              disabled={isDisabled}
-              onClick={() => onSubmit(name, phone)}
-            >
-              שלח לי את הדוח <ArrowRight className="w-5 h-5 mr-2" />
-            </Button>
-          );
-        })()}
+            {(() => {
+              const isDisabled = name.length < 2 || phone.length < 9 || !consent;
+              return (
+                <Button
+                  className={`w-full h-12 text-lg font-bold transition-all ${isDisabled ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50' : 'bg-accent hover:bg-accent/90 text-accent-foreground'}`}
+                  disabled={isDisabled}
+                  onClick={handleSubmit}
+                >
+                  שלח לי את הדוח <ArrowRight className="w-5 h-5 mr-2" />
+                </Button>
+              );
+            })()}
 
-        <p className="text-[10px] text-muted-foreground text-center">
-          <Lock className="w-3 h-3 inline ml-1" />
-          הנתונים מוצפנים ונשמרים בהתאם לתקנות הגנת הפרטיות
-        </p>
-      </motion.div>
+            <p className="text-[10px] text-muted-foreground text-center">
+              <Lock className="w-3 h-3 inline ml-1" />
+              הנתונים מוצפנים ונשמרים בהתאם לתקנות הגנת הפרטיות
+            </p>
+          </motion.div>
+        )}
+
+        {/* ── Phase 2: Syncing ── */}
+        {modalPhase === "syncing" && (
+          <motion.div
+            key="syncing"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.05, opacity: 0 }}
+            className="w-full max-w-sm rounded-2xl border border-accent/30 bg-card p-8 shadow-2xl flex flex-col items-center gap-5"
+          >
+            {/* Glowing spinner */}
+            <div className="relative w-20 h-20">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
+                className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-accent border-r-accent/50"
+                style={{ boxShadow: '0 0 20px hsl(var(--accent) / 0.4)' }}
+              />
+              <div className="absolute inset-2 rounded-full bg-card flex items-center justify-center">
+                <Shield className="w-7 h-7 text-accent" />
+              </div>
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="text-lg font-bold text-foreground">Securing Data & Syncing to CRM...</h3>
+              <motion.div
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 1.6, ease: "easeInOut" }}
+                className="h-1 rounded-full bg-gradient-to-r from-accent/60 via-accent to-accent/60 mx-auto max-w-[200px]"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Lock className="w-3 h-3" />
+              <span>הצפנת 256-bit פעילה</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Phase 3: Success Dashboard ── */}
+        {modalPhase === "success" && (
+          <motion.div
+            key="success"
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 20 }}
+            className="w-full max-w-2xl rounded-2xl border border-accent/30 bg-card shadow-2xl overflow-hidden"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Left: Confirmation */}
+              <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center space-y-4 border-b md:border-b-0 md:border-l border-accent/20">
+                {/* Glowing checkmark */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", delay: 0.2, damping: 12 }}
+                  className="relative"
+                >
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(74,222,128,0.25) 0%, transparent 70%)',
+                      boxShadow: '0 0 40px rgba(74,222,128,0.3), 0 0 80px rgba(74,222,128,0.15)'
+                    }}
+                  >
+                    <CheckCircle2 className="w-12 h-12 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="space-y-2"
+                >
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground">
+                    הליד נקלט בהצלחה!
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-[260px]">
+                    הנתונים ב-CRM. הלקוח קיבל הרגע את ההודעה הבאה:
+                  </p>
+                </motion.div>
+
+                {/* Stats pills */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="flex flex-wrap justify-center gap-2 mt-2"
+                >
+                  <Badge variant="outline" className="border-green-500/30 text-green-400 bg-green-500/10 text-xs gap-1">
+                    <Shield className="w-3 h-3" /> מוצפן
+                  </Badge>
+                  <Badge variant="outline" className="border-accent/30 text-accent bg-accent/10 text-xs gap-1">
+                    <Sparkles className="w-3 h-3" /> CRM Synced
+                  </Badge>
+                </motion.div>
+              </div>
+
+              {/* Right: WhatsApp Mockup */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="p-4 md:p-6 bg-[#0b141a]/30 flex items-center justify-center"
+              >
+                <WhatsAppMockup />
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
