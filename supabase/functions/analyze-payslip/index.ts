@@ -12,11 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { base64, mime_type, text } = await req.json();
+    const { base64, mime_type, text, images } = await req.json();
 
-    if (!base64 && !text) {
+    // Support both legacy single-image and new multi-image format
+    const imageList: { base64: string; mime_type: string }[] = images
+      ? images
+      : base64
+        ? [{ base64, mime_type: mime_type || "image/jpeg" }]
+        : [];
+
+    if (imageList.length === 0 && !text) {
       return new Response(
-        JSON.stringify({ error: "Either base64 image or text is required" }),
+        JSON.stringify({ error: "Either images or text is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -71,14 +78,15 @@ serve(async (req) => {
 
 אם שדה לא נמצא בתלוש, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
 
+    const pageCount = imageList.length;
     const userContent: any[] = [
-      { type: "text", text: text || "נתח את תלוש השכר המצורף." },
+      { type: "text", text: text || (pageCount > 1 ? `נתח את תלוש השכר המצורף (${pageCount} עמודים). שלב את כל הנתונים מכל העמודים לתוצאה אחת.` : "נתח את תלוש השכר המצורף.") },
     ];
 
-    if (base64) {
+    for (const img of imageList) {
       userContent.push({
         type: "image_url",
-        image_url: { url: `data:${mime_type || "image/jpeg"};base64,${base64}` },
+        image_url: { url: `data:${img.mime_type};base64,${img.base64}` },
       });
     }
 
