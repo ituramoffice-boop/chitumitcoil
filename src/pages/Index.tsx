@@ -5,7 +5,7 @@ import {
   ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles, Users, User,
   ChevronDown, Zap, Brain, Lock, BarChart3, CheckCircle2, Star,
   ArrowUpRight, Shield, HeartPulse, Search, Eye, Layers, Globe,
-  Building2, Award, BadgeCheck, Cpu, Smartphone, ChevronRight,
+  Building2, Award, BadgeCheck, Cpu, Smartphone, ChevronRight, Crown,
 } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Badge } from "@/components/ui/badge";
@@ -173,16 +173,6 @@ function ScoreGauge({ score }: { score: number }) {
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -199,54 +189,30 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/insurance-dashboard")}
+              onClick={() => navigate("/pro")}
               className="border-gold/30 text-gold hover:bg-gold/10 gap-1.5 text-sm h-9 px-3 sm:px-4"
             >
-              <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">אזור ביטוח</span>
+              <Crown className="w-4 h-4" />
+              <span className="hidden sm:inline">Chitumit PRO</span>
+              <span className="sm:hidden">PRO</span>
             </Button>
-            <ThemeToggle />
-            <div className="relative" ref={menuRef}>
-              <Button
-                onClick={() => user ? navigate("/dashboard") : setMenuOpen(!menuOpen)}
-                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5 gold-glow-btn text-sm h-9 px-4 sm:h-10 sm:px-5"
-              >
-                <span className="hidden sm:inline">התחל בחינם</span>
-                <span className="sm:hidden">התחל</span>
-                {!user && <ChevronDown className={`w-3.5 h-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`} />}
-                {user && <ArrowLeft className="w-3.5 h-3.5" />}
-              </Button>
-              {menuOpen && !user && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute left-0 top-full mt-2 w-56 rounded-xl border border-gold/20 bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden z-50"
-                >
-                  <button onClick={() => { navigate("/auth?role=consultant"); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gold/10 transition-colors text-right">
-                    <div className="p-2 rounded-lg bg-gold/10"><Users className="w-4 h-4 text-gold" /></div>
-                    <div><p className="text-sm font-semibold text-foreground">פורטל יועצים</p><p className="text-[10px] text-muted-foreground">CRM, ניתוח תיקים, לידים</p></div>
-                  </button>
-                  <div className="border-t border-border/50" />
-                  <button onClick={() => { navigate("/auth?role=consultant&profession=insurance_agent"); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-emerald-500/10 transition-colors text-right">
-                    <div className="p-2 rounded-lg bg-emerald-500/10"><Shield className="w-4 h-4 text-emerald-500" /></div>
-                    <div><p className="text-sm font-semibold text-foreground">סוכן ביטוח</p><p className="text-[10px] text-muted-foreground">פוליסות, לקוחות, דוחות</p></div>
-                  </button>
-                  <div className="border-t border-border/50" />
-                  <button onClick={() => { navigate("/auth?role=client"); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-primary/10 transition-colors text-right">
-                    <div className="p-2 rounded-lg bg-primary/10"><User className="w-4 h-4 text-primary" /></div>
-                    <div><p className="text-sm font-semibold text-foreground">אזור אישי</p><p className="text-[10px] text-muted-foreground">מעקב תיק, מסמכים, סטטוס</p></div>
-                  </button>
-                  <div className="border-t border-border/50" />
-                  <button onClick={() => { navigate("/self-check"); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-accent/10 transition-colors text-right">
-                    <div className="p-2 rounded-lg bg-accent/10"><Sparkles className="w-4 h-4 text-accent" /></div>
-                    <div><p className="text-sm font-semibold text-foreground">בדיקת היתכנות</p><p className="text-[10px] text-muted-foreground">חינם ללא הרשמה</p></div>
-                  </button>
-                </motion.div>
+            <Button
+              onClick={() => user ? navigate("/dashboard") : navigate("/auth")}
+              className="bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5 gold-glow-btn text-sm h-9 px-4 sm:h-10 sm:px-5"
+            >
+              {user ? (
+                <>
+                  <span>האזור שלי</span>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </>
+              ) : (
+                <span>התחל בחינם</span>
               )}
-            </div>
+            </Button>
           </div>
         </div>
       </header>
