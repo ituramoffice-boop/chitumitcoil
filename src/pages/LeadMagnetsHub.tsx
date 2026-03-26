@@ -81,6 +81,11 @@ export default function LeadMagnetsHub() {
   const { isDemoMode } = useDemo();
   const isDemo = isDemoMode || searchParams.get("demo") === "true";
 
+  // Get user ID for referral links
+  const { user } = useAuth();
+  const userId = user?.id || "demo";
+  const smartCheckUrl = `${window.location.origin}/smart-check?ref=${userId}`;
+
   const copyLink = (widgetId: string) => {
     const url = `${window.location.origin}/widget/${widgetId}`;
     navigator.clipboard.writeText(url);
