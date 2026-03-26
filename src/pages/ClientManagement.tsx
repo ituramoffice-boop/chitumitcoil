@@ -18,6 +18,7 @@ import {
   MessageSquare, Bell, Calendar, ChevronLeft, ChevronRight,
   FileText, ArrowRight, Zap, Phone, Mail, Search, Filter,
 } from "lucide-react";
+import { FinancialXRay } from "@/components/FinancialXRay";
 
 // Stage definitions
 const STAGES = [
@@ -450,6 +451,9 @@ export default function ClientManagement() {
             </div>
           </div>
         </div>
+
+        {/* Financial X-Ray */}
+        <FinancialXRay />
 
         {/* Timeline */}
         <div className="bg-card border border-border rounded-2xl p-5">
