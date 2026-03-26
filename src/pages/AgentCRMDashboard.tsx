@@ -4,7 +4,7 @@ import {
   Home, Users, Calendar, Settings, Phone, Video, FileText,
   Shield, Bot, Clock, ChevronLeft, Sparkles, Eye, MessageCircle,
   TrendingUp, Zap, Star, CheckCheck, X, Download, Lock,
-  CreditCard, Heart, Building2, User, Mail, Hash, AlertTriangle
+  CreditCard, Heart, Building2, User, Mail, Hash, AlertTriangle, RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -55,11 +55,13 @@ function TypingIndicator() {
 function WhatsAppLiveLog() {
   const [visibleCount, setVisibleCount] = useState(0);
   const [showTyping, setShowTyping] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+
+  const isComplete = visibleCount >= WA_CHAT.length;
 
   useEffect(() => {
-    if (visibleCount >= WA_CHAT.length) return;
+    if (isComplete) return;
 
-    // Show typing indicator before next message
     const nextMsg = WA_CHAT[visibleCount];
     const typingDelay = visibleCount === 0 ? 800 : nextMsg.delay * 1000 - 800;
 
@@ -73,20 +75,35 @@ function WhatsAppLiveLog() {
     }, nextMsg.delay * 1000 + (visibleCount === 0 ? 1200 : 1200));
 
     return () => { clearTimeout(typingTimer); clearTimeout(msgTimer); };
-  }, [visibleCount]);
+  }, [visibleCount, animKey]);
+
+  const handleReplay = () => {
+    setVisibleCount(0);
+    setShowTyping(false);
+    setAnimKey(k => k + 1);
+  };
 
   return (
     <div className="bg-[#0b141a] border border-white/[0.06] rounded-2xl p-4 overflow-hidden">
       <div className="flex items-center gap-2 mb-3">
         <MessageCircle size={14} className="text-emerald-400" />
         <span className="text-white/50 text-[11px] font-medium">WhatsApp Bot Log</span>
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-auto" />
+        {!isComplete && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-auto" />}
+        {isComplete && (
+          <button
+            onClick={handleReplay}
+            className="mr-auto flex items-center gap-1 text-[10px] text-amber-400/80 hover:text-amber-400 transition-colors"
+          >
+            <RotateCcw size={11} />
+            <span>Replay</span>
+          </button>
+        )}
       </div>
       <div className="space-y-2 max-h-[140px] overflow-y-auto">
-        <AnimatePresence>
+        <AnimatePresence mode="wait" key={animKey}>
           {WA_CHAT.slice(0, visibleCount).map((msg, i) => (
             <motion.div
-              key={i}
+              key={`${animKey}-${i}`}
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
