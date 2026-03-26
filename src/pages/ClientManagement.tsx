@@ -453,7 +453,7 @@ export default function ClientManagement() {
         </div>
 
         {/* Financial X-Ray */}
-        <FinancialXRay />
+        <FinancialXRay leadId={selectedCase?.lead_id} />
 
         {/* Timeline */}
         <div className="bg-card border border-border rounded-2xl p-5">
