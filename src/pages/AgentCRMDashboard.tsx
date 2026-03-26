@@ -203,21 +203,8 @@ export default function AgentCRMDashboard() {
                 </div>
               </div>
 
-              {/* WhatsApp Log */}
-              <div className="bg-[#0b141a] border border-white/[0.06] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle size={14} className="text-emerald-400" />
-                  <span className="text-white/50 text-[11px] font-medium">WhatsApp Bot Log</span>
-                </div>
-                <div className="bg-[#202c33] rounded-xl px-3 py-2">
-                  <p className="text-white/70 text-xs leading-relaxed">
-                    סטטוס בוט: הלקוח אישר פגישה ל-10:00 ✓
-                  </p>
-                  <p className="text-white/30 text-[10px] mt-1 flex items-center gap-1">
-                    <span className="text-blue-400">✓✓</span> 10:42
-                  </p>
-                </div>
-              </div>
+              {/* WhatsApp Log - Live Chat Simulation */}
+              <WhatsAppLiveLog />
             </div>
           </div>
 
