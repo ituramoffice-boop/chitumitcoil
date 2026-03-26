@@ -138,23 +138,102 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
 // ── Payslip Hook Widget ────────────────────────────────────
 function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  const [fileName, setFileName] = useState("");
+
+  const processFile = useCallback(async (file: File) => {
+    if (!file) return;
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("הקובץ גדול מדי – עד 10MB");
+      return;
+    }
+    const allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      toast.error("פורמט לא נתמך – PDF, JPG, PNG בלבד");
+      return;
+    }
+
+    setUploading(true);
+    setFileName(file.name);
+
+    try {
+      // 1) Upload to Supabase Storage
+      const filePath = `${crypto.randomUUID()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("payslips")
+        .upload(filePath, file, { contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      // 2) Convert to base64 for AI analysis
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]); // strip data:...;base64,
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // 3) Call analyze-payslip edge function
+      const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
+        body: { base64, mime_type: file.type },
+      });
+      if (fnError) throw fnError;
+
+      const analysis = data?.analysis || data;
+      setUploaded(true);
+      setUploading(false);
+
+      // Pass analysis + file info back
+      onSubmit({ tool: "payslip_scan", file_path: filePath, ai_analysis: analysis });
+    } catch (err: any) {
+      console.error("Payslip upload error:", err);
+      setUploading(false);
+      toast.error("שגיאה בניתוח התלוש – נסו שנית");
+    }
+  }, [onSubmit]);
+
+  const handleFileSelect = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.jpg,.jpeg,.png,.webp";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) processFile(file);
+    };
+    input.click();
+  }, [processFile]);
 
   return (
     <div className="space-y-4">
       <div
         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
-          dragging ? "border-accent bg-accent/10 scale-[1.02]" : uploaded ? "border-green-500 bg-green-500/10" : "border-border hover:border-accent/50"
+          dragging ? "border-accent bg-accent/10 scale-[1.02]" : uploaded ? "border-green-500 bg-green-500/10" : uploading ? "border-accent/50 bg-accent/5" : "border-border hover:border-accent/50"
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); setUploaded(true); }}
-        onClick={() => setUploaded(true)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          const file = e.dataTransfer.files?.[0];
+          if (file) processFile(file);
+        }}
+        onClick={() => !uploading && !uploaded && handleFileSelect()}
       >
-        {uploaded ? (
+        {uploading ? (
+          <div className="space-y-2">
+            <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
+            <p className="text-accent font-bold">מנתח את התלוש...</p>
+            <p className="text-xs text-muted-foreground">{fileName}</p>
+          </div>
+        ) : uploaded ? (
           <div className="space-y-2">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-green-400 font-bold">תלוש הועלה בהצלחה</p>
+            <p className="text-green-400 font-bold">תלוש נותח בהצלחה!</p>
+            <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -164,13 +243,6 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
           </div>
         )}
       </div>
-      <Button
-        className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
-        disabled={!uploaded}
-        onClick={() => onSubmit({ tool: "payslip_scan" })}
-      >
-        <Brain className="w-5 h-5 ml-2" /> סרוק עם AI
-      </Button>
     </div>
   );
 }
@@ -594,14 +666,31 @@ export default function CampaignLanding() {
   const FunnelIcon = config.icon;
 
   // States
-  const [phase, setPhase] = useState<"widget" | "loading" | "capture" | "done">("widget");
+  const [phase, setPhase] = useState<"widget" | "loading" | "wow_alerts" | "capture" | "done">("widget");
+  const [wowAlerts, setWowAlerts] = useState<string[]>([]);
   const [stepIdx, setStepIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [toolData, setToolData] = useState<Record<string, unknown>>({});
 
-  // Trigger AI loading
+  // Trigger AI loading (for non-payslip funnels) or handle payslip result
   const handleToolSubmit = useCallback((data: Record<string, unknown>) => {
     setToolData(data);
+
+    // If payslip already analyzed (has ai_analysis), skip loading and show wow_alerts
+    if (data.ai_analysis) {
+      const analysis = data.ai_analysis as any;
+      const alerts = analysis.wow_alerts || [];
+      if (alerts.length > 0) {
+        setWowAlerts(alerts);
+        setPhase("wow_alerts");
+        return;
+      }
+      // No wow_alerts, go straight to capture
+      setPhase("capture");
+      return;
+    }
+
+    // For other funnels, show fake loading animation
     setPhase("loading");
     setProgress(0);
     setStepIdx(0);
@@ -621,6 +710,7 @@ export default function CampaignLanding() {
   // Save lead
   const handleLeadSubmit = useCallback(async (name: string, phone: string) => {
     try {
+      const aiAnalysis = toolData.ai_analysis ? toolData.ai_analysis : null;
       const { error } = await supabase.from("leads").insert({
         full_name: name,
         phone,
@@ -628,7 +718,8 @@ export default function CampaignLanding() {
         lead_source: `campaign_${funnelType}`,
         status: "new" as const,
         notes: JSON.stringify(toolData),
-      });
+        ai_analysis: aiAnalysis,
+      } as any);
       if (error) throw error;
       setPhase("done");
       toast.success("הדוח בדרך אליך!");
@@ -738,6 +829,44 @@ export default function CampaignLanding() {
                     );
                   })}
                 </div>
+              </motion.div>
+            )}
+
+            {phase === "wow_alerts" && (
+              <motion.div key="wow_alerts" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5 py-4">
+                <div className="text-center space-y-2">
+                  <div className="w-14 h-14 rounded-full bg-destructive/20 mx-auto flex items-center justify-center">
+                    <Sparkles className="w-7 h-7 text-destructive" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground">ממצאים חשובים!</h3>
+                  <p className="text-sm text-muted-foreground">הנה מה שגילינו בתלוש שלך:</p>
+                </div>
+                <div className="space-y-2">
+                  {wowAlerts.map((alert, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.2 }}
+                      className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2"
+                    >
+                      <span className="text-lg shrink-0">⚠️</span>
+                      <p className="text-sm text-foreground font-medium">{alert}</p>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center space-y-1">
+                  <p className="text-2xl font-black text-accent">
+                    ₪{((toolData.ai_analysis as any)?.total_monthly_waste || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">בזבוז חודשי שזיהינו</p>
+                </div>
+                <Button
+                  className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
+                  onClick={() => setPhase("capture")}
+                >
+                  קבל דוח מלא + ייעוץ חינם <ArrowRight className="w-5 h-5 mr-2" />
+                </Button>
               </motion.div>
             )}
 

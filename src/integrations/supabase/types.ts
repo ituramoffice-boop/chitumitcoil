@@ -691,6 +691,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          ai_analysis: Json | null
           assigned_to: string | null
           client_user_id: string | null
           consultant_id: string | null
@@ -716,6 +717,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_analysis?: Json | null
           assigned_to?: string | null
           client_user_id?: string | null
           consultant_id?: string | null
@@ -741,6 +743,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_analysis?: Json | null
           assigned_to?: string | null
           client_user_id?: string | null
           consultant_id?: string | null
