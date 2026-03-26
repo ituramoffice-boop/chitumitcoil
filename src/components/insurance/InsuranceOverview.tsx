@@ -2,14 +2,16 @@ import { useState } from "react";
 import {
   Shield, Users, FileText, TrendingUp, DollarSign, AlertTriangle,
   Brain, Radar, ShoppingCart, MessageSquare, Zap, Target,
-  ArrowUpRight, Clock, Phone, Sparkles, ChevronRight,
+  ArrowUpRight, Clock, Phone, Sparkles, ChevronRight, Copy, Check, X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useInsuranceClients, useInsurancePolicies } from "@/hooks/useInsuranceData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 /* ═══════ Realistic Mock Data ═══════ */
 
@@ -47,6 +49,8 @@ export function InsuranceOverview() {
   const { data: clients, isLoading: loadingClients } = useInsuranceClients();
   const { data: policies, isLoading: loadingPolicies } = useInsurancePolicies();
   const [generatingPitch, setGeneratingPitch] = useState<number | null>(null);
+  const [pitchResult, setPitchResult] = useState<{ name: string; pitch: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const loading = loadingClients || loadingPolicies;
 
@@ -60,16 +64,36 @@ export function InsuranceOverview() {
     (p) => p.status === "active" && p.end_date && new Date(p.end_date) <= in30 && new Date(p.end_date) > now
   ).length;
 
-  const kpis = [
-    { label: "פוליסות פעילות", value: activePolicies.length, icon: FileText, color: "text-primary", bgColor: "bg-primary/10" },
-    { label: "חידושים ב-30 יום", value: renewalCount || MOCK_RETENTION.length, icon: AlertTriangle, color: "text-amber-400", bgColor: "bg-amber-400/10" },
-    { label: "הכנסת Cross-Sell", value: totalPremium || 12840, prefix: "₪", icon: DollarSign, color: "text-gold", bgColor: "bg-gold/10" },
-    { label: "ציון הזדמנות AI", value: 87, suffix: "/100", icon: Brain, color: "text-cyan-400", bgColor: "bg-cyan-400/10" },
-  ];
-
-  const handleGeneratePitch = (id: number) => {
+  const handleGeneratePitch = async (id: number) => {
+    const row = MOCK_GAP_DATA.find((r) => r.id === id);
+    if (!row) return;
     setGeneratingPitch(id);
-    setTimeout(() => setGeneratingPitch(null), 2000);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-ai-pitch", {
+        body: {
+          clientName: row.name,
+          mortgageStatus: row.mortgageStatus,
+          missingCoverage: row.missingCoverage,
+          score: row.score,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setPitchResult({ name: row.name, pitch: data.pitch });
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "שגיאה ביצירת הפיץ'");
+    } finally {
+      setGeneratingPitch(null);
+    }
+  };
+
+  const handleCopyPitch = () => {
+    if (!pitchResult) return;
+    navigator.clipboard.writeText(pitchResult.pitch);
+    setCopied(true);
+    toast.success("הפיץ' הועתק!");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
