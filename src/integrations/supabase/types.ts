@@ -693,7 +693,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           client_user_id: string | null
-          consultant_id: string
+          consultant_id: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -718,7 +718,7 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           client_user_id?: string | null
-          consultant_id: string
+          consultant_id?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -743,7 +743,7 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           client_user_id?: string | null
-          consultant_id?: string
+          consultant_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
