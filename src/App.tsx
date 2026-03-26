@@ -84,6 +84,7 @@ const App = () => {
                {/* Public routes */}
                <Route path="/" element={<Index />} />
                <Route path="/auth" element={<Auth />} />
+               <Route path="/pro" element={<ProAuth />} />
                <Route path="/self-check" element={<SelfCheck />} />
                <Route path="/calculator" element={<MortgageCalculatorLanding />} />
                <Route path="/property-value" element={<PropertyValueCalculator />} />
