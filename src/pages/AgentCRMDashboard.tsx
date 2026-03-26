@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import jsPDF from "jspdf";
+import { toast } from "sonner";
 
 const NAV_ITEMS = [
   { icon: Home, label: "ראשי", active: true },
@@ -305,12 +307,193 @@ function FullFileModal({ open, onClose }: { open: boolean; onClose: () => void }
                   </div>
                 </motion.div>
               ))}
-            </div>
+           </div>
+          </div>
+
+          {/* Download PDF Button */}
+          <div className="pt-2 pb-1">
+            <Button
+              onClick={() => exportLeadDossierPdf()}
+              className="w-full bg-gradient-to-l from-[hsl(var(--primary))] to-amber-600 text-black font-bold hover:brightness-110 gap-2"
+            >
+              <Download size={16} />
+              הורד דו״ח PDF
+            </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
+}
+
+function exportLeadDossierPdf() {
+  try {
+    const rev = (t: string) => t.split("").reverse().join("");
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+
+    // Background
+    doc.setFillColor(10, 14, 26);
+    doc.rect(0, 0, W, H, "F");
+
+    // Gold header
+    doc.setFillColor(212, 175, 55);
+    doc.rect(0, 0, W, 30, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(10, 14, 26);
+    doc.text("Chitumit AI — Lead Dossier", W / 2, 14, { align: "center" });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(rev("תיק ליד מלא — דוח מקצועי"), W / 2, 23, { align: "center" });
+
+    let y = 40;
+
+    // Client info card
+    doc.setFillColor(22, 30, 50);
+    doc.roundedRect(15, y, W - 30, 42, 3, 3, "F");
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(212, 175, 55);
+    doc.text(rev(LEAD_PROFILE.name), W - 22, y + 10, { align: "right" });
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(180, 190, 210);
+    const infoLines = [
+      `${rev("ת.ז:")} ${LEAD_PROFILE.id}   |   ${rev("גיל:")} ${LEAD_PROFILE.age}   |   ${rev("עיר:")} ${rev(LEAD_PROFILE.city)}`,
+      `${rev("הכנסה:")} ${LEAD_PROFILE.income}   |   ${rev("מעסיק:")} ${rev(LEAD_PROFILE.employer)}`,
+      `${rev("טלפון:")} ${LEAD_PROFILE.phone}   |   ${rev("אימייל:")} ${LEAD_PROFILE.email}`,
+      `${rev("מקור:")} ${rev(LEAD_PROFILE.source)}   |   ${rev("נקלט:")} ${LEAD_PROFILE.capturedAt}`,
+    ];
+    infoLines.forEach((line, i) => {
+      doc.text(line, W - 22, y + 18 + i * 6, { align: "right" });
+    });
+
+    y += 50;
+
+    // Documents section
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(212, 175, 55);
+    doc.text(rev("מסמכים סרוקים"), W - 15, y, { align: "right" });
+    y += 6;
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    LEAD_DOCUMENTS.forEach((d) => {
+      doc.setFillColor(18, 25, 42);
+      doc.roundedRect(15, y, W - 30, 9, 2, 2, "F");
+      doc.setTextColor(200, 210, 230);
+      doc.text(rev(d.type), W - 22, y + 6, { align: "right" });
+      doc.text(d.size, W / 2, y + 6, { align: "center" });
+      const statusText = d.status === "verified" ? rev("מאומת") : rev("ממתין");
+      if (d.status === "verified") {
+        doc.setTextColor(52, 211, 153);
+      } else {
+        doc.setTextColor(251, 191, 36);
+      }
+      doc.text(statusText, 22, y + 6, { align: "left" });
+      y += 11;
+    });
+
+    y += 4;
+
+    // Insurance findings
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(212, 175, 55);
+    doc.text(rev("ממצאי ביטוח — ניתוח מסלקה"), W - 15, y, { align: "right" });
+    y += 7;
+
+    // Table header
+    doc.setFillColor(30, 41, 59);
+    doc.roundedRect(15, y, W - 30, 8, 2, 2, "F");
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(212, 175, 55);
+    const cols = [W - 22, W - 55, W - 95, 50];
+    doc.text(rev("חברה"), cols[0], y + 5.5, { align: "right" });
+    doc.text(rev("סוג"), cols[1], y + 5.5, { align: "right" });
+    doc.text(rev("פרמיה"), cols[2], y + 5.5, { align: "right" });
+    doc.text(rev("סטטוס"), cols[3], y + 5.5, { align: "center" });
+    y += 10;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    INSURANCE_FINDINGS.forEach((row) => {
+      doc.setTextColor(200, 210, 230);
+      doc.text(rev(row.company), cols[0], y + 4, { align: "right" });
+      doc.text(rev(row.type), cols[1], y + 4, { align: "right" });
+      doc.text(row.premium, cols[2], y + 4, { align: "right" });
+      if (row.flag) {
+        doc.setTextColor(248, 113, 113);
+        doc.text(rev(row.flag), cols[3], y + 4, { align: "center" });
+      } else {
+        doc.setTextColor(52, 211, 153);
+        doc.text(rev("תקין"), cols[3], y + 4, { align: "center" });
+      }
+      y += 8;
+    });
+
+    // Savings highlight
+    y += 3;
+    doc.setFillColor(16, 185, 129, 25);
+    doc.roundedRect(15, y, W - 30, 12, 3, 3, "F");
+    doc.setDrawColor(52, 211, 153);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(15, y, W - 30, 12, 3, 3, "S");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(52, 211, 153);
+    doc.text("₪5,400 " + rev("חיסכון שנתי מזוהה — ביטול כפל בריאות"), W - 22, y + 8, { align: "right" });
+
+    y += 20;
+
+    // AI Timeline
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(212, 175, 55);
+    doc.text(rev("ציר זמן AI"), W - 15, y, { align: "right" });
+    y += 7;
+
+    const timeline = [
+      { time: "10:38", text: rev("ליד נקלט ממשפך מסלקה") },
+      { time: "10:39", text: rev("תלוש שכר + מסלקה נסרקו") },
+      { time: "10:40", text: rev("AI זיהה כפל ביטוחי — WhatsApp נשלח") },
+      { time: "10:42", text: rev("הלקוח אישר פגישה ל-10:00 מחר") },
+      { time: "10:42", text: rev("Zoom נקבע אוטומטית ביומן הסוכן") },
+    ];
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    timeline.forEach((ev) => {
+      doc.setFillColor(212, 175, 55);
+      doc.circle(W - 19, y + 2, 1.5, "F");
+      doc.setTextColor(212, 175, 55);
+      doc.text(ev.time, W - 25, y + 3, { align: "right" });
+      doc.setTextColor(180, 190, 210);
+      doc.text(ev.text, W - 42, y + 3, { align: "right" });
+      y += 8;
+    });
+
+    // Footer
+    const fy = H - 12;
+    doc.setDrawColor(212, 175, 55);
+    doc.setLineWidth(0.3);
+    doc.line(20, fy - 3, W - 20, fy - 3);
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Powered by Chitumit AI  |  CONFIDENTIAL", W / 2, fy, { align: "center" });
+    doc.text(new Date().toLocaleDateString("he-IL"), 15, fy, { align: "left" });
+
+    doc.save(`lead-dossier-${LEAD_PROFILE.id}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("דו״ח תיק הליד יוצא בהצלחה");
+  } catch (err) {
+    console.error("Lead dossier PDF error:", err);
+    toast.error("שגיאה ביצוא הדוח");
+  }
 }
 
 export default function AgentCRMDashboard() {
