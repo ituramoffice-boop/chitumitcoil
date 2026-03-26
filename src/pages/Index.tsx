@@ -5,7 +5,7 @@ import {
   ShieldCheck, FileText, TrendingUp, ArrowLeft, Sparkles, Users, User,
   ChevronDown, Zap, Brain, Lock, BarChart3, CheckCircle2, Star,
   ArrowUpRight, Shield, HeartPulse, Search, Eye, Layers, Globe,
-  Building2, Award, BadgeCheck, Cpu, Smartphone, ChevronRight,
+  Building2, Award, BadgeCheck, Cpu, Smartphone, ChevronRight, Crown,
 } from "lucide-react";
 import { PublicFooter } from "@/components/PublicFooter";
 import { Badge } from "@/components/ui/badge";
