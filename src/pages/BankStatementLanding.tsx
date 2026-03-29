@@ -61,6 +61,10 @@ export default function BankStatementLanding() {
 
   const avgIncome = salaryVerification?.average_monthly_deposit || 0;
   const mortgagePayment = mortgage?.monthly_payment || 0;
+  const verifiedSalary = analysis?.verified_salary as number || 0;
+  const verifiedBy = analysis?.verified_by as string || "";
+  const totalDtiRatio = analysis?.total_dti_ratio as number || 0;
+  const dtiStatus = analysis?.dti_status as "green" | "yellow" | "red" | undefined;
 
   const healthScore = analysis
     ? Math.max(0, Math.min(100, Math.round(
@@ -178,6 +182,73 @@ export default function BankStatementLanding() {
                   <p className="text-xs text-emerald-200/50">
                     ₪{(estimatedSavings * 12).toLocaleString()} בשנה
                   </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Verified Salary & DTI Status */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Verified Salary */}
+              <Card className="bg-white/5 backdrop-blur-xl border-gold/10">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                  </div>
+                  <p className="text-sm text-blue-200/60 font-medium">שכר מאומת</p>
+                  <p className="text-3xl font-black text-white">
+                    ₪{verifiedSalary.toLocaleString()}
+                  </p>
+                  {verifiedBy && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-[11px] font-bold text-emerald-300">{verifiedBy}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* DTI Gauge */}
+              <Card className={`backdrop-blur-xl ${
+                dtiStatus === "red" ? "bg-red-500/10 border-red-500/20" :
+                dtiStatus === "yellow" ? "bg-amber-500/10 border-amber-500/20" :
+                "bg-emerald-500/10 border-emerald-500/20"
+              }`}>
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <p className="text-sm text-blue-200/60 font-medium">יחס החזר חוב (DTI)</p>
+                  {/* Visual gauge */}
+                  <div className="relative w-28 h-28">
+                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                      <circle cx="50" cy="50" r="42" fill="none" strokeWidth="8"
+                        className="stroke-white/10" />
+                      <circle cx="50" cy="50" r="42" fill="none" strokeWidth="8"
+                        strokeDasharray={`${Math.min(totalDtiRatio, 100) * 2.64} 264`}
+                        strokeLinecap="round"
+                        className={
+                          dtiStatus === "red" ? "stroke-red-400" :
+                          dtiStatus === "yellow" ? "stroke-amber-400" :
+                          "stroke-emerald-400"
+                        }
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className={`text-2xl font-black ${
+                        dtiStatus === "red" ? "text-red-400" :
+                        dtiStatus === "yellow" ? "text-amber-400" :
+                        "text-emerald-300"
+                      }`}>
+                        {totalDtiRatio}%
+                      </span>
+                    </div>
+                  </div>
+                  <Badge className={
+                    dtiStatus === "red" ? "bg-red-500/20 text-red-300 border-red-500/30" :
+                    dtiStatus === "yellow" ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
+                    "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                  }>
+                    {dtiStatus === "red" ? "מעל הסף – סיכון" :
+                     dtiStatus === "yellow" ? "קרוב לסף – זהירות" :
+                     "תקין – ירוק"}
+                  </Badge>
                 </CardContent>
               </Card>
             </div>
