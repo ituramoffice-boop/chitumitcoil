@@ -498,8 +498,8 @@ function WhatsAppMockup() {
 function LeadCaptureModal({
   open,
   onSubmit,
-  initialName = "ישראל ישראלי",
-  initialPhone = "050-1234567",
+  initialName = "",
+  initialPhone = "",
 }: {
   open: boolean;
   onSubmit: (name: string, phone: string) => void;
