@@ -381,13 +381,13 @@ export default function AgentCRMDashboard() {
   const { isDemoMode } = useDemo();
 
   useEffect(() => {
-    if (isDemo) {
+    if (isDemoMode) {
       setLeads(DEMO_LEADS);
       setLoading(false);
     } else {
       fetchLeads();
     }
-  }, [user, isDemo]);
+  }, [user, isDemoMode]);
 
   const fetchLeads = async () => {
     setLoading(true);
