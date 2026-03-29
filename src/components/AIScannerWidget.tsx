@@ -221,7 +221,8 @@ export default function AIScannerWidget({
       // Upload original to storage (optional — skip for unauthenticated users)
       let filePath = "";
       if (user) {
-        filePath = `${crypto.randomUUID()}_${file.name}`;
+        const ext = file.name.split(".").pop() || "pdf";
+        filePath = `${crypto.randomUUID()}.${ext}`;
         console.log(`[Scanner] Uploading to storage: ${filePath}, type: ${file.type}, size: ${file.size}`);
         const { error: uploadError } = await supabase.storage
           .from(config.storageBucket)
