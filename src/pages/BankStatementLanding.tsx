@@ -33,38 +33,64 @@ export default function BankStatementLanding() {
 
   const mapAnalysisResult = (data: Record<string, unknown>) => {
     const parsedData = ((data.ai_analysis as Record<string, unknown> | undefined) ?? data) as Record<string, unknown>;
-    console.log("Parsed Data:", parsedData);
+    
+    console.log("=== FULL RAW DATA FROM EDGE FUNCTION ===", JSON.stringify(data, null, 2));
+    console.log("=== PARSED DATA (ai_analysis or root) ===", JSON.stringify(parsedData, null, 2));
 
     if (!parsedData || typeof parsedData !== "object") {
+      console.warn("parsedData is empty or not an object, setting null");
       setAnalysisResult(null);
       return;
     }
 
+    // Extract backend values first
+    const salaryFromBackend = Number(
+      parsedData.verified_salary ??
+      (parsedData.salary_verification as { average_monthly_deposit?: number } | undefined)?.average_monthly_deposit ??
+      (parsedData.summary as { verifiedSalary?: number } | undefined)?.verifiedSalary ??
+      0
+    );
+    const liabilitiesFromBackend = Number(
+      parsedData.total_monthly_obligations ?? 
+      (parsedData.summary as { totalLiabilities?: number } | undefined)?.totalLiabilities ??
+      0
+    );
+    const dtiFromBackend = Number(parsedData.total_dti_ratio ?? parsedData.debt_to_income_ratio ?? 0);
+
+    console.log("=== BACKEND VALUES ===", { salaryFromBackend, liabilitiesFromBackend, dtiFromBackend });
+
+    // Try client-side extraction from transactions as fallback
     const rawTransactions = Array.isArray(parsedData.transactions)
       ? (parsedData.transactions as Array<Record<string, unknown>>)
       : [];
 
+    console.log(`=== TRANSACTIONS COUNT: ${rawTransactions.length} ===`);
+
     const normalizedTransactions = rawTransactions
       .map((tx) => {
         const rawAmount = Number(tx.amount ?? 0);
-        const txTypeValue = String(tx.type ?? tx.transaction_type ?? "").toLowerCase();
-        const inferredType: "debit" | "credit" =
-          txTypeValue === "debit" ||
-          txTypeValue === "חובה" ||
-          rawAmount < 0 ||
-          txTypeValue === "loan" ||
-          txTypeValue === "standing_order" ||
-          txTypeValue === "direct_debit"
-            ? "debit"
-            : "credit";
+        const txType = String(tx.type ?? "").toLowerCase();
+        const hasDebit = tx.debit != null && Number(tx.debit) > 0;
+        const hasCredit = tx.credit != null && Number(tx.credit) > 0;
+        
+        // Use debit/credit fields from AI if available, they're more reliable than "type"
+        let inferredType: "debit" | "credit";
+        if (hasCredit && !hasDebit) {
+          inferredType = "credit";
+        } else if (hasDebit && !hasCredit) {
+          inferredType = "debit";
+        } else {
+          inferredType = txType === "credit" ? "credit" : "debit";
+        }
 
         const rawReference = String(tx.reference_code ?? tx.bank_code ?? "");
         const referenceCode = rawReference.split("/")[0]?.trim();
+        const amount = hasCredit ? Number(tx.credit) : hasDebit ? Number(tx.debit) : Math.abs(rawAmount);
 
         return {
           description: String(tx.description ?? ""),
           reference_code: referenceCode,
-          amount: Math.abs(rawAmount),
+          amount,
           type: inferredType,
         };
       })
@@ -74,22 +100,19 @@ export default function BankStatementLanding() {
     const liabilitiesFromTransactions = calculateTotalLiabilities(normalizedTransactions);
     const dtiFromTransactions = calculateDTI(liabilitiesFromTransactions, salaryFromTransactions);
 
-    const salaryFromBackend = Number(
-      parsedData.verified_salary ??
-      (parsedData.salary_verification as { average_monthly_deposit?: number } | undefined)?.average_monthly_deposit ??
-      0
-    );
-    const liabilitiesFromBackend = Number(parsedData.total_monthly_obligations ?? 0);
-    const dtiFromBackend = Number(parsedData.total_dti_ratio ?? parsedData.debt_to_income_ratio ?? 0);
+    console.log("=== CLIENT-SIDE EXTRACTION ===", { salaryFromTransactions, liabilitiesFromTransactions, dtiFromTransactions });
 
-    const verifiedSalary = salaryFromTransactions || salaryFromBackend;
-    const totalLiabilities = liabilitiesFromTransactions || liabilitiesFromBackend;
-    const dtiRatio = dtiFromTransactions || dtiFromBackend;
+    // Prefer non-zero values: backend first, then client-side fallback
+    const verifiedSalary = salaryFromBackend || salaryFromTransactions;
+    const totalLiabilities = liabilitiesFromBackend || liabilitiesFromTransactions;
+    const dtiRatio = dtiFromBackend || dtiFromTransactions;
 
     const clientName =
       (parsedData.personal as { account_holder?: string } | undefined)?.account_holder ||
       (parsedData.client as { full_name?: string } | undefined)?.full_name ||
       undefined;
+
+    console.log("=== FINAL DASHBOARD VALUES ===", { verifiedSalary, totalLiabilities, dtiRatio, clientName });
 
     setAnalysisResult({
       verifiedSalary,
