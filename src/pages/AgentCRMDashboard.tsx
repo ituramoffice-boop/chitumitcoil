@@ -197,6 +197,30 @@ function FullAnalysisPanel({ lead, open, onClose, heatStatus, onChangeHeat }: {
             </div>
           )}
 
+          {/* Health Insurance / קופת חולים */}
+          {ai?.health_insurance?.provider && ai.health_insurance.provider !== "unknown" && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Heart size={16} className="text-pink-400" />
+                <div>
+                  <p className="text-white/40 text-[10px]">קופת חולים</p>
+                  <p className="text-white/80 text-sm font-semibold">{ai.health_insurance.provider}</p>
+                  {ai.health_insurance.monthly_payment > 0 && (
+                    <p className="text-white/50 text-[10px]">₪{ai.health_insurance.monthly_payment.toLocaleString()}/חודש</p>
+                  )}
+                </div>
+              </div>
+              <Badge className={`text-[10px] ${
+                ai.health_insurance.confidence === "high" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
+                ai.health_insurance.confidence === "medium" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" :
+                "bg-red-500/20 text-red-400 border-red-500/30"
+              }`}>
+                {ai.health_insurance.confidence === "high" ? "✓ מאומת" :
+                 ai.health_insurance.confidence === "medium" ? "בינוני" : "לא מזוהה"}
+              </Badge>
+            </div>
+          )}
+
           {/* Heat selector */}
           <div>
             <p className="text-white/40 text-xs mb-2">סטטוס חום</p>
@@ -368,6 +392,7 @@ const DEMO_LEADS: LeadRow[] = [
       cross_reference_status: "green",
       employer: { name: "אלביט מערכות", confidence: "high", verification_method: "MSB code 71", needs_manual_verification: false },
       employer_name: "אלביט מערכות",
+      health_insurance: { provider: "מכבי", monthly_payment: 120, confidence: "high" },
       advisor_summary: "לקוח עם פרופיל חזק. מעסיק: אלביט מערכות (מאומת MSB). זוהה כפל ביטוחי בריאות (מגדל + הראל). חיסכון שנתי פוטנציאלי: ₪3,480. יחס חוב/הכנסה 38% — תקין. מומלץ לקבוע פגישה לביטול הכפילות."
     }
   },
