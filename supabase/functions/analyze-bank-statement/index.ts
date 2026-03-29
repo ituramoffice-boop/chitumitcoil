@@ -217,9 +217,7 @@ Return ONLY a valid JSON object with this structure:
 }
 Do NOT include balance column values anywhere in the output.
 Do NOT add any explanation or markdown — return raw JSON only.
-${crossRefInstruction}
-
-אם שדה לא נמצא, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
+${crossRefInstruction}`;
 
     // Limit to first 2 pages for performance, unless deep_scan is true
     const maxPages = deep_scan ? imageList.length : 2;
