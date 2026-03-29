@@ -108,6 +108,8 @@ interface Lead {
   last_contact: string | null;
   next_step: string | null;
   client_user_id: string | null;
+  ai_analysis: any;
+  lead_score: number | null;
 }
 
 interface Document {
