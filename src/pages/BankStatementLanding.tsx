@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   ShieldCheck, Lock, Landmark, TrendingDown, PiggyBank,
-  AlertTriangle, CheckCircle2, CreditCard, Building2, Mail, Loader2
+  AlertTriangle, CheckCircle2, CreditCard, Building2, Mail, Loader2, Search
 } from "lucide-react";
 
 export default function BankStatementLanding() {
@@ -19,6 +19,7 @@ export default function BankStatementLanding() {
   const [emailInput, setEmailInput] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [deepScanMode, setDeepScanMode] = useState(false);
 
   const analysis = result?.ai_analysis as Record<string, unknown> | undefined;
 
@@ -119,7 +120,9 @@ export default function BankStatementLanding() {
             <CardContent className="p-6">
               <AIScannerWidget
                 type="bank_statement"
-                onSubmit={(data) => setResult(data)}
+                onSubmit={(data) => { setResult(data); setDeepScanMode(false); }}
+                extraBody={deepScanMode ? { deep_scan: true } : undefined}
+                key={deepScanMode ? "deep" : "normal"}
               />
             </CardContent>
           </Card>
@@ -155,6 +158,27 @@ export default function BankStatementLanding() {
             transition={{ duration: 0.5 }}
             className="max-w-2xl mx-auto px-4 pb-20 space-y-6"
           >
+            {/* Deep Scan Button */}
+            {!deepScanMode && (
+              <Card className="bg-white/5 backdrop-blur-xl border-gold/10">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">רוצים ניתוח מעמיק יותר?</p>
+                    <p className="text-xs text-white/50">סריקה מעמיקה מנתחת את כל העמודים</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-gold/30 text-gold hover:bg-gold/10"
+                    onClick={() => { setDeepScanMode(true); setResult(null); }}
+                  >
+                    <Search className="w-3.5 h-3.5 ml-1.5" />
+                    סריקה מעמיקה
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Financial Health Score + Savings */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Health Score */}

@@ -22,7 +22,7 @@ serve(async (req) => {
       );
     }
 
-    const { base64, mime_type, text, images, payslip_analysis } = body;
+    const { base64, mime_type, text, images, payslip_analysis, deep_scan } = body;
 
     const imageList: { base64: string; mime_type: string }[] = images
       ? images
@@ -313,8 +313,8 @@ ${crossRefInstruction}
 
 אם שדה לא נמצא, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
 
-    // Limit to first 2 pages for performance
-    const maxPages = 2;
+    // Limit to first 2 pages for performance, unless deep_scan is true
+    const maxPages = deep_scan ? imageList.length : 2;
     const limitedImages = imageList.slice(0, maxPages);
     const pageCount = limitedImages.length;
     const totalPages = imageList.length;
@@ -348,7 +348,7 @@ ${crossRefInstruction}
           { role: "system", content: systemPrompt },
           { role: "user", content: userContent },
         ],
-        max_tokens: 1500,
+        ...(deep_scan ? {} : { max_tokens: 1500 }),
         response_format: { type: "json_object" },
       }),
     });
