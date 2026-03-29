@@ -69,19 +69,28 @@ serve(async (req) => {
    - עדכן matches_payslip ל-false אם יש פער, ו-cross_reference_status ל-"red" אם הפער מעל 10%, "yellow" אם 5-10%.`;
     }
 
-const BANK_EXTRACTION_SYSTEM_PROMPT = `🚨 כלל עמודות קריטי — קרא לפני הכל:
-דפי בנק ישראלי מכילים 5 עמודות (מימין לשמאל):
-| תיאור | אסמכתא | חיוב | זיכוי | יתרה |
-| Description | Reference | Debit(out) | Credit(in) | Balance |
+const BANK_EXTRACTION_SYSTEM_PROMPT = `🚨 BANK HAPOALIM COLUMN STRUCTURE (READ FIRST — applies to most Israeli banks):
+Columns from right to left:
+| תאריך | פרטי הפעולה | יום ערך | חיובים | זיכויים | יתרה | מידע לשימושינו |
+| Date  | Description  | Value Date | Debits(out) | Credits(in) | Balance | Reference Code |
 
-⛔ עמודת יתרה (Balance) — התעלם לחלוטין!
-היתרה היא סכום מצטבר רץ — היא אינה תנועה כלל!
-לעולם אל תחלץ ערכים מעמודת היתרה כחיוב או זיכוי.
-אם אתה רואה מספרים כמו 19,223 / 18,624 / 19,438 — אלה יתרות חשבון, לא הוצאות!
+⛔ RULE 1 — NEVER use the יתרה (balance) column as a transaction amount.
+The balance column shows a running total only. It is never income or expense.
+If you see numbers like 19,223 / 18,624 / 19,438 in the balance column — these are account balances, NOT transactions!
 
-⛔ מסגרת משכורת — התעלם לחלוטין!
-אם שורה מכילה המילה "מסגרת" — זהו מסגרת אשראי בלבד, לא משכורת!
-לעולם אל תרשום אותה כהכנסה ב-verified_salary.
+⛔ RULE 2 — IGNORE any row containing the word "מסגרת".
+This is a credit limit (credit line framework), not a salary deposit. Never record it as income in verified_salary.
+
+✅ RULE 3 — SALARY must come ONLY from the זיכויים (credits) column.
+The salary is the largest recurring credit that appears consistently month after month (above ₪3,000).
+Identify it by pattern (recurring amount, MSB code 71/72), not by name alone.
+
+✅ RULE 4 — LOANS are ONLY rows where מידע לשימושינו contains code 469.
+Description will typically contain "הו"ק הלואה" or "משכנתא" or "פירעון".
+Only these should be counted as loan obligations for DTI calculation.
+
+⛔ RULE 5 — Rows with codes 4153 or 6147 are credit card aggregations (סה"כ חיובי אשראי).
+Never include them in DTI calculation — they are summary lines for credit card billing, not individual loans.
 
 You are an expert Israeli bank statement parser.
 Your task is to extract structured transaction data from the provided bank statement image(s).
