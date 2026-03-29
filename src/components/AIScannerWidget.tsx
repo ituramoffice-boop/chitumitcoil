@@ -35,7 +35,7 @@ async function pdfToBase64Images(
 }
 
 // ── Scanner type configs ───────────────────────────────────
-export type ScannerType = "payslip" | "pension" | "insurance";
+export type ScannerType = "payslip" | "pension" | "insurance" | "bank_statement";
 
 interface ScannerTypeConfig {
   edgeFunction: string;
@@ -88,6 +88,21 @@ const SCANNER_CONFIGS: Record<ScannerType, ScannerTypeConfig> = {
     successMessage: "ביקורת ביטוח הושלמה!",
     acceptFormats: ".pdf,.jpg,.jpeg,.png,.webp",
     uploadLabel: "גררו מסמך ביטוח לכאן או לחצו להעלאה",
+    formatHint: "PDF, JPG, PNG – עד 10MB",
+  },
+  bank_statement: {
+    edgeFunction: "analyze-bank-statement",
+    storageBucket: "payslips",
+    progressMessages: [
+      "הופך קובץ לתמונה לעיבוד...",
+      "סורק תנועות עו״ש וזיכויים...",
+      "מזהה תשלומי משכנתא וביטוח...",
+      "מחשב יחס התחייבויות להכנסה...",
+      "מצליב נתונים מול תלוש שכר...",
+    ],
+    successMessage: "ביקורת עו״ש הושלמה!",
+    acceptFormats: ".pdf,.jpg,.jpeg,.png,.webp",
+    uploadLabel: "גררו דף חשבון בנק לכאן או לחצו להעלאה",
     formatHint: "PDF, JPG, PNG – עד 10MB",
   },
 };
