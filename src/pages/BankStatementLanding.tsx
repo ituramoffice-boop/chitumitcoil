@@ -15,39 +15,51 @@ export default function BankStatementLanding() {
 
   const analysis = result?.ai_analysis as Record<string, unknown> | undefined;
 
-  const avgIncome = analysis?.average_monthly_net_income as number | undefined;
-  const mortgagePayment = analysis?.mortgage_monthly_payment as number | undefined;
-  const mortgageBank = analysis?.mortgage_bank as string | undefined;
-  const obligationRatio = analysis?.obligation_ratio as number | undefined;
-  const insurancePayments = analysis?.identified_insurance_payments as Array<{
+  // New schema mappings
+  const personal = analysis?.personal as { account_holder?: string; bank_name?: string; account_number?: string } | undefined;
+  const salaryVerification = analysis?.salary_verification as {
+    net_deposits?: number[];
+    average_monthly_deposit?: number;
+    matches_payslip?: boolean;
+    discrepancy_amount?: number;
+    discrepancy_alert?: string;
+  } | undefined;
+  const mortgage = analysis?.mortgage as {
+    detected?: boolean;
+    monthly_payment?: number;
+    bank_name?: string;
+    estimated_remaining?: string;
+  } | undefined;
+  const existingLoans = analysis?.existing_loans as Array<{
+    description: string;
+    monthly_payment: number;
+    lender: string;
+  }> | undefined;
+  const insuranceCharges = analysis?.insurance_charges as Array<{
     company: string;
     monthly_amount: number;
-    type: string;
-  }> | undefined;
-  const recurringLoans = analysis?.recurring_loan_repayments as Array<{
     description: string;
-    monthly_amount: number;
   }> | undefined;
-  const salaryDiscrepancy = analysis?.salary_discrepancy as {
-    payslip_net: number;
-    bank_deposit: number;
-    difference: number;
-  } | undefined;
-  const totalObligations = (mortgagePayment || 0) +
-    (insurancePayments?.reduce((s, p) => s + p.monthly_amount, 0) || 0) +
-    (recurringLoans?.reduce((s, l) => s + l.monthly_amount, 0) || 0);
+  const totalObligations = analysis?.total_monthly_obligations as number || 0;
+  const debtToIncome = analysis?.debt_to_income_ratio as number || 0;
+  const wowAlerts = analysis?.wow_alerts as string[] | undefined;
+  const advisorSummary = analysis?.advisor_summary as string | undefined;
+  const crossRefStatus = analysis?.cross_reference_status as string | undefined;
+
+  const avgIncome = salaryVerification?.average_monthly_deposit || 0;
+  const mortgagePayment = mortgage?.monthly_payment || 0;
 
   const healthScore = analysis
     ? Math.max(0, Math.min(100, Math.round(
-        100 - (obligationRatio || 0) * 1.2 -
-        (insurancePayments && insurancePayments.length > 3 ? 10 : 0) -
-        (salaryDiscrepancy && Math.abs(salaryDiscrepancy.difference) > 500 ? 15 : 0)
+        100 - (debtToIncome || 0) * 1.2 -
+        (insuranceCharges && insuranceCharges.length > 3 ? 10 : 0) -
+        (salaryVerification && !salaryVerification.matches_payslip ? 15 : 0)
       )))
     : 0;
 
   const estimatedSavings = analysis
     ? Math.round(
-        (insurancePayments?.reduce((s, p) => s + p.monthly_amount * 0.15, 0) || 0) +
+        (insuranceCharges?.reduce((s, p) => s + p.monthly_amount * 0.15, 0) || 0) +
         (mortgagePayment ? mortgagePayment * 0.08 : 0)
       )
     : 0;
@@ -172,18 +184,18 @@ export default function BankStatementLanding() {
                   <div className="bg-white/5 rounded-lg p-3">
                     <p className="text-blue-200/50 text-xs">החזר משכנתא</p>
                     <p className="text-lg font-bold text-white">₪{mortgagePayment?.toLocaleString() || "—"}</p>
-                    {mortgageBank && <p className="text-[10px] text-blue-200/40">{mortgageBank}</p>}
+                    {mortgage?.bank_name && <p className="text-[10px] text-blue-200/40">{mortgage.bank_name}</p>}
                   </div>
                   <div className="bg-white/5 rounded-lg p-3">
                     <p className="text-blue-200/50 text-xs">סה״כ התחייבויות</p>
                     <p className="text-lg font-bold text-white">₪{totalObligations.toLocaleString()}</p>
                   </div>
-                  <div className={`rounded-lg p-3 ${(obligationRatio || 0) > 40 ? "bg-red-500/10 border border-red-500/20" : "bg-white/5"}`}>
+                  <div className={`rounded-lg p-3 ${debtToIncome > 40 ? "bg-red-500/10 border border-red-500/20" : "bg-white/5"}`}>
                     <p className="text-blue-200/50 text-xs">יחס התחייבויות/הכנסה</p>
-                    <p className={`text-lg font-bold ${(obligationRatio || 0) > 40 ? "text-red-400" : "text-emerald-300"}`}>
-                      {obligationRatio ? `${obligationRatio}%` : "—"}
+                    <p className={`text-lg font-bold ${debtToIncome > 40 ? "text-red-400" : "text-emerald-300"}`}>
+                      {debtToIncome ? `${debtToIncome}%` : "—"}
                     </p>
-                    {(obligationRatio || 0) > 40 && (
+                    {debtToIncome > 40 && (
                       <p className="text-[10px] text-red-300 flex items-center gap-1 mt-1">
                         <AlertTriangle className="w-3 h-3" />
                         מעל הסף המומלץ
@@ -195,7 +207,7 @@ export default function BankStatementLanding() {
             </Card>
 
             {/* Insurance Payments */}
-            {insurancePayments && insurancePayments.length > 0 && (
+            {insuranceCharges && insuranceCharges.length > 0 && (
               <Card className="bg-white/5 backdrop-blur-xl border-gold/10">
                 <CardContent className="p-5 space-y-3">
                   <h3 className="text-sm font-bold text-gold flex items-center gap-2">
@@ -203,11 +215,11 @@ export default function BankStatementLanding() {
                     תשלומי ביטוח שזוהו
                   </h3>
                   <div className="space-y-2">
-                    {insurancePayments.map((p, i) => (
+                    {insuranceCharges.map((p, i) => (
                       <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2">
                         <div>
                           <p className="text-sm font-medium text-white">{p.company}</p>
-                          <p className="text-xs text-blue-200/40">{p.type}</p>
+                          <p className="text-xs text-blue-200/40">{p.description}</p>
                         </div>
                         <p className="text-sm font-bold text-amber-300">₪{p.monthly_amount.toLocaleString()}</p>
                       </div>
@@ -218,7 +230,7 @@ export default function BankStatementLanding() {
             )}
 
             {/* Salary Discrepancy */}
-            {salaryDiscrepancy && Math.abs(salaryDiscrepancy.difference) > 100 && (
+            {salaryVerification && !salaryVerification.matches_payslip && salaryVerification.discrepancy_amount && Math.abs(salaryVerification.discrepancy_amount) > 100 && (
               <Card className="bg-red-500/10 backdrop-blur-xl border-red-500/20">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-3">
@@ -226,7 +238,7 @@ export default function BankStatementLanding() {
                     <div>
                       <p className="text-sm font-bold text-red-300">פער בין תלוש לזיכוי בבנק</p>
                       <p className="text-xs text-red-200/60 mt-1">
-                        נטו בתלוש: ₪{salaryDiscrepancy.payslip_net.toLocaleString()} · זיכוי בבנק: ₪{salaryDiscrepancy.bank_deposit.toLocaleString()} · הפרש: ₪{Math.abs(salaryDiscrepancy.difference).toLocaleString()}
+                        {salaryVerification.discrepancy_alert || `הפרש: ₪${Math.abs(salaryVerification.discrepancy_amount).toLocaleString()}`}
                       </p>
                     </div>
                   </div>
