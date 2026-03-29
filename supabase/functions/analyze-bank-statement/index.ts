@@ -40,15 +40,15 @@ serve(async (req) => {
 7. הצלבה עם תלוש שכר (Cross-Reference):
    קיים תלוש שכר קודם עם שכר נטו: ₪${payslip_analysis.salary.net_salary}.
    - השווה את "זיכוי משכורת" בדף הבנק לשכר הנטו מהתלוש.
-   - אם יש פער מעל 5%, דווח בשדה salary_discrepancy עם הפרטים.
-   - אם אין פער משמעותי, הגדר salary_discrepancy ל-null.`;
+   - אם יש פער מעל 5%, דווח בשדה salary_verification.discrepancy_amount ו-discrepancy_alert.
+   - עדכן matches_payslip ל-false אם יש פער, ו-cross_reference_status ל-"red" אם הפער מעל 10%, "yellow" אם 5-10%.`;
     }
 
-    const systemPrompt = `אתה רואה חשבון בכיר ומומחה פיננסי ישראלי עם 20 שנות ניסיון. בצע ביקורת על דף חשבון בנק (עו"ש) של לקוח.
+    const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק ישראלי עם 20 שנות ניסיון כרואה חשבון בכיר. נתח את דף החשבון ותחזיר JSON בלבד.
 
 ⚠️ מילות מפתח לזיהוי בעברית:
 - תשלומי משכנתא: "משכנתא", "החזר משכנתא", "הלוואת דיור"
-- הלוואות: "החזר הלוואה", "הלוואה", "תשלום הלוואה"
+- הלוואות: "החזר הלוואה", "הלוואה", "תשלום הלוואה", "מימון"
 - ביטוח: "פרמיה", "ביטוח", "פרמיית ביטוח"
 - הכנסה: "זיכוי משכורת", "העברת משכורת", "שכר"
 - העברות קבועות: "העברה קבועה", "הוראת קבע"
@@ -60,89 +60,75 @@ serve(async (req) => {
 החזר JSON בלבד עם המבנה הבא:
 
 {
-  "account_info": {
+  "personal": {
+    "account_holder": "שם בעל החשבון",
     "bank_name": "שם הבנק",
-    "branch": "מספר סניף אם מופיע",
-    "account_number": "מספר חשבון אם מופיע",
-    "statement_period": "תקופת הדף (מ-עד)"
+    "account_number": "4 ספרות אחרונות בלבד"
   },
-  "income": {
-    "salary_deposits": [
-      {
-        "date": "תאריך",
-        "amount": 0,
-        "source": "שם המעסיק/מקור"
-      }
-    ],
-    "average_monthly_net": 0,
-    "months_analyzed": 0
+  "salary_verification": {
+    "net_deposits": [0],
+    "average_monthly_deposit": 0,
+    "matches_payslip": true,
+    "discrepancy_amount": 0,
+    "discrepancy_alert": "תיאור הפער אם קיים"
   },
   "mortgage": {
-    "found": false,
-    "bank_name": "שם הבנק למשכנתא",
+    "detected": true,
     "monthly_payment": 0,
-    "payments": [
-      {
-        "date": "תאריך",
-        "amount": 0
-      }
-    ]
+    "bank_name": "שם הבנק",
+    "estimated_remaining": "הערכה"
   },
-  "insurance_payments": [
-    {
-      "company": "שם חברת הביטוח (עברית)",
-      "company_en": "English name",
-      "monthly_amount": 0,
-      "type": "health|life|pension|other",
-      "dates_found": ["תאריכים"]
-    }
-  ],
-  "loan_repayments": [
+  "existing_loans": [
     {
       "description": "תיאור ההלוואה",
-      "monthly_amount": 0,
-      "lender": "שם הגוף המלווה"
+      "monthly_payment": 0,
+      "lender": "שם המלווה"
     }
   ],
-  "recurring_transfers": [
+  "insurance_charges": [
     {
-      "description": "תיאור",
-      "amount": 0,
-      "frequency": "חודשי/שבועי"
+      "company": "שם חברת הביטוח",
+      "monthly_amount": 0,
+      "description": "סוג הביטוח"
     }
   ],
-  "salary_discrepancy": null,
-  "financial_summary": {
-    "total_monthly_income": 0,
-    "total_monthly_obligations": 0,
-    "obligation_ratio_percent": 0,
-    "free_cash_flow": 0
-  },
+  "total_monthly_obligations": 0,
   "wow_alerts": [
-    "התראות טקסטואליות קצרות"
+    "⚠️ הפקדת נטו נמוכה ב-800 ש״ח מהתלוש",
+    "🏠 משכנתא: 3,200 ש״ח לחודש"
   ],
-  "agent_summary": "סיכום ביקורת קצר וממוקד לסוכן"
+  "debt_to_income_ratio": 0,
+  "advisor_summary": "סיכום קצר לסוכן",
+  "cross_reference_status": "green|yellow|red"
 }
 
 הנחיות לביקורת:
 
-1. הכנסות: זהה את כל זיכויי המשכורת. חשב ממוצע חודשי נטו על בסיס כל החודשים שמופיעים בדף.
+1. personal: חלץ שם בעל החשבון מכותרת הדף. שם הבנק מהלוגו/כותרת. מספר חשבון – 4 ספרות אחרונות בלבד.
 
-2. משכנתא: חפש תשלומי "משכנתא" או "החזר משכנתא". זהה את הבנק (לאומי/הפועלים/דיסקונט/מזרחי טפחות) ואת הסכום החודשי.
+2. salary_verification: זהה כל הפקדות משכורת ("זיכוי משכורת", "העברת משכורת"). רשום כל הפקדה ב-net_deposits. חשב ממוצע ב-average_monthly_deposit.
 
-3. ביטוח: חפש תשלומים לחברות ביטוח (הראל, מנורה, מגדל, כלל, הפניקס וכד'). סווג: בריאות/חיים/פנסיה/אחר.
+3. mortgage: חפש "משכנתא" או "החזר משכנתא". זהה בנק, סכום חודשי. estimated_remaining – הערכה בלבד (אם לא ניתן, null).
 
-4. הלוואות: זהה החזרי הלוואות גדולים (מעל ₪500 לחודש). רשום את הגוף המלווה והסכום.
+4. existing_loans: זהה כל החזרי הלוואות (מעל ₪300/חודש). רשום תיאור, סכום, ושם המלווה.
 
-5. יחס התחייבויות: חשב obligation_ratio_percent = (סך חיובים חודשיים / סך הכנסה חודשית) × 100.
+5. insurance_charges: זהה תשלומים לחברות ביטוח (הראל, מנורה, מגדל, כלל, הפניקס וכד'). רשום חברה, סכום חודשי, וסוג (בריאות/חיים/פנסיה/רכב/דירה/אחר).
 
-6. wow_alerts: צור התראות אימפקטיביות. דוגמאות:
-   - "יחס החזר של X% – מעל הסף הבנקאי של 40%!"
-   - "זוהו תשלומים ל-3 חברות ביטוח שונות – חשד לכפילויות"
-   - "הלוואה של ₪X בחודש – שווה לבדוק מיחזור"
+6. total_monthly_obligations: סכום כל ההתחייבויות (משכנתא + הלוואות + ביטוח + הוראות קבע).
+   debt_to_income_ratio: (total_monthly_obligations / average_monthly_deposit) × 100. עגל למספר שלם.
+
+7. wow_alerts: צור התראות אימפקטיביות עם אימוג'ים. דוגמאות:
+   - "⚠️ יחס החזר של X% – מעל הסף הבנקאי של 40%!"
+   - "🔍 זוהו תשלומים ל-3 חברות ביטוח שונות – חשד לכפילויות"
+   - "💰 הלוואה של ₪X בחודש – שווה לבדוק מיחזור"
+   - "🏠 משכנתא: X ש״ח לחודש – בנק Y"
+
+8. advisor_summary: סיכום קצר וממוקד (2-3 משפטים) לסוכן/יועץ.
+
+9. cross_reference_status: "green" אם הכל תקין, "yellow" אם יש פערים קטנים (5-10%), "red" אם יש פערים גדולים (מעל 10%) או התראות קריטיות.
 ${crossRefInstruction}
 
-אם שדה לא נמצא בדף, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
+אם שדה לא נמצא, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
 
     const pageCount = imageList.length;
     const userContent: any[] = [
