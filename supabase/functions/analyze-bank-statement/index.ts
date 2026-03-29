@@ -81,8 +81,17 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 - קוד 10734 = הפקדת צ'ק, סווג כ-"check"
 
 קודי הוצאה (חובה):
+- קוד 469 = החזר הלוואה בנקאית — תמיד סווג כ-"loan" וכלול ב-DTI
 - קוד 4153 או 6147 = חיוב ישיר (כרטיס אשראי / הוראת קבע), סווג כ-"direct_debit"
-- חיוב חוזר מגורם בנקאי = הלוואה פעילה, חשב השפעה על DTI
+
+קודי הכנסה משנית:
+- קוד 177 או תיאור המכיל "ביטוח לאומי" = הכנסה משנית יציבה (קצבה), סווג כ-"secondary_income"
+
+⚠️ זיהוי הלוואות — כלול ב-existing_loans רק אם:
+  א) קוד אסמכתא 469, או
+  ב) תיאור מכיל: "הו״ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"
+⚠️ התעלם מאלו — הם לא הלוואות:
+  - "דירקט מצטבר", "משיכה מבנקט", "דירקט" — אלו פעולות בנקאיות שוטפות
 
 ⚠️ כלל עדיפות: אם התיאור סותר את הקוד – תמיד סמוך על הקוד!
 
@@ -184,13 +193,22 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
       "confidence_reason": "סיבת הסיווג"
     }
   ],
+  "secondary_income": [
+    {
+      "source_name": "שם המקור (ביטוח לאומי / קצבה)",
+      "monthly_amount": 0,
+      "frequency": "monthly",
+      "reference_code": "177 או אחר",
+      "confidence": "high|medium|low"
+    }
+  ],
   "total_monthly_obligations": 0,
   "total_dti_ratio": 0,
   "dti_status": "green|yellow|red",
   "employer": {
     "name": "שם המעסיק המלא (מנוקה)",
     "confidence": "high|medium|low",
-    "verification_method": "MSB code 71|recurring pattern|description match",
+    "verification_method": "MSB code 71|recurring pattern|description match|recurring 9th/10th deposit",
     "needs_manual_verification": false
   },
   "employer_name": "שם המעסיק (לתצוגה מהירה)",
@@ -226,7 +244,11 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 
 3. mortgage: חפש "משכנתא" או "החזר משכנתא". זהה בנק, סכום חודשי. estimated_remaining – הערכה בלבד (אם לא ניתן, null).
 
-4. existing_loans: זהה כל החזרי הלוואות (מעל ₪300/חודש). רשום תיאור, סכום, שם המלווה, ו-dti_impact (הסכום שמשפיע על יחס ההחזר).
+4. existing_loans: זהה החזרי הלוואות רק לפי הקריטריונים הבאים:
+   - קוד אסמכתא 469 (החזר הלוואה בנקאית)
+   - תיאור המכיל: "הו״ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"
+   ⚠️ התעלם לחלוטין מ: "דירקט מצטבר", "משיכה מבנקט", "דירקט" — אלו אינן הלוואות!
+   רשום תיאור, סכום, שם המלווה, ו-dti_impact.
 
 5. insurance_charges: זהה תשלומים לחברות ביטוח (הראל, מנורה, מגדל, כלל, הפניקס וכד'). רשום חברה, סכום חודשי, וסוג (בריאות/חיים/פנסיה/רכב/דירה/אחר).
 
@@ -281,13 +303,18 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
    dti_status: "green" אם מתחת ל-30%, "yellow" אם 30-40%, "red" אם מעל 40%.
 
 10. employer (זיהוי מעסיק):
-    כאשר מזוהה משכורת, חלץ את שם המעסיק המלא:
-    - נקה מהתיאור את המילים: MSB, מס"ב, מסב, זיכוי, ZIKUY, MASAB, העברת, הפקדת, שכר, משכורת.
-    - אם התיאור מכיל שם חברה מוכר (Intel, IDF, צה"ל, צבא, מדינת ישראל, שטראוס, טבע, אלביט, רפאל, IAI, תעשייה אווירית, אוניברסיטה, עירייה, בית חולים, משרד הביטחון, משטרה וכד') → confidence: "high".
-    - אם אותו גורם מעביר כסף בתאריך קבוע (1, 9, 10 לחודש) מדי חודש → confidence: "high".
-    - אם הסכום עקבי בין חודשים (פער מתחת ל-5%) אבל אין שם ברור → confidence: "medium".
-    - אם לא ניתן לזהות → confidence: "low", needs_manual_verification: true.
-    - עדכן employer_name בשורש ה-JSON לשם המנוקה לתצוגה מהירה.
+     כאשר מזוהה משכורת, חלץ את שם המעסיק המלא:
+     - נקה מהתיאור את המילים: MSB, מס"ב, מסב, זיכוי, ZIKUY, MASAB, העברת, הפקדת, שכר, משכורת.
+     - ⚠️ כלל חדש: אם זיכויים בסכום דומה (±500 ₪) חוזרים ב-9 או 10 לחודש — חלץ את שם הגורם המעביר מאותה שורה כ-employer_name, ו-verification_method = "recurring 9th/10th deposit".
+     - אם התיאור מכיל שם חברה מוכר (Intel, IDF, צה"ל, צבא, מדינת ישראל, שטראוס, טבע, אלביט, רפאל, IAI, תעשייה אווירית, אוניברסיטה, עירייה, בית חולים, משרד הביטחון, משטרה וכד') → confidence: "high".
+     - אם אותו גורם מעביר כסף בתאריך קבוע (1, 9, 10 לחודש) מדי חודש → confidence: "high".
+     - אם הסכום עקבי בין חודשים (פער מתחת ל-5%) אבל אין שם ברור → confidence: "medium".
+     - אם לא ניתן לזהות → confidence: "low", needs_manual_verification: true.
+     - עדכן employer_name בשורש ה-JSON לשם המנוקה לתצוגה מהירה.
+
+11a. secondary_income (הכנסה משנית):
+     זהה זיכויים מ"ביטוח לאומי" או עם קוד אסמכתא 177.
+     אלו הכנסות משניות יציבות (קצבאות). רשום ב-secondary_income עם שם המקור, סכום חודשי, ותדירות.
 
 11. health_insurance (קופת חולים):
     זהה חיובים לקופות חולים מדף הבנק:
@@ -390,11 +417,31 @@ ${crossRefInstruction}
       analysis = { raw: content, error: "Failed to parse AI response" };
     }
 
-    // Post-process: recalculate DTI from structured data (not AI's total)
+    // Post-process: filter out false-positive loans and recalculate DTI
     if (analysis && !analysis.error) {
       const income = Number(analysis.salary_verification?.average_monthly_deposit) || Number(analysis.verified_salary) || 0;
 
-      // Sum recurring debits from structured fields instead of trusting AI total
+      // Filter existing_loans: only keep true loans (code 469 or loan keywords)
+      const LOAN_EXCLUDES = ["דירקט מצטבר", "משיכה מבנקט", "דירקט"];
+      const LOAN_KEYWORDS = ["הו\"ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"];
+      if (Array.isArray(analysis.existing_loans)) {
+        analysis.existing_loans = analysis.existing_loans.filter((loan: any) => {
+          const desc = (loan.description || "").toLowerCase();
+          // Exclude known false positives
+          if (LOAN_EXCLUDES.some(ex => desc.includes(ex.toLowerCase()))) return false;
+          // Keep if code 469 or contains loan keywords
+          const code = String(loan.bank_code || loan.reference_code || "");
+          if (code.startsWith("469")) return true;
+          if (LOAN_KEYWORDS.some(kw => desc.includes(kw))) return true;
+          // Keep mortgage-related
+          if (desc.includes("משכנתא") || desc.includes("הלוואת דיור")) return true;
+          // Keep items the AI explicitly marked with dti_impact > 0
+          if (Number(loan.dti_impact) > 0) return true;
+          return true; // keep by default for other AI-detected loans
+        });
+      }
+
+      // Sum recurring debits from structured fields
       let recurringDebits = 0;
 
       // Mortgage payment
@@ -402,7 +449,7 @@ ${crossRefInstruction}
         recurringDebits += Number(analysis.mortgage.monthly_payment) || 0;
       }
 
-      // Existing loans
+      // Existing loans (already filtered)
       if (Array.isArray(analysis.existing_loans)) {
         for (const loan of analysis.existing_loans) {
           recurringDebits += Number(loan.monthly_payment) || 0;
