@@ -123,6 +123,22 @@ function FullAnalysisPanel({ lead, open, onClose, heatStatus, onChangeHeat }: {
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
+          {/* Client name from bank statement */}
+          {ai?.client?.full_name && ai.client.full_name !== lead.full_name && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 flex items-center gap-2">
+              <User size={14} className="text-[hsl(var(--primary))]" />
+              <div>
+                <p className="text-white/40 text-[10px]">שם מדף הבנק</p>
+                <p className="text-white/80 text-sm font-medium">{ai.client.full_name}</p>
+              </div>
+              {ai.client.bank_name && (
+                <Badge variant="outline" className="mr-auto text-[10px] text-white/50 border-white/10">
+                  {ai.client.bank_name} • {ai.client.account_number || ""}
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Contact info */}
           <div className="grid grid-cols-2 gap-3">
             {lead.phone && (
