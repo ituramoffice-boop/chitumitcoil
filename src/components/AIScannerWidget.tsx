@@ -185,7 +185,7 @@ export default function AIScannerWidget({
       setSearchingClients(true);
       const { data } = await supabase
         .from("leads")
-        .select("id, full_name, phone")
+        .select("id, full_name, phone, email")
         .or(`full_name.ilike.%${clientSearch}%,phone.ilike.%${clientSearch}%`)
         .limit(5);
       setClientResults(data || []);
