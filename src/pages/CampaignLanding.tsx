@@ -742,8 +742,8 @@ export default function CampaignLanding() {
   const [stepIdx, setStepIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [toolData, setToolData] = useState<Record<string, unknown>>({});
-  const [prefillName, setPrefillName] = useState("ישראל ישראלי");
-  const [prefillPhone, setPrefillPhone] = useState("050-1234567");
+  const [prefillName, setPrefillName] = useState("");
+  const [prefillPhone, setPrefillPhone] = useState("");
 
   // Trigger AI loading (for non-payslip funnels) or handle payslip result
   const handleToolSubmit = useCallback((data: Record<string, unknown>) => {
