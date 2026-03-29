@@ -392,6 +392,7 @@ const DEMO_LEADS: LeadRow[] = [
       cross_reference_status: "green",
       employer: { name: "אלביט מערכות", confidence: "high", verification_method: "MSB code 71", needs_manual_verification: false },
       employer_name: "אלביט מערכות",
+      health_insurance: { provider: "מכבי", monthly_payment: 120, confidence: "high" },
       advisor_summary: "לקוח עם פרופיל חזק. מעסיק: אלביט מערכות (מאומת MSB). זוהה כפל ביטוחי בריאות (מגדל + הראל). חיסכון שנתי פוטנציאלי: ₪3,480. יחס חוב/הכנסה 38% — תקין. מומלץ לקבוע פגישה לביטול הכפילות."
     }
   },
