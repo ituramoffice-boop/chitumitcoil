@@ -53,7 +53,7 @@ serve(async (req) => {
       ? "https://ai.gateway.lovable.dev/v1/chat/completions"
       : "https://api.openai.com/v1/chat/completions";
     const apiKey = useLovable ? LOVABLE_API_KEY : OPENAI_API_KEY;
-    const model = useLovable ? "openai/gpt-5" : "gpt-4o";
+    const model = useLovable ? "google/gemini-2.5-flash" : "gpt-4o";
 
     console.log(`[analyze-bank-statement] Using ${useLovable ? "Lovable AI" : "OpenAI"}, images: ${imageList.length}, hasText: ${!!text}`);
 
