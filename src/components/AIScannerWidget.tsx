@@ -341,6 +341,35 @@ export default function AIScannerWidget({
           .eq("id", selectedClient.id);
       }
 
+      // Trigger email notification to advisor after scan completion
+      if (user && analysis) {
+        const wowAlerts = analysis.wow_alerts || analysis.key_findings || [];
+        const findingsCount = (wowAlerts.length || 0) + (analysis.risks?.length || 0);
+        const clientName = advisorMode && selectedClient ? selectedClient.full_name : "לקוח אנונימי";
+
+        // Fetch advisor profile for email
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (profile?.email) {
+          supabase.functions.invoke("send-email", {
+            body: {
+              type: "new_lead",
+              to: profile.email,
+              data: {
+                name: clientName,
+                scan_type: type === "payslip" ? "תלוש שכר" : type === "bank_statement" ? "דף בנק" : type === "credit_card" ? "כרטיס אשראי" : type === "pension" ? "פנסיה" : "ביטוח",
+                wow_alerts: wowAlerts,
+                from: "חיתומית SCORE <reports@chitumit.co.il>",
+              },
+            },
+          }).catch((e: any) => console.warn("[Scanner] Email notification failed:", e));
+        }
+      }
+
       onSubmit(resultPayload);
     } catch (err: any) {
       console.error(`${type} scanner error:`, err);

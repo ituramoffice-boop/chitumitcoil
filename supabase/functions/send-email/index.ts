@@ -172,7 +172,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: data?.from || "חיתומית SCORE <noreply@chitumit.co.il>",
+        from: data?.from || "חיתומית SCORE <reports@chitumit.co.il>",
         to: [to],
         subject,
         html,
