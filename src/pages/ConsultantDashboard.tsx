@@ -1183,14 +1183,18 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <AuditLog lead={selectedLead} />
             </div>
 
-            <Tabs defaultValue="advocate" dir="rtl">
-              <TabsList>
+            <Tabs defaultValue="ai-scan" dir="rtl">
+              <TabsList className="flex-wrap">
+                <TabsTrigger value="ai-scan">📊 ניתוח סריקה</TabsTrigger>
                 <TabsTrigger value="advocate">AI חיתום</TabsTrigger>
                 <TabsTrigger value="collab">מודיעין קולקטיבי</TabsTrigger>
                 <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
                 <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
                 <TabsTrigger value="details">פרטים</TabsTrigger>
               </TabsList>
+              <TabsContent value="ai-scan" className="mt-4">
+                <AIAnalysisTab lead={selectedLead} />
+              </TabsContent>
               <TabsContent value="advocate" className="mt-4">
                 <AIUnderwriterAdvocate lead={selectedLead} />
               </TabsContent>
