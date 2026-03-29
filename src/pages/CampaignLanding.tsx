@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import AIScannerWidget from "@/components/AIScannerWidget";
 import { useParams, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -138,181 +139,7 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
   );
 }
 
-// ── PDF to Image converter (all pages) ─────────────────────
-async function pdfToBase64Images(
-  file: File,
-  onProgress?: (current: number, total: number) => void
-): Promise<string[]> {
-  const pdfjsLib = await import("pdfjs-dist");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const totalPages = pdf.numPages;
-  const images: string[] = [];
-
-  for (let i = 1; i <= totalPages; i++) {
-    onProgress?.(i, totalPages);
-    const page = await pdf.getPage(i);
-    const scale = 2;
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement("canvas");
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext("2d")!;
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    images.push(canvas.toDataURL("image/png").split(",")[1]);
-  }
-
-  return images;
-}
-
-// ── Payslip analysis progress messages ─────────────────────
-const PAYSLIP_PROGRESS_MESSAGES = [
-  "הופך קובץ לתמונה לעיבוד...",
-  "סורק הפרשות פנסיוניות מול החוק...",
-  "מזהה כפילויות ביטוח וחוסרים...",
-  "מכין סיכום מנהלים ליועץ...",
-];
-
-// ── Payslip Hook Widget ────────────────────────────────────
-function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
-  const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploaded, setUploaded] = useState(false);
-  const [fileName, setFileName] = useState("");
-  const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
-  const [progressMsgIdx, setProgressMsgIdx] = useState(0);
-
-  // Cycle progress messages during analysis
-  useEffect(() => {
-    if (!uploading) return;
-    const iv = setInterval(() => {
-      setProgressMsgIdx((prev) => (prev + 1) % PAYSLIP_PROGRESS_MESSAGES.length);
-    }, 2500);
-    return () => clearInterval(iv);
-  }, [uploading]);
-
-  const processFile = useCallback(async (file: File) => {
-    if (!file) return;
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error("הקובץ גדול מדי – עד 10MB");
-      return;
-    }
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error("פורמט לא נתמך – PDF, JPG, PNG בלבד");
-      return;
-    }
-
-    setUploading(true);
-    setFileName(file.name);
-    setProgressMsgIdx(0);
-
-    try {
-      const filePath = `${crypto.randomUUID()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("payslips")
-        .upload(filePath, file, { contentType: file.type });
-      if (uploadError) throw uploadError;
-
-      let images: { base64: string; mime_type: string }[] = [];
-
-      if (file.type === "application/pdf") {
-        setPdfProgress({ current: 0, total: 0 });
-        const pdfImages = await pdfToBase64Images(file, (current, total) => {
-          setPdfProgress({ current, total });
-        });
-        setPdfProgress(null);
-        images = pdfImages.map((b64) => ({ base64: b64, mime_type: "image/png" }));
-      } else {
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result.split(",")[1]);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        images = [{ base64, mime_type: file.type }];
-      }
-
-      const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
-        body: { images },
-      });
-      if (fnError) throw fnError;
-
-      const analysis = data?.analysis || data;
-      setUploaded(true);
-      setUploading(false);
-
-      onSubmit({ tool: "payslip_scan", file_path: filePath, ai_analysis: analysis });
-    } catch (err: any) {
-      console.error("Payslip upload error:", err);
-      setUploading(false);
-      toast.error("שגיאה בניתוח התלוש – נסו שנית");
-    }
-  }, [onSubmit]);
-
-  const handleFileSelect = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".pdf,.jpg,.jpeg,.png,.webp";
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) processFile(file);
-    };
-    input.click();
-  }, [processFile]);
-
-  return (
-    <div className="space-y-4">
-      <div
-        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
-          dragging ? "border-accent bg-accent/10 scale-[1.02]" : uploaded ? "border-green-500 bg-green-500/10" : uploading ? "border-accent/50 bg-accent/5" : "border-border hover:border-accent/50"
-        }`}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          const file = e.dataTransfer.files?.[0];
-          if (file) processFile(file);
-        }}
-        onClick={() => !uploading && !uploaded && handleFileSelect()}
-      >
-        {uploading ? (
-          <div className="space-y-3">
-            <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
-            <p className="text-accent font-bold text-sm">
-              {pdfProgress && pdfProgress.total > 0
-                ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...`
-                : PAYSLIP_PROGRESS_MESSAGES[progressMsgIdx]}
-            </p>
-            <Progress value={pdfProgress && pdfProgress.total > 0 ? Math.round((pdfProgress.current / pdfProgress.total) * 100) : undefined} className="h-2 w-48 mx-auto" />
-            <p className="text-xs text-muted-foreground">{fileName}</p>
-          </div>
-        ) : uploaded ? (
-          <div className="space-y-2">
-            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-green-400 font-bold">ביקורת תלוש הושלמה!</p>
-            <p className="text-xs text-muted-foreground">{fileName}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
-            <p className="text-foreground font-semibold">גררו תלוש לכאן או לחצו להעלאה</p>
-            <p className="text-xs text-muted-foreground">PDF, JPG, PNG – עד 10MB</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Har HaBituach Widget ───────────────────────────────────
 function HarHabituachWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
   const [idNumber, setIdNumber] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -816,7 +643,7 @@ export default function CampaignLanding() {
       case "mortgage":
         return <MortgageWidget onSubmit={handleToolSubmit} />;
       case "payslip":
-        return <PayslipWidget onSubmit={handleToolSubmit} />;
+        return <AIScannerWidget type="payslip" onSubmit={handleToolSubmit} />;
       case "har-habituach":
         return <HarHabituachWidget onSubmit={handleToolSubmit} />;
       case "masleka":
