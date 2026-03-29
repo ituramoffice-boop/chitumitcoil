@@ -979,9 +979,12 @@ export default function CampaignLanding() {
                               </TableRow>
                             </TableBody>
                           </Table>
-                          {pension.destination_institution && (
+                          {(pension.destination_institution || pension.destination_institution_hebrew) && (
                             <div className="px-3 py-2 border-t border-border text-xs text-muted-foreground">
-                              גוף מנהל: <span className="text-foreground font-medium">{pension.destination_institution}</span>
+                              גוף מנהל: <span className="text-foreground font-medium">{pension.destination_institution_hebrew || pension.destination_institution}</span>
+                              {pension.destination_institution_hebrew && pension.destination_institution && (
+                                <span className="text-muted-foreground"> ({pension.destination_institution})</span>
+                              )}
                             </div>
                           )}
                         </div>
