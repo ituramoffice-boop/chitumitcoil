@@ -81,17 +81,8 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 - קוד 10734 = הפקדת צ'ק, סווג כ-"check"
 
 קודי הוצאה (חובה):
-- קוד 469 = החזר הלוואה בנקאית — תמיד סווג כ-"loan" וכלול ב-DTI
 - קוד 4153 או 6147 = חיוב ישיר (כרטיס אשראי / הוראת קבע), סווג כ-"direct_debit"
-
-קודי הכנסה משנית:
-- קוד 177 או תיאור המכיל "ביטוח לאומי" = הכנסה משנית יציבה (קצבה), סווג כ-"secondary_income"
-
-⚠️ זיהוי הלוואות — כלול ב-existing_loans רק אם:
-  א) קוד אסמכתא 469, או
-  ב) תיאור מכיל: "הו״ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"
-⚠️ התעלם מאלו — הם לא הלוואות:
-  - "דירקט מצטבר", "משיכה מבנקט", "דירקט" — אלו פעולות בנקאיות שוטפות
+- חיוב חוזר מגורם בנקאי = הלוואה פעילה, חשב השפעה על DTI
 
 ⚠️ כלל עדיפות: אם התיאור סותר את הקוד – תמיד סמוך על הקוד!
 
@@ -193,22 +184,13 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
       "confidence_reason": "סיבת הסיווג"
     }
   ],
-  "secondary_income": [
-    {
-      "source_name": "שם המקור (ביטוח לאומי / קצבה)",
-      "monthly_amount": 0,
-      "frequency": "monthly",
-      "reference_code": "177 או אחר",
-      "confidence": "high|medium|low"
-    }
-  ],
   "total_monthly_obligations": 0,
   "total_dti_ratio": 0,
   "dti_status": "green|yellow|red",
   "employer": {
     "name": "שם המעסיק המלא (מנוקה)",
     "confidence": "high|medium|low",
-    "verification_method": "MSB code 71|recurring pattern|description match|recurring 9th/10th deposit",
+    "verification_method": "MSB code 71|recurring pattern|description match",
     "needs_manual_verification": false
   },
   "employer_name": "שם המעסיק (לתצוגה מהירה)",
@@ -244,11 +226,7 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 
 3. mortgage: חפש "משכנתא" או "החזר משכנתא". זהה בנק, סכום חודשי. estimated_remaining – הערכה בלבד (אם לא ניתן, null).
 
-4. existing_loans: זהה החזרי הלוואות רק לפי הקריטריונים הבאים:
-   - קוד אסמכתא 469 (החזר הלוואה בנקאית)
-   - תיאור המכיל: "הו״ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"
-   ⚠️ התעלם לחלוטין מ: "דירקט מצטבר", "משיכה מבנקט", "דירקט" — אלו אינן הלוואות!
-   רשום תיאור, סכום, שם המלווה, ו-dti_impact.
+4. existing_loans: זהה כל החזרי הלוואות (מעל ₪300/חודש). רשום תיאור, סכום, שם המלווה, ו-dti_impact (הסכום שמשפיע על יחס ההחזר).
 
 5. insurance_charges: זהה תשלומים לחברות ביטוח (הראל, מנורה, מגדל, כלל, הפניקס וכד'). רשום חברה, סכום חודשי, וסוג (בריאות/חיים/פנסיה/רכב/דירה/אחר).
 
@@ -303,18 +281,13 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
    dti_status: "green" אם מתחת ל-30%, "yellow" אם 30-40%, "red" אם מעל 40%.
 
 10. employer (זיהוי מעסיק):
-     כאשר מזוהה משכורת, חלץ את שם המעסיק המלא:
-     - נקה מהתיאור את המילים: MSB, מס"ב, מסב, זיכוי, ZIKUY, MASAB, העברת, הפקדת, שכר, משכורת.
-     - ⚠️ כלל חדש: אם זיכויים בסכום דומה (±500 ₪) חוזרים ב-9 או 10 לחודש — חלץ את שם הגורם המעביר מאותה שורה כ-employer_name, ו-verification_method = "recurring 9th/10th deposit".
-     - אם התיאור מכיל שם חברה מוכר (Intel, IDF, צה"ל, צבא, מדינת ישראל, שטראוס, טבע, אלביט, רפאל, IAI, תעשייה אווירית, אוניברסיטה, עירייה, בית חולים, משרד הביטחון, משטרה וכד') → confidence: "high".
-     - אם אותו גורם מעביר כסף בתאריך קבוע (1, 9, 10 לחודש) מדי חודש → confidence: "high".
-     - אם הסכום עקבי בין חודשים (פער מתחת ל-5%) אבל אין שם ברור → confidence: "medium".
-     - אם לא ניתן לזהות → confidence: "low", needs_manual_verification: true.
-     - עדכן employer_name בשורש ה-JSON לשם המנוקה לתצוגה מהירה.
-
-11a. secondary_income (הכנסה משנית):
-     זהה זיכויים מ"ביטוח לאומי" או עם קוד אסמכתא 177.
-     אלו הכנסות משניות יציבות (קצבאות). רשום ב-secondary_income עם שם המקור, סכום חודשי, ותדירות.
+    כאשר מזוהה משכורת, חלץ את שם המעסיק המלא:
+    - נקה מהתיאור את המילים: MSB, מס"ב, מסב, זיכוי, ZIKUY, MASAB, העברת, הפקדת, שכר, משכורת.
+    - אם התיאור מכיל שם חברה מוכר (Intel, IDF, צה"ל, צבא, מדינת ישראל, שטראוס, טבע, אלביט, רפאל, IAI, תעשייה אווירית, אוניברסיטה, עירייה, בית חולים, משרד הביטחון, משטרה וכד') → confidence: "high".
+    - אם אותו גורם מעביר כסף בתאריך קבוע (1, 9, 10 לחודש) מדי חודש → confidence: "high".
+    - אם הסכום עקבי בין חודשים (פער מתחת ל-5%) אבל אין שם ברור → confidence: "medium".
+    - אם לא ניתן לזהות → confidence: "low", needs_manual_verification: true.
+    - עדכן employer_name בשורש ה-JSON לשם המנוקה לתצוגה מהירה.
 
 11. health_insurance (קופת חולים):
     זהה חיובים לקופות חולים מדף הבנק:
@@ -417,42 +390,32 @@ ${crossRefInstruction}
       analysis = { raw: content, error: "Failed to parse AI response" };
     }
 
-    // Post-process: filter out false-positive loans and recalculate DTI
+    // Post-process: recalculate DTI, excluding false-positive "דירקט"/"מצטבר"/"משיכה" items
     if (analysis && !analysis.error) {
       const income = Number(analysis.salary_verification?.average_monthly_deposit) || Number(analysis.verified_salary) || 0;
 
-      // Filter existing_loans: only keep true loans (code 469 or loan keywords)
-      const LOAN_EXCLUDES = ["דירקט מצטבר", "משיכה מבנקט", "דירקט"];
-      const LOAN_KEYWORDS = ["הו\"ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"];
-      if (Array.isArray(analysis.existing_loans)) {
-        analysis.existing_loans = analysis.existing_loans.filter((loan: any) => {
-          const desc = (loan.description || "").toLowerCase();
-          // Exclude known false positives
-          if (LOAN_EXCLUDES.some(ex => desc.includes(ex.toLowerCase()))) return false;
-          // Keep if code 469 or contains loan keywords
-          const code = String(loan.bank_code || loan.reference_code || "");
-          if (code.startsWith("469")) return true;
-          if (LOAN_KEYWORDS.some(kw => desc.includes(kw))) return true;
-          // Keep mortgage-related
-          if (desc.includes("משכנתא") || desc.includes("הלוואת דיור")) return true;
-          // Keep items the AI explicitly marked with dti_impact > 0
-          if (Number(loan.dti_impact) > 0) return true;
-          return true; // keep by default for other AI-detected loans
-        });
-      }
+      // Exclusion filter for DTI: descriptions containing these are NOT real obligations
+      const DTI_EXCLUDE_WORDS = ["דירקט", "מצטבר", "משיכה"];
+      const shouldExclude = (desc: string) => DTI_EXCLUDE_WORDS.some(w => desc.includes(w));
 
       // Sum recurring debits from structured fields
       let recurringDebits = 0;
 
       // Mortgage payment
       if (analysis.mortgage?.detected && analysis.mortgage?.monthly_payment) {
-        recurringDebits += Number(analysis.mortgage.monthly_payment) || 0;
+        const desc = String(analysis.mortgage.description || "");
+        if (!shouldExclude(desc)) {
+          recurringDebits += Number(analysis.mortgage.monthly_payment) || 0;
+        }
       }
 
-      // Existing loans (already filtered)
+      // Existing loans (filter out false positives)
       if (Array.isArray(analysis.existing_loans)) {
         for (const loan of analysis.existing_loans) {
-          recurringDebits += Number(loan.monthly_payment) || 0;
+          const desc = String(loan.description || "");
+          if (!shouldExclude(desc)) {
+            recurringDebits += Number(loan.monthly_payment) || 0;
+          }
         }
       }
 
@@ -466,7 +429,10 @@ ${crossRefInstruction}
       // Standing orders (הוראות קבע)
       if (Array.isArray(analysis.standing_orders)) {
         for (const so of analysis.standing_orders) {
-          recurringDebits += Number(so.monthly_amount) || 0;
+          const desc = String(so.description || "");
+          if (!shouldExclude(desc)) {
+            recurringDebits += Number(so.monthly_amount) || 0;
+          }
         }
       }
 
@@ -476,7 +442,6 @@ ${crossRefInstruction}
       console.log(`[analyze-bank-statement] DTI recalc: income=${income}, recurringDebits=${recurringDebits}`);
 
       if (recurringDebits === 0) {
-        // No recurring debits found — DTI is 0%
         analysis.debt_to_income_ratio = 0;
         analysis.total_dti_ratio = 0;
         analysis.dti_status = "green";
@@ -496,7 +461,6 @@ ${crossRefInstruction}
           analysis.dti_display = null;
         }
       } else {
-        // No income detected — can't calculate
         analysis.debt_to_income_ratio = null;
         analysis.total_dti_ratio = null;
         analysis.dti_status = "calculation_error";
