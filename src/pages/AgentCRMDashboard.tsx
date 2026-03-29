@@ -301,6 +301,75 @@ function FullAnalysisPanel({ lead, open, onClose, heatStatus, onChangeHeat }: {
   );
 }
 
+const DEMO_LEADS: LeadRow[] = [
+  {
+    id: "demo-1", full_name: "ישראל כהן", phone: "054-1234567", email: "israel@email.co.il",
+    status: "in_progress", lead_score: 87, created_at: new Date().toISOString(),
+    lead_source: "משפך מסלקה", mortgage_amount: 1800000, monthly_income: 22000, property_value: 2500000,
+    notes: null, next_step: "פגישת זום מחר",
+    ai_analysis: {
+      personal: { account_holder: "ישראל כהן", bank_name: "לאומי", account_number: "4567" },
+      salary_verification: { net_deposits: [21500, 22100, 21800], average_monthly_deposit: 21800, matches_payslip: true, discrepancy_amount: 0 },
+      mortgage: { detected: true, monthly_payment: 4200, bank_name: "לאומי", remaining_balance: 850000 },
+      total_monthly_obligations: 8400,
+      debt_to_income_ratio: 38,
+      insurance_charges: [
+        { company: "מגדל", monthly_amount: 320, description: "ביטוח בריאות" },
+        { company: "הראל", monthly_amount: 290, description: "ביטוח בריאות — כפילות" },
+      ],
+      wow_alerts: ["⚠️ כפל ביטוחי בריאות — חיסכון 290 ש״ח", "🏠 משכנתא: 4,200 ש״ח לחודש", "✅ יחס חוב-הכנסה תקין"],
+      cross_reference_status: "green",
+      advisor_summary: "לקוח עם פרופיל חזק. זוהה כפל ביטוחי בריאות (מגדל + הראל). חיסכון שנתי פוטנציאלי: ₪3,480. יחס חוב/הכנסה 38% — תקין. מומלץ לקבוע פגישה לביטול הכפילות."
+    }
+  },
+  {
+    id: "demo-2", full_name: "רונית לוי", phone: "052-9876543", email: "ronit@gmail.com",
+    status: "new", lead_score: 62, created_at: new Date(Date.now() - 86400000).toISOString(),
+    lead_source: "מחשבון משכנתא", mortgage_amount: 1200000, monthly_income: 15000, property_value: 1700000,
+    notes: null, next_step: null,
+    ai_analysis: {
+      personal: { account_holder: "רונית לוי", bank_name: "הפועלים", account_number: "8901" },
+      salary_verification: { net_deposits: [14200, 14800], average_monthly_deposit: 14500, matches_payslip: false, discrepancy_amount: 500, discrepancy_alert: "הפקדה נמוכה ב-500 ש״ח מהתלוש" },
+      mortgage: { detected: false },
+      total_monthly_obligations: 5200,
+      debt_to_income_ratio: 35,
+      wow_alerts: ["⚠️ הפקדת נטו נמוכה ב-500 ש״ח מהתלוש", "⚠️ אין משכנתא פעילה — בקשה חדשה"],
+      cross_reference_status: "yellow",
+      advisor_summary: "לקוחה חדשה ממחשבון משכנתא. פער קל בהפקדות מול תלוש (500 ש״ח). אין משכנתא פעילה — מבקשת משכנתא ראשונה. דרושה בדיקה נוספת."
+    }
+  },
+  {
+    id: "demo-3", full_name: "אבי מזרחי", phone: "050-5551234", email: "avi.m@outlook.com",
+    status: "contacted", lead_score: 45, created_at: new Date(Date.now() - 172800000).toISOString(),
+    lead_source: "אתר", mortgage_amount: 900000, monthly_income: 12000, property_value: 1300000,
+    notes: null, next_step: "שליחת הצעה",
+    ai_analysis: {
+      salary_verification: { average_monthly_deposit: 11200, matches_payslip: false, discrepancy_amount: 800 },
+      mortgage: { detected: true, monthly_payment: 3100, bank_name: "דיסקונט" },
+      total_monthly_obligations: 7800,
+      debt_to_income_ratio: 65,
+      wow_alerts: ["⚠️ יחס חוב להכנסה גבוה: 65%", "⚠️ הפקדה נמוכה ב-800 ש״ח", "🏠 משכנתא קיימת: 3,100 ש״ח"],
+      cross_reference_status: "red",
+      advisor_summary: "יחס חוב/הכנסה גבוה מאוד (65%). פער משמעותי בהפקדות. דרוש שיפור פרופיל פיננסי לפני הגשה לבנק. מומלץ תוכנית הבראה 6-12 חודשים."
+    }
+  },
+  {
+    id: "demo-4", full_name: "מיכל אברהם", phone: "058-7773344", email: null,
+    status: "new", lead_score: 91, created_at: new Date(Date.now() - 3600000).toISOString(),
+    lead_source: "תלוש שכר", mortgage_amount: 2200000, monthly_income: 35000, property_value: 3000000,
+    notes: null, next_step: null,
+    ai_analysis: {
+      salary_verification: { average_monthly_deposit: 34800, matches_payslip: true },
+      mortgage: { detected: false },
+      total_monthly_obligations: 3200,
+      debt_to_income_ratio: 9,
+      wow_alerts: ["✅ פרופיל חזק מאוד", "✅ יחס חוב-הכנסה מצוין: 9%", "🔥 VIP — סכום משכנתא מעל 2M"],
+      cross_reference_status: "green",
+      advisor_summary: "VIP — הכנסה גבוהה, יחס חוב/הכנסה מצוין (9%). בקשה למשכנתא ראשונה בסך 2.2M ש״ח. סיכויי אישור גבוהים מאוד. דרוש תיאום פגישה דחוף."
+    }
+  },
+];
+
 export default function AgentCRMDashboard() {
   const [activeNav, setActiveNav] = useState(0);
   const [leads, setLeads] = useState<LeadRow[]>([]);
@@ -309,10 +378,16 @@ export default function AgentCRMDashboard() {
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
   const [heatOverrides, setHeatOverrides] = useState<Record<string, HeatStatus>>({});
   const { user } = useAuth();
+  const { isDemo } = useDemo();
 
   useEffect(() => {
-    fetchLeads();
-  }, [user]);
+    if (isDemo) {
+      setLeads(DEMO_LEADS);
+      setLoading(false);
+    } else {
+      fetchLeads();
+    }
+  }, [user, isDemo]);
 
   const fetchLeads = async () => {
     setLoading(true);
