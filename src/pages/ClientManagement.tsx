@@ -19,6 +19,9 @@ import {
   FileText, ArrowRight, Zap, Phone, Mail, Search, Filter,
 } from "lucide-react";
 import { FinancialXRay } from "@/components/FinancialXRay";
+import AIScannerWidget from "@/components/AIScannerWidget";
+import type { ScannerType } from "@/components/AIScannerWidget";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Stage definitions
 const STAGES = [
@@ -454,6 +457,35 @@ export default function ClientManagement() {
 
         {/* Financial X-Ray */}
         <FinancialXRay leadId={selectedCase?.lead_id} clientName={selectedCase?.lead?.full_name} />
+
+        {/* AI Document Scanners */}
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h3 className="font-bold flex items-center gap-2 mb-4">
+            <Search className="w-4 h-4 text-primary" />
+            סריקת מסמכים AI
+          </h3>
+          <Tabs defaultValue="payslip" dir="rtl">
+            <TabsList className="flex-wrap h-auto gap-1">
+              <TabsTrigger value="payslip">תלוש שכר</TabsTrigger>
+              <TabsTrigger value="bank_statement">דף בנק</TabsTrigger>
+              <TabsTrigger value="credit_card">כרטיס אשראי</TabsTrigger>
+              <TabsTrigger value="pension">פנסיה</TabsTrigger>
+              <TabsTrigger value="insurance">ביטוח</TabsTrigger>
+            </TabsList>
+            {(["payslip", "bank_statement", "credit_card", "pension", "insurance"] as ScannerType[]).map((scanType) => (
+              <TabsContent key={scanType} value={scanType} className="mt-4">
+                <AIScannerWidget
+                  type={scanType}
+                  onSubmit={(data) => {
+                    toast({ title: "✅ סריקה הושלמה", description: `הנתונים נשמרו בתיק ${selectedCase?.lead?.full_name || "הלקוח"}` });
+                  }}
+                  extraBody={{ lead_id: selectedCase?.lead_id }}
+                  hideAdvisorUpload
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
 
         {/* Timeline */}
         <div className="bg-card border border-border rounded-2xl p-5">
