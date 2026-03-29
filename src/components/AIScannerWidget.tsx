@@ -189,7 +189,7 @@ export default function AIScannerWidget({
 
       // Call the type-specific edge function
       const { data, error: fnError } = await supabase.functions.invoke(config.edgeFunction, {
-        body: { images },
+        body: { images, ...extraBody },
       });
       if (fnError) throw fnError;
 
