@@ -89,6 +89,7 @@ import { InsiderFeed } from "@/components/InsiderFeed";
 import { PerformanceStats, FeeEstimator, CloseDealTrigger, PipelineTicker } from "@/components/ProfitIntelligence";
 import { PresentationMode } from "@/components/PresentationMode";
 import { ComplianceGuardrail, AuditLog, ClientTermsGate } from "@/components/LiabilityShield";
+import { AIAnalysisTab, HeatTag, WowAlertsBadges, CrossRefIndicator } from "@/components/LeadAIAnalysis";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
@@ -107,6 +108,8 @@ interface Lead {
   last_contact: string | null;
   next_step: string | null;
   client_user_id: string | null;
+  ai_analysis: any;
+  lead_score: number | null;
 }
 
 interface Document {
@@ -300,12 +303,12 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
 
   // Demo data for consultant
   const DEMO_LEADS: Lead[] = [
-    { id: "d1", full_name: "דנה כהן", phone: "052-1111111", email: "dana@test.com", status: "new", notes: "פנתה דרך הפייסבוק", mortgage_amount: 800000, property_value: 1500000, monthly_income: 18000, created_at: new Date(Date.now() - 86400000).toISOString(), lead_source: "facebook", last_contact: null, next_step: "העלאת תלושי שכר", client_user_id: null },
-    { id: "d2", full_name: "אבי לוי", phone: "054-2222222", email: "avi@test.com", status: "contacted", notes: "זוג צעיר", mortgage_amount: 1200000, property_value: 2000000, monthly_income: 25000, created_at: new Date(Date.now() - 172800000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 43200000).toISOString(), next_step: "העלאת דפי בנק", client_user_id: null },
-    { id: "d3", full_name: "שרה מזרחי", phone: "050-3333333", email: "sara@test.com", status: "in_progress", notes: "מחכה לאישור BDI", mortgage_amount: 950000, property_value: 1800000, monthly_income: 20000, created_at: new Date(Date.now() - 604800000).toISOString(), lead_source: "organic", last_contact: new Date(Date.now() - 86400000).toISOString(), next_step: "המתנה לאישור עקרוני", client_user_id: null },
-    { id: "d4", full_name: "יוסי ברק", phone: "058-4444444", email: "yossi@test.com", status: "submitted", notes: "הוגש לבנק הפועלים", mortgage_amount: 1500000, property_value: 2500000, monthly_income: 30000, created_at: new Date(Date.now() - 1209600000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 172800000).toISOString(), next_step: "חתימה על מסמכים", client_user_id: null },
-    { id: "d5", full_name: "מיכל אדרי", phone: "053-5555555", email: "michal@test.com", status: "approved", notes: "אושר! מזל טוב", mortgage_amount: 700000, property_value: 1300000, monthly_income: 16000, created_at: new Date(Date.now() - 2592000000).toISOString(), lead_source: "advisor_sync", last_contact: new Date().toISOString(), next_step: null, client_user_id: "demo-synced" },
-    { id: "d6", full_name: "רון גבאי", phone: "050-6666666", email: "ron@test.com", status: "new", notes: null, mortgage_amount: null, property_value: null, monthly_income: null, created_at: new Date(Date.now() - 3600000).toISOString(), lead_source: "organic", last_contact: null, next_step: null, client_user_id: null },
+    { id: "d1", full_name: "דנה כהן", phone: "052-1111111", email: "dana@test.com", status: "new", notes: "פנתה דרך הפייסבוק", mortgage_amount: 800000, property_value: 1500000, monthly_income: 18000, created_at: new Date(Date.now() - 86400000).toISOString(), lead_source: "facebook", last_contact: null, next_step: "העלאת תלושי שכר", client_user_id: null, ai_analysis: null, lead_score: 55 },
+    { id: "d2", full_name: "אבי לוי", phone: "054-2222222", email: "avi@test.com", status: "contacted", notes: "זוג צעיר", mortgage_amount: 1200000, property_value: 2000000, monthly_income: 25000, created_at: new Date(Date.now() - 172800000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 43200000).toISOString(), next_step: "העלאת דפי בנק", client_user_id: null, ai_analysis: { wow_alerts: ["✅ פרופיל חזק", "⚠️ חסר תלוש שכר"], cross_reference_status: "yellow", total_monthly_obligations: 6200, advisor_summary: "זוג צעיר עם פוטנציאל גבוה" }, lead_score: 72 },
+    { id: "d3", full_name: "שרה מזרחי", phone: "050-3333333", email: "sara@test.com", status: "in_progress", notes: "מחכה לאישור BDI", mortgage_amount: 950000, property_value: 1800000, monthly_income: 20000, created_at: new Date(Date.now() - 604800000).toISOString(), lead_source: "organic", last_contact: new Date(Date.now() - 86400000).toISOString(), next_step: "המתנה לאישור עקרוני", client_user_id: null, ai_analysis: null, lead_score: 45 },
+    { id: "d4", full_name: "יוסי ברק", phone: "058-4444444", email: "yossi@test.com", status: "submitted", notes: "הוגש לבנק הפועלים", mortgage_amount: 1500000, property_value: 2500000, monthly_income: 30000, created_at: new Date(Date.now() - 1209600000).toISOString(), lead_source: "referral", last_contact: new Date(Date.now() - 172800000).toISOString(), next_step: "חתימה על מסמכים", client_user_id: null, ai_analysis: { wow_alerts: ["🔥 VIP — סכום מעל 1.5M", "✅ יחס חוב-הכנסה מצוין"], cross_reference_status: "green", total_monthly_obligations: 4100, debt_to_income_ratio: 14, advisor_summary: "תיק VIP — סיכויי אישור גבוהים מאוד" }, lead_score: 91 },
+    { id: "d5", full_name: "מיכל אדרי", phone: "053-5555555", email: "michal@test.com", status: "approved", notes: "אושר! מזל טוב", mortgage_amount: 700000, property_value: 1300000, monthly_income: 16000, created_at: new Date(Date.now() - 2592000000).toISOString(), lead_source: "advisor_sync", last_contact: new Date().toISOString(), next_step: null, client_user_id: "demo-synced", ai_analysis: null, lead_score: 80 },
+    { id: "d6", full_name: "רון גבאי", phone: "050-6666666", email: "ron@test.com", status: "new", notes: null, mortgage_amount: null, property_value: null, monthly_income: null, created_at: new Date(Date.now() - 3600000).toISOString(), lead_source: "organic", last_contact: null, next_step: null, client_user_id: null, ai_analysis: null, lead_score: 0 },
   ];
 
   const DEMO_DOCS: Document[] = [
@@ -1180,14 +1183,18 @@ const ConsultantDashboard = ({ onSwitchToAdmin }: { onSwitchToAdmin?: () => void
               <AuditLog lead={selectedLead} />
             </div>
 
-            <Tabs defaultValue="advocate" dir="rtl">
-              <TabsList>
+            <Tabs defaultValue="ai-scan" dir="rtl">
+              <TabsList className="flex-wrap">
+                <TabsTrigger value="ai-scan">📊 ניתוח סריקה</TabsTrigger>
                 <TabsTrigger value="advocate">AI חיתום</TabsTrigger>
                 <TabsTrigger value="collab">מודיעין קולקטיבי</TabsTrigger>
                 <TabsTrigger value="risk">ניתוח סיכונים</TabsTrigger>
                 <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
                 <TabsTrigger value="details">פרטים</TabsTrigger>
               </TabsList>
+              <TabsContent value="ai-scan" className="mt-4">
+                <AIAnalysisTab lead={selectedLead} />
+              </TabsContent>
               <TabsContent value="advocate" className="mt-4">
                 <AIUnderwriterAdvocate lead={selectedLead} />
               </TabsContent>
