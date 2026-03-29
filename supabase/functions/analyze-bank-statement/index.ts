@@ -12,7 +12,17 @@ serve(async (req) => {
   }
 
   try {
-    const { base64, mime_type, text, images, payslip_analysis } = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid request body – expected JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { base64, mime_type, text, images, payslip_analysis } = body;
 
     const imageList: { base64: string; mime_type: string }[] = images
       ? images
@@ -22,22 +32,37 @@ serve(async (req) => {
 
     if (imageList.length === 0 && !text) {
       return new Response(
-        JSON.stringify({ error: "Either images or text is required" }),
+        JSON.stringify({ error: "נדרש קובץ תמונה או PDF לניתוח" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // Try Lovable AI Gateway first, fallback to OpenAI
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
+    
+    if (!LOVABLE_API_KEY && !OPENAI_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "No AI API key configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const useLovable = !!LOVABLE_API_KEY;
+    const apiUrl = useLovable
+      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+      : "https://api.openai.com/v1/chat/completions";
+    const apiKey = useLovable ? LOVABLE_API_KEY : OPENAI_API_KEY;
+    const model = useLovable ? "openai/gpt-5" : "gpt-4o";
+
+    console.log(`[analyze-bank-statement] Using ${useLovable ? "Lovable AI" : "OpenAI"}, images: ${imageList.length}, hasText: ${!!text}`);
 
     // Build cross-reference instruction if payslip data exists
     let crossRefInstruction = "";
     if (payslip_analysis?.salary?.net_salary) {
       crossRefInstruction = `
 
-7. הצלבה עם תלוש שכר (Cross-Reference):
+10. הצלבה עם תלוש שכר (Cross-Reference):
    קיים תלוש שכר קודם עם שכר נטו: ₪${payslip_analysis.salary.net_salary}.
    - השווה את "זיכוי משכורת" בדף הבנק לשכר הנטו מהתלוש.
    - אם יש פער מעל 5%, דווח בשדה salary_verification.discrepancy_amount ו-discrepancy_alert.
@@ -147,14 +172,16 @@ ${crossRefInstruction}
       });
     }
 
-    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    console.log(`[analyze-bank-statement] Sending to AI: model=${model}, contentParts=${userContent.length}`);
+
+    const aiResponse = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userContent },
@@ -165,20 +192,36 @@ ${crossRefInstruction}
 
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
-      console.error("OpenAI error:", aiResponse.status, errText);
+      console.error(`[analyze-bank-statement] AI error ${aiResponse.status}:`, errText);
+      
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "המערכת עמוסה – נסו שנית בעוד דקה" }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "נדרש חידוש קרדיטים" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: `OpenAI API error: ${aiResponse.status}` }),
-        { status: aiResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: `שגיאה בשירות הניתוח (${aiResponse.status}) – נסו שנית` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content || "{}";
+    console.log(`[analyze-bank-statement] AI response received, length: ${content.length}`);
 
     let analysis;
     try {
       analysis = JSON.parse(content);
     } catch {
+      console.error("[analyze-bank-statement] Failed to parse AI response:", content.substring(0, 200));
       analysis = { raw: content, error: "Failed to parse AI response" };
     }
 
@@ -187,9 +230,9 @@ ${crossRefInstruction}
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("analyze-bank-statement error:", e);
+    console.error("[analyze-bank-statement] Unhandled error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "שגיאה לא צפויה – נסו שנית" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
