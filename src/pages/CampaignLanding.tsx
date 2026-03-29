@@ -656,6 +656,8 @@ export default function CampaignLanding() {
         return <PlaceholderWidget label="מסלקה" onSubmit={handleToolSubmit} />;
       case "savings":
         return <PlaceholderWidget label="חיסכון" onSubmit={handleToolSubmit} />;
+      case "bank-statement":
+        return <AIScannerWidget type="bank_statement" onSubmit={handleToolSubmit} extraBody={toolData.ai_analysis ? { payslip_analysis: toolData.ai_analysis } : undefined} />;
       case "price-compare":
         return <PlaceholderWidget label="השוואת מחירים" onSubmit={handleToolSubmit} />;
       default:
