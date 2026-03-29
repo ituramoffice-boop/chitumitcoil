@@ -14,7 +14,6 @@ serve(async (req) => {
   try {
     const { base64, mime_type, text, images } = await req.json();
 
-    // Support both legacy single-image and new multi-image format
     const imageList: { base64: string; mime_type: string }[] = images
       ? images
       : base64
@@ -33,55 +32,82 @@ serve(async (req) => {
       throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    const systemPrompt = `אתה מומחה לביטוח ופנסיה ישראלי עם 20 שנות ניסיון.
-נתח את תלוש השכר ותחזיר JSON בלבד עם המבנה הבא:
+    const systemPrompt = `אתה רואה חשבון בכיר ומומחה לביטוח ופנסיה ישראלי עם 20 שנות ניסיון. בצע ביקורת מקצועית (Professional Audit) על תלוש השכר.
+
+החזר JSON בלבד עם המבנה הבא:
 
 {
   "personal": {
-    "full_name": "שם מלא",
-    "phone": "מספר טלפון אם מופיע",
-    "employer": "שם מעסיק",
+    "full_name": "שם מלא של העובד",
+    "phone": "מספר טלפון אם מופיע, אחרת null",
+    "employer": "שם המעסיק"
+  },
+  "salary": {
     "gross_salary": 0,
     "net_salary": 0,
-    "pension_salary": 0
+    "pensionable_salary": 0
   },
-  "insurance_doubles": [
-    {
-      "type": "סוג הכפל",
-      "company1": "חברה א",
-      "company2": "חברה ב",
-      "monthly_waste": 0,
-      "description": "תיאור"
-    }
-  ],
-  "pension_issues": {
-    "employer_deposit_percent": 0,
-    "employee_deposit_percent": 0,
-    "missing_employer_percent": 0,
-    "monthly_loss": 0,
-    "uninsured_components": []
+  "pension_audit": {
+    "pensionable_salary": 0,
+    "employer_contribution_actual": 0,
+    "employer_contribution_percent": 0,
+    "employer_contribution_legal_min": 6.5,
+    "employee_contribution_actual": 0,
+    "employee_contribution_percent": 0,
+    "employee_contribution_legal_min": 6.0,
+    "severance_contribution_actual": 0,
+    "severance_contribution_percent": 0,
+    "severance_contribution_legal_min": 8.33,
+    "destination_institution": "שם הגוף המנהל (מנורה/מגדל/הראל/כלל/הפניקס/אלטשולר/אחר)",
+    "employer_gap_shekel": 0,
+    "employee_gap_shekel": 0,
+    "severance_gap_shekel": 0,
+    "total_missing_money": 0
   },
-  "opportunities": [
-    {
-      "type": "disability_insurance|pension|study_fund|other",
-      "title": "כותרת",
-      "potential_commission": "גבוה|בינוני|נמוך",
-      "description": "תיאור קצר לסוכן"
-    }
-  ],
+  "insurance_audit": {
+    "health_insurance_deduction": null,
+    "life_risk_deduction": null,
+    "group_insurance_deduction": null,
+    "has_double_insurance": false,
+    "double_insurance_details": "פירוט כפל ביטוח אם קיים, אחרת null"
+  },
   "wow_alerts": [
-    "הלקוח משלם X ש״ח מיותרים על כפל ביטוח",
-    "חוסר פנסיוני משמעותי - פוטנציאל עמלה גבוה"
+    "התראות טקסטואליות קצרות על ממצאים חריגים"
   ],
   "total_monthly_waste": 0,
-  "agent_summary": "סיכום קצר לסוכן על ההזדמנות"
+  "agent_summary": "סיכום ביקורת קצר וממוקד לסוכן הביטוח"
 }
+
+הנחיות לביקורת:
+
+1. שכר פנסיוני (Pensionable Salary): זהה את "שכר הבסיס" או "ברוטו לפנסיה" – לא את הברוטו הכולל.
+
+2. בדיקת הפרשות פנסיה:
+   - הפרשת מעסיק: המינימום החוקי 6.5% משכר פנסיוני. חשב את האחוז בפועל וזהה פער.
+   - הפרשת עובד: המינימום 6%. חשב אחוז בפועל וזהה פער.
+   - פיצויים: המינימום 8.33%. חשב אחוז בפועל וזהה פער.
+   - total_missing_money = סך כל הפערים בש"ח.
+
+3. גוף מנהל (Destination Institution): זהה את שם חברת הביטוח/בית השקעות מתוך שורות "קופת גמל", "קרן פנסיה", "ביטוח מנהלים" (מנורה, מגדל, הראל, כלל, הפניקס, אלטשולר שחם וכד').
+
+4. בדיקת ביטוחים:
+   - health_insurance_deduction: סכום ניכוי לביטוח בריאות/שב"ן אם קיים.
+   - life_risk_deduction: סכום ניכוי לביטוח חיים/ריסק אם קיים.
+   - group_insurance_deduction: סכום ניכוי לביטוח קבוצתי אם קיים.
+   - has_double_insurance: true אם יש ניכוי לתוכנית בריאות פרטית/קבוצתית (כפל מול ביטוח הבריאות הממלכתי).
+
+5. wow_alerts: צור התראות קצרות ואימפקטיביות. דוגמאות:
+   - "חסרים X ש״ח בהפרשת מעסיק לפנסיה – כסף שנשאר אצל המעסיק!"
+   - "כפל ביטוח בריאות – משלם על כיסוי כפול"
+   - "אין הפרשה לפיצויים – סיכון בפיטורין"
+
+6. total_monthly_waste = total_missing_money + סכום כפלי ביטוח אם קיימים.
 
 אם שדה לא נמצא בתלוש, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
 
     const pageCount = imageList.length;
     const userContent: any[] = [
-      { type: "text", text: text || (pageCount > 1 ? `נתח את תלוש השכר המצורף (${pageCount} עמודים). שלב את כל הנתונים מכל העמודים לתוצאה אחת.` : "נתח את תלוש השכר המצורף.") },
+      { type: "text", text: text || (pageCount > 1 ? `בצע ביקורת מקצועית על תלוש השכר המצורף (${pageCount} עמודים). שלב את כל הנתונים מכל העמודים לתוצאה אחת.` : "בצע ביקורת מקצועית על תלוש השכר המצורף.") },
     ];
 
     for (const img of imageList) {
