@@ -19,6 +19,7 @@ export default function BankStatementLanding() {
   const [emailInput, setEmailInput] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [deepScanMode, setDeepScanMode] = useState(false);
 
   const analysis = result?.ai_analysis as Record<string, unknown> | undefined;
 
@@ -119,7 +120,9 @@ export default function BankStatementLanding() {
             <CardContent className="p-6">
               <AIScannerWidget
                 type="bank_statement"
-                onSubmit={(data) => setResult(data)}
+                onSubmit={(data) => { setResult(data); setDeepScanMode(false); }}
+                extraBody={deepScanMode ? { deep_scan: true } : undefined}
+                key={deepScanMode ? "deep" : "normal"}
               />
             </CardContent>
           </Card>
