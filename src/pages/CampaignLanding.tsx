@@ -593,9 +593,11 @@ export default function CampaignLanding() {
       const alerts = analysis.wow_alerts || [];
       const hasMissingMoney = (analysis.pension_audit?.total_missing_money || 0) > 0;
       const hasDoubleInsurance = analysis.insurance_audit?.has_double_insurance;
+      const hasBankFindings = analysis.financial_summary?.obligation_ratio_percent > 0;
+      const hasSalaryDiscrepancy = !!analysis.salary_discrepancy;
 
       // Show audit results if there are any findings
-      if (alerts.length > 0 || hasMissingMoney || hasDoubleInsurance) {
+      if (alerts.length > 0 || hasMissingMoney || hasDoubleInsurance || hasBankFindings || hasSalaryDiscrepancy) {
         setWowAlerts(alerts);
         setPhase("wow_alerts");
         return;
