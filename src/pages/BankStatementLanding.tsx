@@ -61,6 +61,10 @@ export default function BankStatementLanding() {
 
   const avgIncome = salaryVerification?.average_monthly_deposit || 0;
   const mortgagePayment = mortgage?.monthly_payment || 0;
+  const verifiedSalary = analysis?.verified_salary as number || 0;
+  const verifiedBy = analysis?.verified_by as string || "";
+  const totalDtiRatio = analysis?.total_dti_ratio as number || 0;
+  const dtiStatus = analysis?.dti_status as "green" | "yellow" | "red" | undefined;
 
   const healthScore = analysis
     ? Math.max(0, Math.min(100, Math.round(
