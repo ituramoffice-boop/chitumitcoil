@@ -413,7 +413,7 @@ export default function BankStatementLanding() {
                           const wowAlerts = analysis?.wow_alerts as string[] || [];
                           const findingsCount = wowAlerts.length + ((analysis?.risks as any[])?.length || 0);
                           const scanType = "דף בנק";
-                          const clientName = (analysis?.personal as any)?.account_holder || "";
+                          const clientName = (analysis?.personal as any)?.account_holder || (analysis?.client as any)?.full_name || "";
 
                           const { error } = await supabase.functions.invoke("send-email", {
                             body: {
