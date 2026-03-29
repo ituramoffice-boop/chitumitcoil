@@ -42,9 +42,9 @@ const CONSENTS = [
 ];
 
 const SCAN_SOURCES = [
-  { id: "masleka", label: "סנכרן מסלקה פנסיונית", icon: Landmark, color: "from-cyan-500 to-blue-600" },
-  { id: "har", label: "סנכרן הר הביטוח", icon: Shield, color: "from-amber-500 to-orange-600" },
-  { id: "openbanking", label: "סרוק בנק וכרטיסי אשראי", icon: CreditCard, color: "from-emerald-500 to-teal-600" },
+  { id: "masleka", label: "סנכרן מסלקה פנסיונית", icon: Landmark, color: "from-cyan-500 to-blue-600", whatsappMsg: "שלום {name} 👋\nאני צריך לשלוף את נתוני המסלקה הפנסיונית שלך לצורך ניתוח מקיף. אפשר בבקשה להיכנס לאתר המסלקה ולשתף את הדוח? 📊\nתודה!" },
+  { id: "har", label: "סנכרן הר הביטוח", icon: Shield, color: "from-amber-500 to-orange-600", whatsappMsg: "שלום {name} 👋\nאני צריך גישה לנתוני הר הביטוח שלך כדי לזהות כפילויות ולבדוק פוליסות. אפשר להיכנס ל-https://har-habituach.gov.il ולשתף את הדוח? 🛡️\nתודה!" },
+  { id: "openbanking", label: "סרוק בנק וכרטיסי אשראי", icon: CreditCard, color: "from-emerald-500 to-teal-600", whatsappMsg: "שלום {name} 👋\nלצורך הניתוח הפיננסי, אני צריך תדפיסי עו\"ש ופירוט כרטיס אשראי (3 חודשים אחרונים). אפשר להוריד מהאפליקציה של הבנק ולשלוח? 🏦\nתודה!" },
 ];
 
 /* ── Helpers ── */
