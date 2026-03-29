@@ -5,13 +5,20 @@ import { TrustBankLogos } from "@/components/TrustBankLogos";
 import { ReadinessScore } from "@/components/ReadinessScore";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   ShieldCheck, Lock, Landmark, TrendingDown, PiggyBank,
-  AlertTriangle, CheckCircle2, CreditCard, Building2
+  AlertTriangle, CheckCircle2, CreditCard, Building2, Mail, Loader2
 } from "lucide-react";
 
 export default function BankStatementLanding() {
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [emailInput, setEmailInput] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const analysis = result?.ai_analysis as Record<string, unknown> | undefined;
 
@@ -280,6 +287,70 @@ export default function BankStatementLanding() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Send Report by Email */}
+            <Card className="bg-white/5 backdrop-blur-xl border-gold/10">
+              <CardContent className="p-5 space-y-3">
+                <h3 className="text-sm font-bold text-gold flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  שלח לי את הדוח למייל
+                </h3>
+                {emailSent ? (
+                  <div className="flex items-center gap-2 text-emerald-300 text-sm">
+                    <CheckCircle2 className="w-4 h-4" />
+                    הדוח נשלח בהצלחה! בדוק את תיבת המייל שלך
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      type="email"
+                      placeholder="הזן את כתובת המייל שלך"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-blue-200/30 text-sm"
+                      dir="ltr"
+                    />
+                    <Button
+                      disabled={!emailInput || sendingEmail}
+                      onClick={async () => {
+                        setSendingEmail(true);
+                        try {
+                          const wowAlerts = analysis?.wow_alerts as string[] || [];
+                          const findingsCount = wowAlerts.length + ((analysis?.risks as any[])?.length || 0);
+                          const scanType = "דף בנק";
+                          const clientName = (analysis?.personal as any)?.account_holder || "";
+
+                          const { error } = await supabase.functions.invoke("send-email", {
+                            body: {
+                              type: "analysis_ready",
+                              to: emailInput,
+                              data: {
+                                client_name: clientName,
+                                scan_type: scanType,
+                                findings_count: findingsCount,
+                                wow_alerts: wowAlerts,
+                                link: window.location.href,
+                              },
+                            },
+                          });
+                          if (error) throw error;
+                          setEmailSent(true);
+                          toast.success("הדוח נשלח למייל בהצלחה!");
+                        } catch (e) {
+                          console.error("Email send error:", e);
+                          toast.error("שגיאה בשליחה – נסה שנית");
+                        } finally {
+                          setSendingEmail(false);
+                        }
+                      }}
+                      className="bg-gold hover:bg-gold/90 text-black font-bold shrink-0"
+                    >
+                      {sendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : "שלח"}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* CTA */}
             <motion.div
