@@ -182,6 +182,13 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
   "total_monthly_obligations": 0,
   "total_dti_ratio": 0,
   "dti_status": "green|yellow|red",
+  "employer": {
+    "name": "שם המעסיק המלא (מנוקה)",
+    "confidence": "high|medium|low",
+    "verification_method": "MSB code 71|recurring pattern|description match",
+    "needs_manual_verification": false
+  },
+  "employer_name": "שם המעסיק (לתצוגה מהירה)",
   "wow_alerts": [
     "⚠️ הפקדת נטו נמוכה ב-800 ש״ח מהתלוש",
     "🏠 משכנתא: 3,200 ש״ח לחודש"
