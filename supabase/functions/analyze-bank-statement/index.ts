@@ -417,11 +417,31 @@ ${crossRefInstruction}
       analysis = { raw: content, error: "Failed to parse AI response" };
     }
 
-    // Post-process: recalculate DTI from structured data (not AI's total)
+    // Post-process: filter out false-positive loans and recalculate DTI
     if (analysis && !analysis.error) {
       const income = Number(analysis.salary_verification?.average_monthly_deposit) || Number(analysis.verified_salary) || 0;
 
-      // Sum recurring debits from structured fields instead of trusting AI total
+      // Filter existing_loans: only keep true loans (code 469 or loan keywords)
+      const LOAN_EXCLUDES = ["דירקט מצטבר", "משיכה מבנקט", "דירקט"];
+      const LOAN_KEYWORDS = ["הו\"ק הלואה", "הוק הלואה", "החזר הלוואה", "פירעון"];
+      if (Array.isArray(analysis.existing_loans)) {
+        analysis.existing_loans = analysis.existing_loans.filter((loan: any) => {
+          const desc = (loan.description || "").toLowerCase();
+          // Exclude known false positives
+          if (LOAN_EXCLUDES.some(ex => desc.includes(ex.toLowerCase()))) return false;
+          // Keep if code 469 or contains loan keywords
+          const code = String(loan.bank_code || loan.reference_code || "");
+          if (code.startsWith("469")) return true;
+          if (LOAN_KEYWORDS.some(kw => desc.includes(kw))) return true;
+          // Keep mortgage-related
+          if (desc.includes("משכנתא") || desc.includes("הלוואת דיור")) return true;
+          // Keep items the AI explicitly marked with dti_impact > 0
+          if (Number(loan.dti_impact) > 0) return true;
+          return true; // keep by default for other AI-detected loans
+        });
+      }
+
+      // Sum recurring debits from structured fields
       let recurringDebits = 0;
 
       // Mortgage payment
@@ -429,7 +449,7 @@ ${crossRefInstruction}
         recurringDebits += Number(analysis.mortgage.monthly_payment) || 0;
       }
 
-      // Existing loans
+      // Existing loans (already filtered)
       if (Array.isArray(analysis.existing_loans)) {
         for (const loan of analysis.existing_loans) {
           recurringDebits += Number(loan.monthly_payment) || 0;
