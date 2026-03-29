@@ -911,34 +911,142 @@ export default function CampaignLanding() {
             )}
 
             {phase === "wow_alerts" && (
-              <motion.div key="wow_alerts" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5 py-4">
+              <motion.div key="wow_alerts" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5 py-4" dir="rtl">
                 <div className="text-center space-y-2">
                   <div className="w-14 h-14 rounded-full bg-destructive/20 mx-auto flex items-center justify-center">
-                    <Sparkles className="w-7 h-7 text-destructive" />
+                    <AlertTriangle className="w-7 h-7 text-destructive" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">ממצאים חשובים!</h3>
-                  <p className="text-sm text-muted-foreground">הנה מה שגילינו בתלוש שלך:</p>
+                  <h3 className="text-xl font-bold text-foreground">ביקורת תלוש – ממצאים</h3>
+                  <p className="text-sm text-muted-foreground">סיכום ביקורת AI מקצועית:</p>
                 </div>
-                <div className="space-y-2">
-                  {wowAlerts.map((alert, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: 15 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.2 }}
-                      className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2"
-                    >
-                      <span className="text-lg shrink-0">⚠️</span>
-                      <p className="text-sm text-foreground font-medium">{alert}</p>
-                    </motion.div>
-                  ))}
-                </div>
-                <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center space-y-1">
-                  <p className="text-2xl font-black text-accent">
-                    ₪{((toolData.ai_analysis as any)?.total_monthly_waste || 0).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground">בזבוז חודשי שזיהינו</p>
-                </div>
+
+                {/* Audit Summary Table */}
+                {(() => {
+                  const analysis = toolData.ai_analysis as any;
+                  const pension = analysis?.pension_audit;
+                  const insurance = analysis?.insurance_audit;
+                  return (
+                    <div className="space-y-4">
+                      {/* Personal & Salary */}
+                      {analysis?.personal?.employer && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Building2 className="w-4 h-4" />
+                          <span>מעסיק: <span className="text-foreground font-medium">{analysis.personal.employer}</span></span>
+                        </div>
+                      )}
+
+                      {/* Pension Audit Table */}
+                      {pension && (
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-3 py-2 text-sm font-bold text-foreground">בדיקת הפרשות פנסיה</div>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-right">סעיף</TableHead>
+                                <TableHead className="text-right">בפועל</TableHead>
+                                <TableHead className="text-right">מינימום חוקי</TableHead>
+                                <TableHead className="text-right">פער ₪</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell className="font-medium">הפרשת מעסיק</TableCell>
+                                <TableCell>{pension.employer_contribution_percent ?? '—'}%</TableCell>
+                                <TableCell>6.5%</TableCell>
+                                <TableCell className={pension.employer_gap_shekel > 0 ? "text-destructive font-bold" : "text-green-500 font-bold"}>
+                                  {pension.employer_gap_shekel > 0 ? `₪${pension.employer_gap_shekel.toLocaleString()}-` : '✓ תקין'}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">הפרשת עובד</TableCell>
+                                <TableCell>{pension.employee_contribution_percent ?? '—'}%</TableCell>
+                                <TableCell>6.0%</TableCell>
+                                <TableCell className={pension.employee_gap_shekel > 0 ? "text-destructive font-bold" : "text-green-500 font-bold"}>
+                                  {pension.employee_gap_shekel > 0 ? `₪${pension.employee_gap_shekel.toLocaleString()}-` : '✓ תקין'}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">פיצויים</TableCell>
+                                <TableCell>{pension.severance_contribution_percent ?? '—'}%</TableCell>
+                                <TableCell>8.33%</TableCell>
+                                <TableCell className={pension.severance_gap_shekel > 0 ? "text-destructive font-bold" : "text-green-500 font-bold"}>
+                                  {pension.severance_gap_shekel > 0 ? `₪${pension.severance_gap_shekel.toLocaleString()}-` : '✓ תקין'}
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                          {pension.destination_institution && (
+                            <div className="px-3 py-2 border-t border-border text-xs text-muted-foreground">
+                              גוף מנהל: <span className="text-foreground font-medium">{pension.destination_institution}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Insurance Findings */}
+                      {insurance && (insurance.has_double_insurance || insurance.health_insurance_deduction || insurance.life_risk_deduction || insurance.group_insurance_deduction) && (
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-3 py-2 text-sm font-bold text-foreground">ממצאי ביטוח</div>
+                          <div className="p-3 space-y-2 text-sm">
+                            {insurance.health_insurance_deduction != null && (
+                              <div className="flex justify-between">
+                                <span>ביטוח בריאות</span>
+                                <span className="font-medium">₪{insurance.health_insurance_deduction.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {insurance.life_risk_deduction != null && (
+                              <div className="flex justify-between">
+                                <span>ביטוח חיים/ריסק</span>
+                                <span className="font-medium">₪{insurance.life_risk_deduction.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {insurance.group_insurance_deduction != null && (
+                              <div className="flex justify-between">
+                                <span>ביטוח קבוצתי</span>
+                                <span className="font-medium">₪{insurance.group_insurance_deduction.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {insurance.has_double_insurance && (
+                              <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-2 mt-2">
+                                <p className="text-destructive font-bold text-sm">⚠️ כפל ביטוח!</p>
+                                {insurance.double_insurance_details && (
+                                  <p className="text-xs text-muted-foreground mt-1">{insurance.double_insurance_details}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Wow Alerts */}
+                      {wowAlerts.length > 0 && (
+                        <div className="space-y-2">
+                          {wowAlerts.map((alert, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: 15 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.15 }}
+                              className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2"
+                            >
+                              <span className="text-lg shrink-0">⚠️</span>
+                              <p className="text-sm text-foreground font-medium">{alert}</p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Total Missing Money */}
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center space-y-1">
+                        <p className="text-2xl font-black text-destructive">
+                          ₪{(analysis?.total_monthly_waste || pension?.total_missing_money || 0).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">כסף חסר / בזבוז חודשי שזיהינו</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <Button
                   className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
                   onClick={() => setPhase("capture")}
