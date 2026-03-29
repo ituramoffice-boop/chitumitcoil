@@ -58,7 +58,8 @@ serve(async (req) => {
     "severance_contribution_actual": 0,
     "severance_contribution_percent": 0,
     "severance_contribution_legal_min": 8.33,
-    "destination_institution": "שם הגוף המנהל (מנורה/מגדל/הראל/כלל/הפניקס/אלטשולר/אחר)",
+    "destination_institution": "English name (Menora/Migdal/Harel/Clal/Phoenix/Altshuler Shaham/etc)",
+    "destination_institution_hebrew": "השם העברי המקורי מהתלוש (מנורה/מגדל/הראל/כלל/הפניקס וכד')",
     "employer_gap_shekel": 0,
     "employee_gap_shekel": 0,
     "severance_gap_shekel": 0,
@@ -88,7 +89,20 @@ serve(async (req) => {
    - פיצויים: המינימום 8.33%. חשב אחוז בפועל וזהה פער.
    - total_missing_money = סך כל הפערים בש"ח.
 
-3. גוף מנהל (Destination Institution): זהה את שם חברת הביטוח/בית השקעות מתוך שורות "קופת גמל", "קרן פנסיה", "ביטוח מנהלים" (מנורה, מגדל, הראל, כלל, הפניקס, אלטשולר שחם וכד').
+3. גוף מנהל (Destination Institution): חפש את שמות החברות בעברית בשורות הפנסיה/גמל/ביטוח מנהלים:
+   - מנורה / מבטחים → "Menora"
+   - הראל → "Harel"
+   - מגדל → "Migdal"
+   - מקפת → "Makefet"
+   - כלל → "Clal"
+   - הפניקס → "Phoenix"
+   - אלטשולר שחם → "Altshuler Shaham"
+   - מיטב דש → "Meitav Dash"
+   - איילון → "Ayalon"
+   - פסגות → "Psagot"
+   - הכשרה → "Hachshara"
+   סוגי קופות לחיפוש: קרן פנסיה, קופת גמל, קרן השתלמות, ביטוח מנהלים, אובדן כושר עבודה (אכ"ע), ביטוח בריאות.
+   שמור את השם העברי המקורי בשדה destination_institution_hebrew ואת השם באנגלית ב-destination_institution.
 
 4. בדיקת ביטוחים:
    - health_insurance_deduction: סכום ניכוי לביטוח בריאות/שב"ן אם קיים.
