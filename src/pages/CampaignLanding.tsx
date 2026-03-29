@@ -202,7 +202,11 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
       let images: { base64: string; mime_type: string }[] = [];
 
       if (file.type === "application/pdf") {
-        const pdfImages = await pdfToBase64Images(file);
+        setPdfProgress({ current: 0, total: 0 });
+        const pdfImages = await pdfToBase64Images(file, (current, total) => {
+          setPdfProgress({ current, total });
+        });
+        setPdfProgress(null);
         images = pdfImages.map((b64) => ({ base64: b64, mime_type: "image/png" }));
       } else {
         const base64 = await new Promise<string>((resolve, reject) => {
