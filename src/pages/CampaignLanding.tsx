@@ -136,7 +136,10 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
 }
 
 // ── PDF to Image converter (all pages) ─────────────────────
-async function pdfToBase64Images(file: File): Promise<string[]> {
+async function pdfToBase64Images(
+  file: File,
+  onProgress?: (current: number, total: number) => void
+): Promise<string[]> {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
@@ -146,6 +149,7 @@ async function pdfToBase64Images(file: File): Promise<string[]> {
   const images: string[] = [];
 
   for (let i = 1; i <= totalPages; i++) {
+    onProgress?.(i, totalPages);
     const page = await pdf.getPage(i);
     const scale = 2;
     const viewport = page.getViewport({ scale });
