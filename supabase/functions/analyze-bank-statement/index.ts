@@ -273,9 +273,11 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
    - confidence_score: רמת ביטחון בזיהוי המקור
    - confidence_reason: הסבר
 
-9. total_monthly_obligations: סכום כל ההתחייבויות (משכנתא + הלוואות + ביטוח + הוראות קבע).
+9. total_monthly_obligations: סכום כל ההתחייבויות החודשיות (משכנתא + הלוואות + ביטוח + הוראות קבע).
+   ⚠️ חשוב: אל תכלול את המשכורת או הכנסות אחרות בסכום ההתחייבויות!
    debt_to_income_ratio: (total_monthly_obligations / average_monthly_deposit) × 100. עגל למספר שלם.
-   total_dti_ratio: זהה ל-debt_to_income_ratio (סכום כל ה-dti_impact חלקי הכנסה מאומתת × 100).
+   ⚠️ הנוסחה הנכונה: DTI = (סה״כ התחייבויות חודשיות / ממוצע הכנסה חודשית) × 100. התוצאה חייבת להיות בטווח 0-100% במקרים רגילים.
+   total_dti_ratio: זהה ל-debt_to_income_ratio.
    dti_status: "green" אם מתחת ל-30%, "yellow" אם 30-40%, "red" אם מעל 40%.
 
 10. employer (זיהוי מעסיק):
