@@ -378,7 +378,7 @@ export default function AgentCRMDashboard() {
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
   const [heatOverrides, setHeatOverrides] = useState<Record<string, HeatStatus>>({});
   const { user } = useAuth();
-  const { isDemo } = useDemo();
+  const { isDemoMode } = useDemo();
 
   useEffect(() => {
     if (isDemo) {
