@@ -210,7 +210,14 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 
 הנחיות לביקורת:
 
-1. client: חלץ את השם המלא של בעל החשבון מכותרת הדף. חפש ליד "שם", "לכבוד", "מר", "גב'", "גברת". נקה תארים (מר, גב', גברת, לכבוד, ד"ר). שם הבנק מהלוגו/כותרת. מספר חשבון – 4 ספרות אחרונות. העתק גם ל-personal.account_holder.
+1. client: חלץ את השם המלא של בעל החשבון. חפש בסדר העדיפויות הבא:
+   א) אחרי המילה "לכבוד" בכותרת הדף
+   ב) בשדה "מוטב" או "שם" או "שם בעל החשבון"
+   ג) ליד "מר", "גב'", "גברת"
+   ד) מתיאורי תנועות כמו "עבור: [שם]" או "המבצע: [שם]"
+   ה) משמות שולחים בהעברות Bit
+   נקה תארים (מר, גב', גברת, לכבוד, ד"ר). שם הבנק מהלוגו/כותרת. מספר חשבון – 4 ספרות אחרונות. העתק גם ל-personal.account_holder.
+   ⚠️ אם לא נמצא שם כלל, רשום "לא זוהה" (לא "לא צוין").
 
 2. salary_verification: זהה כל הפקדות משכורת ("זיכוי משכורת", "העברת משכורת", או קוד 71/72). רשום כל הפקדה ב-net_deposits. חשב ממוצע ב-average_monthly_deposit.
    - אם זוהה קוד 71 או 72 → עדכן verified_salary לסכום, ו-verified_by ל-"MSB code 71" או "MSB code 72".
@@ -306,17 +313,21 @@ ${crossRefInstruction}
 
 אם שדה לא נמצא, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
 
-    const pageCount = imageList.length;
+    // Limit to first 2 pages for performance
+    const maxPages = 2;
+    const limitedImages = imageList.slice(0, maxPages);
+    const pageCount = limitedImages.length;
+    const totalPages = imageList.length;
     const userContent: any[] = [
       {
         type: "text",
-        text: text || (pageCount > 1
-          ? `בצע ביקורת מקצועית על דף חשבון הבנק המצורף (${pageCount} עמודים). שלב את כל הנתונים מכל העמודים לתוצאה אחת.`
+        text: text || (totalPages > 1
+          ? `בצע ביקורת מקצועית על דף חשבון הבנק המצורף (מוצגים ${pageCount} עמודים מתוך ${totalPages}). שלב את כל הנתונים מכל העמודים לתוצאה אחת.`
           : "בצע ביקורת מקצועית על דף חשבון הבנק המצורף."),
       },
     ];
 
-    for (const img of imageList) {
+    for (const img of limitedImages) {
       userContent.push({
         type: "image_url",
         image_url: { url: `data:${img.mime_type};base64,${img.base64}` },
@@ -337,6 +348,7 @@ ${crossRefInstruction}
           { role: "system", content: systemPrompt },
           { role: "user", content: userContent },
         ],
+        max_tokens: 1500,
         response_format: { type: "json_object" },
       }),
     });
