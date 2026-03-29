@@ -41,6 +41,7 @@ interface LeadRow {
   property_value: number | null;
   notes: string | null;
   next_step: string | null;
+  heat_status: string | null;
 }
 
 function getHeatFromScore(score: number | null): HeatStatus {
@@ -376,7 +377,15 @@ export default function AgentCRMDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
-  const [heatOverrides, setHeatOverrides] = useState<Record<string, HeatStatus>>({});
+  const heatOverrides = useMemo(() => {
+    const map: Record<string, HeatStatus> = {};
+    leads.forEach(l => {
+      if (l.heat_status && ["hot", "warm", "cold"].includes(l.heat_status)) {
+        map[l.id] = l.heat_status as HeatStatus;
+      }
+    });
+    return map;
+  }, [leads]);
   const { user } = useAuth();
   const { isDemoMode } = useDemo();
 
@@ -604,10 +613,18 @@ export default function AgentCRMDashboard() {
         open={!!selectedLead}
         onClose={() => setSelectedLead(null)}
         heatStatus={selectedLead ? getHeat(selectedLead) : "cold"}
-        onChangeHeat={(h) => {
+        onChangeHeat={async (h) => {
           if (selectedLead) {
-            setHeatOverrides(prev => ({ ...prev, [selectedLead.id]: h }));
-            toast.success(`סטטוס ${HEAT_CONFIG[h].label} עודכן`);
+            const { error } = await supabase
+              .from("leads")
+              .update({ heat_status: h } as any)
+              .eq("id", selectedLead.id);
+            if (error) {
+              toast.error("שגיאה בשמירת סטטוס");
+            } else {
+              setLeads(prev => prev.map(l => l.id === selectedLead.id ? { ...l, heat_status: h } : l));
+              toast.success(`סטטוס ${HEAT_CONFIG[h].label} עודכן`);
+            }
           }
         }}
       />
