@@ -79,18 +79,27 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
     case "analysis_ready": {
       const findingsCount = data.findings_count || 0;
       const link = data.link || "#";
+      const clientName = data.client_name || "";
+      const scanType = data.scan_type || "פיננסי";
+      const wowAlerts = Array.isArray(data.wow_alerts)
+        ? data.wow_alerts.slice(0, 3).map((a: string) => `<li style="margin:4px 0;padding:8px 12px;background:#ffffff0a;border-radius:8px;border-right:3px solid ${brandColor};">${a}</li>`).join("")
+        : "";
       return {
-        subject: `✅ הדוח הפיננסי שלך מוכן — ${findingsCount} ממצאים`,
+        subject: `✅ הדוח הפיננסי שלך מוכן${clientName ? ` — ${clientName}` : ""} — ${findingsCount} ממצאים`,
         html: wrapper(`
-          <h2 style="color:${brandColor};margin:0 0 16px;">הדוח הפיננסי שלך מוכן!</h2>
+          <h2 style="color:${brandColor};margin:0 0 16px;">הדוח הפיננסי שלך מוכן! 🎉</h2>
+          ${clientName ? `<p style="font-size:16px;color:#ccc;">שלום <strong style="color:#fff;">${clientName}</strong>,</p>` : ""}
           <p style="font-size:16px;line-height:1.6;color:#ccc;">
-            נמצאו <strong style="color:${brandColor};font-size:20px;">${findingsCount}</strong> ממצאים בניתוח הפיננסי שלך.
+            סיימנו לנתח את ה${scanType} שלך ומצאנו
+            <strong style="color:${brandColor};font-size:20px;"> ${findingsCount} </strong> ממצאים חשובים.
           </p>
+          ${wowAlerts ? `<h3 style="color:${brandColor};margin:20px 0 8px;">ממצאים מרכזיים:</h3><ul style="list-style:none;padding:0;margin:0;">${wowAlerts}</ul>` : ""}
           <div style="text-align:center;margin:28px 0;">
             <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,${brandColor},#b8962e);color:#1a1a2e;padding:14px 40px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;">
               צפה בדוח המלא
             </a>
           </div>
+          <p style="font-size:13px;color:#888;text-align:center;">הדוח זמין לצפייה בכל עת דרך הקישור למעלה</p>
         `),
       };
     }

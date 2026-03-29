@@ -368,6 +368,29 @@ export default function AIScannerWidget({
             },
           }).catch((e: any) => console.warn("[Scanner] Email notification failed:", e));
         }
+
+        // Send analysis_ready email to client if they have an email
+        if (advisorMode && selectedClient?.email && analysis) {
+          const clientWowAlerts = analysis.wow_alerts || analysis.key_findings || [];
+          const clientFindingsCount = (clientWowAlerts.length || 0) + (analysis.risks?.length || 0);
+          const scanTypeHeb = type === "payslip" ? "תלוש שכר" : type === "bank_statement" ? "דף בנק" : type === "credit_card" ? "כרטיס אשראי" : type === "pension" ? "פנסיה" : "ביטוח";
+          const reportLink = `${window.location.origin}/client-dashboard`;
+
+          supabase.functions.invoke("send-email", {
+            body: {
+              type: "analysis_ready",
+              to: selectedClient.email,
+              data: {
+                client_name: selectedClient.full_name,
+                scan_type: scanTypeHeb,
+                findings_count: clientFindingsCount,
+                wow_alerts: clientWowAlerts,
+                link: reportLink,
+                from: "חיתומית SCORE <reports@chitumit.co.il>",
+              },
+            },
+          }).catch((e: any) => console.warn("[Scanner] Client email notification failed:", e));
+        }
       }
 
       onSubmit(resultPayload);
