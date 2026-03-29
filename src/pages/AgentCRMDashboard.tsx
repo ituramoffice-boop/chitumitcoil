@@ -41,6 +41,7 @@ interface LeadRow {
   property_value: number | null;
   notes: string | null;
   next_step: string | null;
+  heat_status: string | null;
 }
 
 function getHeatFromScore(score: number | null): HeatStatus {
@@ -306,7 +307,7 @@ const DEMO_LEADS: LeadRow[] = [
     id: "demo-1", full_name: "ישראל כהן", phone: "054-1234567", email: "israel@email.co.il",
     status: "in_progress", lead_score: 87, created_at: new Date().toISOString(),
     lead_source: "משפך מסלקה", mortgage_amount: 1800000, monthly_income: 22000, property_value: 2500000,
-    notes: null, next_step: "פגישת זום מחר",
+    notes: null, next_step: "פגישת זום מחר", heat_status: null,
     ai_analysis: {
       personal: { account_holder: "ישראל כהן", bank_name: "לאומי", account_number: "4567" },
       salary_verification: { net_deposits: [21500, 22100, 21800], average_monthly_deposit: 21800, matches_payslip: true, discrepancy_amount: 0 },
@@ -326,7 +327,7 @@ const DEMO_LEADS: LeadRow[] = [
     id: "demo-2", full_name: "רונית לוי", phone: "052-9876543", email: "ronit@gmail.com",
     status: "new", lead_score: 62, created_at: new Date(Date.now() - 86400000).toISOString(),
     lead_source: "מחשבון משכנתא", mortgage_amount: 1200000, monthly_income: 15000, property_value: 1700000,
-    notes: null, next_step: null,
+    notes: null, next_step: null, heat_status: null,
     ai_analysis: {
       personal: { account_holder: "רונית לוי", bank_name: "הפועלים", account_number: "8901" },
       salary_verification: { net_deposits: [14200, 14800], average_monthly_deposit: 14500, matches_payslip: false, discrepancy_amount: 500, discrepancy_alert: "הפקדה נמוכה ב-500 ש״ח מהתלוש" },
@@ -342,7 +343,7 @@ const DEMO_LEADS: LeadRow[] = [
     id: "demo-3", full_name: "אבי מזרחי", phone: "050-5551234", email: "avi.m@outlook.com",
     status: "contacted", lead_score: 45, created_at: new Date(Date.now() - 172800000).toISOString(),
     lead_source: "אתר", mortgage_amount: 900000, monthly_income: 12000, property_value: 1300000,
-    notes: null, next_step: "שליחת הצעה",
+    notes: null, next_step: "שליחת הצעה", heat_status: null,
     ai_analysis: {
       salary_verification: { average_monthly_deposit: 11200, matches_payslip: false, discrepancy_amount: 800 },
       mortgage: { detected: true, monthly_payment: 3100, bank_name: "דיסקונט" },
@@ -357,7 +358,7 @@ const DEMO_LEADS: LeadRow[] = [
     id: "demo-4", full_name: "מיכל אברהם", phone: "058-7773344", email: null,
     status: "new", lead_score: 91, created_at: new Date(Date.now() - 3600000).toISOString(),
     lead_source: "תלוש שכר", mortgage_amount: 2200000, monthly_income: 35000, property_value: 3000000,
-    notes: null, next_step: null,
+    notes: null, next_step: null, heat_status: null,
     ai_analysis: {
       salary_verification: { average_monthly_deposit: 34800, matches_payslip: true },
       mortgage: { detected: false },
@@ -376,7 +377,15 @@ export default function AgentCRMDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
-  const [heatOverrides, setHeatOverrides] = useState<Record<string, HeatStatus>>({});
+  const heatOverrides = useMemo(() => {
+    const map: Record<string, HeatStatus> = {};
+    leads.forEach(l => {
+      if (l.heat_status && ["hot", "warm", "cold"].includes(l.heat_status)) {
+        map[l.id] = l.heat_status as HeatStatus;
+      }
+    });
+    return map;
+  }, [leads]);
   const { user } = useAuth();
   const { isDemoMode } = useDemo();
 
@@ -604,10 +613,18 @@ export default function AgentCRMDashboard() {
         open={!!selectedLead}
         onClose={() => setSelectedLead(null)}
         heatStatus={selectedLead ? getHeat(selectedLead) : "cold"}
-        onChangeHeat={(h) => {
+        onChangeHeat={async (h) => {
           if (selectedLead) {
-            setHeatOverrides(prev => ({ ...prev, [selectedLead.id]: h }));
-            toast.success(`סטטוס ${HEAT_CONFIG[h].label} עודכן`);
+            const { error } = await supabase
+              .from("leads")
+              .update({ heat_status: h } as any)
+              .eq("id", selectedLead.id);
+            if (error) {
+              toast.error("שגיאה בשמירת סטטוס");
+            } else {
+              setLeads(prev => prev.map(l => l.id === selectedLead.id ? { ...l, heat_status: h } : l));
+              toast.success(`סטטוס ${HEAT_CONFIG[h].label} עודכן`);
+            }
           }
         }}
       />
