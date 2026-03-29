@@ -253,7 +253,7 @@ ${crossRefInstruction}
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: BANK_EXTRACTION_SYSTEM_PROMPT },
           { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" },
