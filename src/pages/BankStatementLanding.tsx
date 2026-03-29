@@ -235,6 +235,35 @@ export default function BankStatementLanding() {
               </Card>
             )}
 
+            {/* Standing Orders */}
+            {standingOrders && standingOrders.length > 0 && (
+              <Card className="bg-white/5 backdrop-blur-xl border-gold/10">
+                <CardContent className="p-5 space-y-3">
+                  <h3 className="text-sm font-bold text-gold flex items-center gap-2">
+                    <TrendingDown className="w-4 h-4" />
+                    הוראות קבע והעברות חוזרות
+                  </h3>
+                  <div className="space-y-2">
+                    {standingOrders.map((o, i) => (
+                      <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-sm font-medium text-white">{o.recipient || o.description}</p>
+                          <p className="text-xs text-blue-200/40">{o.category}</p>
+                        </div>
+                        <p className="text-sm font-bold text-amber-300">₪{o.monthly_amount?.toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-white/5 text-xs">
+                    <span className="text-blue-200/50">סה״כ הוראות קבע</span>
+                    <span className="font-bold text-amber-300">
+                      ₪{standingOrders.reduce((s, o) => s + (o.monthly_amount || 0), 0).toLocaleString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Salary Discrepancy */}
             {salaryVerification && !salaryVerification.matches_payslip && salaryVerification.discrepancy_amount && Math.abs(salaryVerification.discrepancy_amount) > 100 && (
               <Card className="bg-red-500/10 backdrop-blur-xl border-red-500/20">
