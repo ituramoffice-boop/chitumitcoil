@@ -136,7 +136,10 @@ function MortgageWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>
 }
 
 // ── PDF to Image converter (all pages) ─────────────────────
-async function pdfToBase64Images(file: File): Promise<string[]> {
+async function pdfToBase64Images(
+  file: File,
+  onProgress?: (current: number, total: number) => void
+): Promise<string[]> {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
@@ -146,6 +149,7 @@ async function pdfToBase64Images(file: File): Promise<string[]> {
   const images: string[] = [];
 
   for (let i = 1; i <= totalPages; i++) {
+    onProgress?.(i, totalPages);
     const page = await pdf.getPage(i);
     const scale = 2;
     const viewport = page.getViewport({ scale });
@@ -166,6 +170,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
 
   const processFile = useCallback(async (file: File) => {
     if (!file) return;
@@ -197,7 +202,11 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
       let images: { base64: string; mime_type: string }[] = [];
 
       if (file.type === "application/pdf") {
-        const pdfImages = await pdfToBase64Images(file);
+        setPdfProgress({ current: 0, total: 0 });
+        const pdfImages = await pdfToBase64Images(file, (current, total) => {
+          setPdfProgress({ current, total });
+        });
+        setPdfProgress(null);
         images = pdfImages.map((b64) => ({ base64: b64, mime_type: "image/png" }));
       } else {
         const base64 = await new Promise<string>((resolve, reject) => {
@@ -260,7 +269,12 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         {uploading ? (
           <div className="space-y-2">
             <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
-            <p className="text-accent font-bold">מנתח את התלוש...</p>
+            <p className="text-accent font-bold">
+              {pdfProgress ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...` : "מנתח את התלוש..."}
+            </p>
+            {pdfProgress && pdfProgress.total > 0 && (
+              <Progress value={Math.round((pdfProgress.current / pdfProgress.total) * 100)} className="h-2 w-48 mx-auto" />
+            )}
             <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : uploaded ? (
