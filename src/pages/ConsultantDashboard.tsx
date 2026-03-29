@@ -89,6 +89,7 @@ import { InsiderFeed } from "@/components/InsiderFeed";
 import { PerformanceStats, FeeEstimator, CloseDealTrigger, PipelineTicker } from "@/components/ProfitIntelligence";
 import { PresentationMode } from "@/components/PresentationMode";
 import { ComplianceGuardrail, AuditLog, ClientTermsGate } from "@/components/LiabilityShield";
+import { AIAnalysisTab, HeatTag, WowAlertsBadges, CrossRefIndicator } from "@/components/LeadAIAnalysis";
 
 type LeadStatus = "new" | "contacted" | "in_progress" | "submitted" | "approved" | "rejected" | "closed";
 
