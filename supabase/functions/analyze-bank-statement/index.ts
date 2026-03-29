@@ -103,37 +103,43 @@ In Israeli bank statements, each row has EITHER a value in the חיוב (Debit) 
 - If the amount appears in the זיכוי column (4th from right) → it is a CREDIT (money IN), set: type="credit", credit=<amount>, debit=null
 - The 5th column (leftmost, יתרה) is ALWAYS the running balance — NEVER extract it as debit or credit.
 
-### SALARY / INCOME DETECTION (CRITICAL):
-✅ Salary deposits appear in the זיכוי (Credit) column. They are INCOMING money.
-✅ MSB code 71 or 72 in the reference = salary transfer. These are ALWAYS credits (type="credit").
-✅ Any transaction with reference code starting with 71/ or 72/ and appearing in the credit column is salary.
-✅ Set verified_salary to the credit amount of the MSB 71/72 transaction.
-✅ Set verified_by to "MSB code 71" or "MSB code 72".
-⛔ MSB code 71/72 is NEVER a debit. If you see it, it MUST be type="credit".
-⛔ If a row contains "מסגרת" → IGNORE IT completely. It is a credit limit, NOT salary.
+### ✅ SALARY RULE — CRITICAL FIX:
+The verified salary must meet ALL of these conditions:
+1. It must be in the זיכויים (credit/inbound) column ONLY — never from the חיוב (debit) column.
+2. It must be above ₪3,000 — any "salary" below ₪3,000 is NOT a real salary.
+3. It must be the LARGEST recurring monthly credit in the statement.
+4. If MSB code 71/72 exists but the amount is below ₪3,000, IGNORE IT and continue searching for the real salary by pattern.
+
+⛔ COMMON MISTAKE TO AVOID:
+A small payment of ₪200 labeled "SALARY" is NOT the real salary.
+The real salary is the largest consistent monthly deposit (typically ₪5,000–₪30,000).
+Always pick the highest recurring credit above ₪3,000 as verified_salary.
 
 ### REFERENCE CODE BASED CLASSIFICATION:
-- Code 71, 72 (first number before /) → SALARY (credit, money IN)
+- Code 71, 72 (first number before /) → SALARY candidate (credit, money IN) — but ONLY if amount > ₪3,000
 - Code 175, 106360812 → Bit transfer (could be credit or debit, check column)
-- Code 4153, 6147 → Credit card aggregate (debit, money OUT) — NOT a loan
+- Code 4153, 6147 → Credit card aggregate (debit, money OUT) — NOT a loan, exclude from DTI
 - Code 469 → Loan repayment (debit, money OUT)
 - Code 515 → Standing order / direct debit (debit, money OUT)
 - Code 10734 → Check deposit (credit, money IN)
+⛔ If a row contains "מסגרת" → IGNORE IT completely. It is a credit limit, NOT salary.
+⛔ MSB code 71/72 is NEVER a debit. If you see it, it MUST be type="credit".
 
 ### LIABILITIES (for DTI calculation):
 ✅ Only count as liabilities:
-  - Loans: description contains 'הו"ק הלואה', 'הלוואה', 'משכנתא', or reference code 469
+  - Loans: description contains 'הו"ק הלואה', 'הלוואה', 'משכנתא', 'פירעון', or reference code 469
   - Mortgage payments
 ⛔ EXCLUDE from liabilities:
   - Credit card aggregates (דירקט-מצטבר, codes 4153, 6147)
   - Standing orders for services (ועד בית, חינוך, etc.)
 
 ## VERIFIED SALARY CALCULATION:
-1. Find all credit transactions with MSB code 71 or 72 → these are salary deposits.
-2. If found, set verified_salary = the amount of that credit transaction.
-3. If multiple months visible, set salary_verification.net_deposits = array of all salary amounts.
-4. Set salary_verification.average_monthly_deposit = average of those amounts.
-5. If no MSB 71/72 found, look for recurring monthly credits with similar amounts and descriptions containing "משכורת" or "שכר".
+1. Collect ALL credit transactions above ₪3,000 that recur monthly.
+2. If any have MSB code 71/72 AND amount > ₪3,000, prefer those as salary.
+3. If MSB 71/72 amounts are below ₪3,000, IGNORE them and find the largest recurring credit above ₪3,000.
+4. Set verified_salary = the chosen salary amount.
+5. If multiple months visible, set salary_verification.net_deposits = array of all salary amounts.
+6. Set salary_verification.average_monthly_deposit = average of those amounts.
 
 ## OUTPUT FORMAT:
 Return ONLY a valid JSON object with this structure:
