@@ -327,7 +327,10 @@ ${crossRefInstruction}`;
 
     // Post-process: recalculate DTI, excluding false-positive "דירקט"/"מצטבר"/"משיכה" items
     if (analysis && !analysis.error) {
+      // Ensure verified_salary is always set from best source
       const income = Number(analysis.salary_verification?.average_monthly_deposit) || Number(analysis.verified_salary) || 0;
+      analysis.verified_salary = income; // sync to top-level for frontend
+      console.log(`[analyze-bank-statement] POST-PROCESS: verified_salary=${income}, salary_verification.avg=${analysis.salary_verification?.average_monthly_deposit}, raw verified_salary=${analysis.verified_salary}`);
 
       // Exclusion filter for DTI: descriptions containing these are NOT real obligations
       const DTI_EXCLUDE_WORDS = ["דירקט", "מצטבר", "משיכה"];

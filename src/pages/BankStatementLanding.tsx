@@ -32,10 +32,18 @@ export default function BankStatementLanding() {
   const [deepScanMode, setDeepScanMode] = useState(false);
 
   const mapAnalysisResult = (data: Record<string, unknown>) => {
+    console.log("=== RAW onSubmit DATA ===", JSON.stringify(data, null, 2));
     const parsedData = ((data.ai_analysis as Record<string, unknown> | undefined) ?? data) as Record<string, unknown>;
     
     console.log("=== FULL RAW DATA FROM EDGE FUNCTION ===", JSON.stringify(data, null, 2));
     console.log("=== PARSED DATA (ai_analysis or root) ===", JSON.stringify(parsedData, null, 2));
+    console.log("=== KEY FIELDS CHECK ===", {
+      "parsedData.verified_salary": parsedData.verified_salary,
+      "parsedData.total_monthly_obligations": parsedData.total_monthly_obligations,
+      "parsedData.debt_to_income_ratio": parsedData.debt_to_income_ratio,
+      "parsedData.total_dti_ratio": parsedData.total_dti_ratio,
+      "parsedData.salary_verification": parsedData.salary_verification,
+    });
 
     if (!parsedData || typeof parsedData !== "object") {
       console.warn("parsedData is empty or not an object, setting null");
