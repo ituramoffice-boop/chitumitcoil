@@ -72,56 +72,59 @@ serve(async (req) => {
 const BANK_EXTRACTION_SYSTEM_PROMPT = `🚨 כלל עמודות קריטי — קרא לפני הכל:
 דפי בנק ישראלי מכילים 5 עמודות (מימין לשמאל):
 | תיאור | אסמכתא | חיוב | זיכוי | יתרה |
+| Description | Reference | Debit(out) | Credit(in) | Balance |
 
 ⛔ עמודת יתרה (Balance) — התעלם לחלוטין!
 היתרה היא סכום מצטבר רץ — היא אינה תנועה כלל!
 לעולם אל תחלץ ערכים מעמודת היתרה כחיוב או זיכוי.
 אם אתה רואה מספרים כמו 19,223 / 18,624 / 19,438 — אלה יתרות חשבון, לא הוצאות!
 
-✅ חלץ סכומים רק מעמודת חיוב (כסף יוצא) או זיכוי (כסף נכנס).
-
 ⛔ מסגרת משכורת — התעלם לחלוטין!
 אם שורה מכילה המילה "מסגרת" — זהו מסגרת אשראי בלבד, לא משכורת!
 לעולם אל תרשום אותה כהכנסה ב-verified_salary.
 
-You are an expert Israeli bank statement parser for Bank Hapoalim (בנק הפועלים).
-Your task is to extract structured transaction data from the provided text.
+You are an expert Israeli bank statement parser.
+Your task is to extract structured transaction data from the provided bank statement image(s).
 
-## CRITICAL COLUMN MAPPING RULES:
-Israeli bank statements have these columns (RIGHT TO LEFT):
-| תיאור | אסמכתא | חיוב | זיכוי | יתרה |
-| Description | Reference | Debit | Credit | Balance |
+## CRITICAL RULES FOR DEBIT vs CREDIT:
 
-### RULE 1 — BALANCE COLUMN (יתרה): 
-⛔ COMPLETELY IGNORE the יתרה (Balance) column.
-The balance is a running total — it is NOT a transaction amount.
-Never extract values from the balance column as debits or credits.
+### HOW TO DETERMINE IF A TRANSACTION IS DEBIT OR CREDIT:
+In Israeli bank statements, each row has EITHER a value in the חיוב (Debit) column OR in the זיכוי (Credit) column, NEVER BOTH.
+- If the amount appears in the חיוב column (3rd from right) → it is a DEBIT (money OUT), set: type="debit", debit=<amount>, credit=null
+- If the amount appears in the זיכוי column (4th from right) → it is a CREDIT (money IN), set: type="credit", credit=<amount>, debit=null
+- The 5th column (leftmost, יתרה) is ALWAYS the running balance — NEVER extract it as debit or credit.
 
-### RULE 2 — DEBIT (חיוב) vs CREDIT (זיכוי):
-✅ Only extract amounts from the חיוב (Debit) or זיכוי (Credit) columns.
-- חיוב = money leaving the account → type: "debit"
-- זיכוי = money entering the account → type: "credit"
+### SALARY / INCOME DETECTION (CRITICAL):
+✅ Salary deposits appear in the זיכוי (Credit) column. They are INCOMING money.
+✅ MSB code 71 or 72 in the reference = salary transfer. These are ALWAYS credits (type="credit").
+✅ Any transaction with reference code starting with 71/ or 72/ and appearing in the credit column is salary.
+✅ Set verified_salary to the credit amount of the MSB 71/72 transaction.
+✅ Set verified_by to "MSB code 71" or "MSB code 72".
+⛔ MSB code 71/72 is NEVER a debit. If you see it, it MUST be type="credit".
+⛔ If a row contains "מסגרת" → IGNORE IT completely. It is a credit limit, NOT salary.
 
-### RULE 3 — SALARY / INCOME DETECTION:
-⛔ If a row contains the phrase "מסגרת משכורת" or "מסגרת" → COMPLETELY IGNORE IT.
-  This is a credit limit, NOT a salary deposit.
-✅ Only classify a transaction as salary/income if:
-  - It is in the זיכוי (Credit) column AND
-  - The description contains: "משכורת", "שכר", "זיכוי", or "העברה נכנסת"
+### REFERENCE CODE BASED CLASSIFICATION:
+- Code 71, 72 (first number before /) → SALARY (credit, money IN)
+- Code 175, 106360812 → Bit transfer (could be credit or debit, check column)
+- Code 4153, 6147 → Credit card aggregate (debit, money OUT) — NOT a loan
+- Code 469 → Loan repayment (debit, money OUT)
+- Code 515 → Standing order / direct debit (debit, money OUT)
+- Code 10734 → Check deposit (credit, money IN)
 
-### RULE 4 — RECURRING DETECTION:
-⛔ Do NOT mark running balances (יתרה) as recurring transfers.
-✅ A transaction is "recurring" only if the same amount appears in 
-   the חיוב or זיכוי column in multiple months with the same description.
-
-### RULE 5 — LIABILITIES / LOANS:
-✅ Only include as liabilities:
-  - Description contains: 'הו"ק הלואה', 'הלוואה', 'משכנתא'
-  - OR reference code: '469'
+### LIABILITIES (for DTI calculation):
+✅ Only count as liabilities:
+  - Loans: description contains 'הו"ק הלואה', 'הלוואה', 'משכנתא', or reference code 469
+  - Mortgage payments
 ⛔ EXCLUDE from liabilities:
-  - Description contains: 'דירקט- מצטבר', 'דירקט -מצטבר'
-  - OR reference codes: '4153', '6147'
-  These are credit card aggregates, NOT loans.
+  - Credit card aggregates (דירקט-מצטבר, codes 4153, 6147)
+  - Standing orders for services (ועד בית, חינוך, etc.)
+
+## VERIFIED SALARY CALCULATION:
+1. Find all credit transactions with MSB code 71 or 72 → these are salary deposits.
+2. If found, set verified_salary = the amount of that credit transaction.
+3. If multiple months visible, set salary_verification.net_deposits = array of all salary amounts.
+4. Set salary_verification.average_monthly_deposit = average of those amounts.
+5. If no MSB 71/72 found, look for recurring monthly credits with similar amounts and descriptions containing "משכורת" or "שכר".
 
 ## OUTPUT FORMAT:
 Return ONLY a valid JSON object with this structure:
@@ -179,8 +182,8 @@ Return ONLY a valid JSON object with this structure:
       "date": "DD/MM/YYYY",
       "description": "string",
       "reference_code": "string or null",
-      "debit": null,
-      "credit": null,
+      "debit": "number or null (set ONLY if money is leaving the account)",
+      "credit": "number or null (set ONLY if money is entering the account)",
       "amount": 0,
       "type": "debit | credit",
       "bank_code": "המספר הראשון לפני הלוכסן",
@@ -230,8 +233,13 @@ Return ONLY a valid JSON object with this structure:
     "totalDebits": 0
   }
 }
-Do NOT include balance column values anywhere in the output.
-Do NOT add any explanation or markdown — return raw JSON only.
+
+CRITICAL REMINDERS:
+- debit field = money OUT, credit field = money IN. For each transaction, set ONE of them, not both.
+- MSB code 71/72 = SALARY = ALWAYS credit (money IN). Never classify it as debit.
+- Balance column values must NEVER appear in any transaction.
+- verified_salary must be > 0 if any MSB 71/72 credit transaction exists.
+- Do NOT add any explanation or markdown — return raw JSON only.
 ${crossRefInstruction}`;
 
     // Limit to first 2 pages for performance, unless deep_scan is true
