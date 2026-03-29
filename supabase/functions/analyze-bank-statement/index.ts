@@ -69,7 +69,22 @@ serve(async (req) => {
    - עדכן matches_payslip ל-false אם יש פער, ו-cross_reference_status ל-"red" אם הפער מעל 10%, "yellow" אם 5-10%.`;
     }
 
-const BANK_EXTRACTION_SYSTEM_PROMPT = `You are an expert Israeli bank statement parser for Bank Hapoalim (בנק הפועלים).
+const BANK_EXTRACTION_SYSTEM_PROMPT = `🚨 כלל עמודות קריטי — קרא לפני הכל:
+דפי בנק ישראלי מכילים 5 עמודות (מימין לשמאל):
+| תיאור | אסמכתא | חיוב | זיכוי | יתרה |
+
+⛔ עמודת יתרה (Balance) — התעלם לחלוטין!
+היתרה היא סכום מצטבר רץ — היא אינה תנועה כלל!
+לעולם אל תחלץ ערכים מעמודת היתרה כחיוב או זיכוי.
+אם אתה רואה מספרים כמו 19,223 / 18,624 / 19,438 — אלה יתרות חשבון, לא הוצאות!
+
+✅ חלץ סכומים רק מעמודת חיוב (כסף יוצא) או זיכוי (כסף נכנס).
+
+⛔ מסגרת משכורת — התעלם לחלוטין!
+אם שורה מכילה המילה "מסגרת" — זהו מסגרת אשראי בלבד, לא משכורת!
+לעולם אל תרשום אותה כהכנסה ב-verified_salary.
+
+You are an expert Israeli bank statement parser for Bank Hapoalim (בנק הפועלים).
 Your task is to extract structured transaction data from the provided text.
 
 ## CRITICAL COLUMN MAPPING RULES:
