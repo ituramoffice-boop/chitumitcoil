@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   ScanLine, Shield, CreditCard, Landmark, Brain, AlertTriangle,
   Sparkles, Lock, CheckCircle2, Clock, Send, FileDown,
-  Activity, ChevronRight, Eye, Fingerprint,
+  Activity, ChevronRight, Eye, Fingerprint, MessageCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
