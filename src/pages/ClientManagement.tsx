@@ -19,6 +19,9 @@ import {
   FileText, ArrowRight, Zap, Phone, Mail, Search, Filter,
 } from "lucide-react";
 import { FinancialXRay } from "@/components/FinancialXRay";
+import AIScannerWidget from "@/components/AIScannerWidget";
+import type { ScannerType } from "@/components/AIScannerWidget";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Stage definitions
 const STAGES = [
