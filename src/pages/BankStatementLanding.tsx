@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   ShieldCheck, Lock, Landmark, TrendingDown, PiggyBank,
-  AlertTriangle, CheckCircle2, CreditCard, Building2, Mail, Loader2
+  AlertTriangle, CheckCircle2, CreditCard, Building2, Mail, Loader2, Search
 } from "lucide-react";
 
 export default function BankStatementLanding() {
