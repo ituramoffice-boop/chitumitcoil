@@ -170,6 +170,7 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
 
   const processFile = useCallback(async (file: File) => {
     if (!file) return;
