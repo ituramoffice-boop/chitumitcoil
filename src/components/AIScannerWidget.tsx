@@ -131,6 +131,7 @@ interface ClientOption {
   id: string;
   full_name: string;
   phone?: string | null;
+  email?: string | null;
 }
 
 // ── Generic AI Scanner Widget ──────────────────────────────
