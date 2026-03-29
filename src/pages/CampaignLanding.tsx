@@ -339,21 +339,24 @@ function LeadCaptureModal({
   initialName?: string;
   initialPhone?: string;
 }) {
-  const [name, setName] = useState(initialName);
-  const [phone, setPhone] = useState(initialPhone);
-  useEffect(() => { setName(initialName); }, [initialName]);
-  useEffect(() => { setPhone(initialPhone); }, [initialPhone]);
-  const [consent, setConsent] = useState(false);
-  const [modalPhase, setModalPhase] = useState<"form" | "syncing" | "success">("form");
+  const [clientName, setClientName] = useState(initialName);
+  const [phoneNumber, setPhoneNumber] = useState(initialPhone);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = useCallback(() => {
-    setModalPhase("syncing");
-    // Simulate CRM sync
-    setTimeout(() => {
-      onSubmit(name, phone);
-      setModalPhase("success");
-    }, 1800);
-  }, [name, phone, onSubmit]);
+  useEffect(() => { setClientName(initialName); }, [initialName]);
+  useEffect(() => { setPhoneNumber(initialPhone); }, [initialPhone]);
+
+  const handleSubmit = async () => {
+    if (!clientName.trim() || !phoneNumber.trim()) {
+      setError("יש למלא את כל השדות");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    onSubmit(clientName, phoneNumber);
+    setLoading(false);
+  };
 
   if (!open) return null;
 
@@ -364,84 +367,52 @@ function LeadCaptureModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
     >
       <AnimatePresence mode="wait">
-        {/* ── Phase 1: Form ── */}
-        {modalPhase === "form" && (
-          <motion.div
-            key="form"
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="w-full max-w-md rounded-2xl border border-accent/30 bg-card p-6 shadow-2xl space-y-5"
-          >
-            <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-full bg-green-500/20 mx-auto flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8 text-green-400" />
-              </div>
-              <h3 className="text-xl font-bold text-foreground">הניתוח הושלם!</h3>
-              <p className="text-sm text-muted-foreground">
-                אמתו את הנתונים שחולצו ולחצו לקבלת הדוח המלא
-              </p>
-            </div>
+        <motion.div
+          key="form"
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="w-full max-w-md rounded-2xl border border-accent/30 bg-card p-6 shadow-2xl space-y-5"
+        >
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold text-foreground">פרטי הלקוח</h3>
+            <p className="text-sm text-muted-foreground">נא למלא לפני תחילת הניתוח</p>
+          </div>
 
-            <div className="space-y-3">
-              <p className="text-xs text-accent font-medium flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                AI Extracted
-              </p>
-              <div className="relative">
-                <User className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="campaign-lead-name"
-                  placeholder="שם מלא"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pr-10 h-12 bg-secondary border-border"
-                />
-              </div>
-              <div className="relative">
-                <Phone className="absolute right-3 top-3.5 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="campaign-lead-phone"
-                  placeholder="טלפון נייד"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="pr-10 h-12 bg-secondary border-border"
-                  type="tel"
-                />
-              </div>
-            </div>
-
-            <label className="flex items-start gap-2.5 cursor-pointer text-right">
-              <Checkbox
-                id="campaign-lead-consent"
-                checked={consent}
-                onCheckedChange={(v) => setConsent(v === true)}
-                className="mt-0.5 shrink-0"
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">שם הלקוח</label>
+              <Input
+                id="campaign-lead-name"
+                placeholder="ישראל ישראלי"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                className="h-12 bg-secondary border-border"
               />
-              <span className="text-xs text-muted-foreground leading-relaxed">
-                אני מאשר/ת שהנתונים שחולצו נכונים, ומסכים/ה לתקנון ולקבלת דיוור, עדכונים והצעות שיווקיות
-              </span>
-            </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">מספר טלפון</label>
+              <Input
+                id="campaign-lead-phone"
+                placeholder="050-0000000"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="h-12 bg-secondary border-border"
+                type="tel"
+              />
+            </div>
+          </div>
 
-            {(() => {
-              const isDisabled = name.length < 2 || phone.length < 9 || !consent;
-              return (
-                <Button
-                  className={`w-full h-12 text-lg font-bold transition-all ${isDisabled ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50' : 'bg-accent hover:bg-accent/90 text-accent-foreground'}`}
-                  disabled={isDisabled}
-                  onClick={handleSubmit}
-                >
-                  שלח לי את הדוח <ArrowRight className="w-5 h-5 mr-2" />
-                </Button>
-              );
-            })()}
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
-            <p className="text-[10px] text-muted-foreground text-center">
-              <Lock className="w-3 h-3 inline ml-1" />
-              הנתונים מוצפנים ונשמרים בהתאם לתקנות הגנת הפרטיות
-            </p>
-          </motion.div>
-        )}
+          <Button
+            className="w-full h-12 text-lg font-bold bg-accent hover:bg-accent/90 text-accent-foreground"
+            disabled={loading}
+            onClick={handleSubmit}
+          >
+            {loading ? "שומר..." : "התחל ניתוח"}
+          </Button>
+        </motion.div>
 
         {/* ── Phase 2: Syncing ── */}
         {modalPhase === "syncing" && (
