@@ -167,6 +167,14 @@ async function pdfToBase64Images(
   return images;
 }
 
+// ── Payslip analysis progress messages ─────────────────────
+const PAYSLIP_PROGRESS_MESSAGES = [
+  "הופך קובץ לתמונה לעיבוד...",
+  "סורק הפרשות פנסיוניות מול החוק...",
+  "מזהה כפילויות ביטוח וחוסרים...",
+  "מכין סיכום מנהלים ליועץ...",
+];
+
 // ── Payslip Hook Widget ────────────────────────────────────
 function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
   const [dragging, setDragging] = useState(false);
@@ -174,6 +182,16 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
   const [uploaded, setUploaded] = useState(false);
   const [fileName, setFileName] = useState("");
   const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
+  const [progressMsgIdx, setProgressMsgIdx] = useState(0);
+
+  // Cycle progress messages during analysis
+  useEffect(() => {
+    if (!uploading) return;
+    const iv = setInterval(() => {
+      setProgressMsgIdx((prev) => (prev + 1) % PAYSLIP_PROGRESS_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(iv);
+  }, [uploading]);
 
   const processFile = useCallback(async (file: File) => {
     if (!file) return;
@@ -190,17 +208,14 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
 
     setUploading(true);
     setFileName(file.name);
+    setProgressMsgIdx(0);
 
     try {
-      // 1) Upload original to Supabase Storage
       const filePath = `${crypto.randomUUID()}_${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("payslips")
         .upload(filePath, file, { contentType: file.type });
       if (uploadError) throw uploadError;
-
-      // 2) Convert to base64 image(s) for AI
-      let mimeType: string;
 
       let images: { base64: string; mime_type: string }[] = [];
 
@@ -224,7 +239,6 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         images = [{ base64, mime_type: file.type }];
       }
 
-      // 3) Call analyze-payslip edge function with all pages
       const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
         body: { images },
       });
@@ -270,20 +284,20 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         onClick={() => !uploading && !uploaded && handleFileSelect()}
       >
         {uploading ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
-            <p className="text-accent font-bold">
-              {pdfProgress ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...` : "מנתח את התלוש..."}
+            <p className="text-accent font-bold text-sm">
+              {pdfProgress && pdfProgress.total > 0
+                ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...`
+                : PAYSLIP_PROGRESS_MESSAGES[progressMsgIdx]}
             </p>
-            {pdfProgress && pdfProgress.total > 0 && (
-              <Progress value={Math.round((pdfProgress.current / pdfProgress.total) * 100)} className="h-2 w-48 mx-auto" />
-            )}
+            <Progress value={pdfProgress && pdfProgress.total > 0 ? Math.round((pdfProgress.current / pdfProgress.total) * 100) : undefined} className="h-2 w-48 mx-auto" />
             <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : uploaded ? (
           <div className="space-y-2">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-green-400 font-bold">תלוש נותח בהצלחה!</p>
+            <p className="text-green-400 font-bold">ביקורת תלוש הושלמה!</p>
             <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : (
