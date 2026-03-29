@@ -13,13 +13,91 @@ import {
   ShieldCheck, Lock, Landmark, TrendingDown, PiggyBank,
   AlertTriangle, CheckCircle2, CreditCard, Building2, Mail, Loader2, Search
 } from "lucide-react";
+import { AnalysisResultDashboard } from "@/components/AnalysisResultDashboard";
+import { calculateDTI, calculateTotalLiabilities, extractVerifiedSalary } from "@/lib/analysis-utils";
+
+interface AnalysisResult {
+  verifiedSalary: number;
+  totalLiabilities: number;
+  dtiRatio: number;
+  clientName?: string;
+}
 
 export default function BankStatementLanding() {
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [emailInput, setEmailInput] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [deepScanMode, setDeepScanMode] = useState(false);
+
+  const mapAnalysisResult = (data: Record<string, unknown>) => {
+    const parsedData = ((data.ai_analysis as Record<string, unknown> | undefined) ?? data) as Record<string, unknown>;
+    console.log("Parsed Data:", parsedData);
+
+    if (!parsedData || typeof parsedData !== "object") {
+      setAnalysisResult(null);
+      return;
+    }
+
+    const rawTransactions = Array.isArray(parsedData.transactions)
+      ? (parsedData.transactions as Array<Record<string, unknown>>)
+      : [];
+
+    const normalizedTransactions = rawTransactions
+      .map((tx) => {
+        const rawAmount = Number(tx.amount ?? 0);
+        const txTypeValue = String(tx.type ?? tx.transaction_type ?? "").toLowerCase();
+        const inferredType: "debit" | "credit" =
+          txTypeValue === "debit" ||
+          txTypeValue === "חובה" ||
+          rawAmount < 0 ||
+          txTypeValue === "loan" ||
+          txTypeValue === "standing_order" ||
+          txTypeValue === "direct_debit"
+            ? "debit"
+            : "credit";
+
+        const rawReference = String(tx.reference_code ?? tx.bank_code ?? "");
+        const referenceCode = rawReference.split("/")[0]?.trim();
+
+        return {
+          description: String(tx.description ?? ""),
+          reference_code: referenceCode,
+          amount: Math.abs(rawAmount),
+          type: inferredType,
+        };
+      })
+      .filter((tx) => tx.description || tx.amount > 0);
+
+    const salaryFromTransactions = extractVerifiedSalary(normalizedTransactions);
+    const liabilitiesFromTransactions = calculateTotalLiabilities(normalizedTransactions);
+    const dtiFromTransactions = calculateDTI(liabilitiesFromTransactions, salaryFromTransactions);
+
+    const salaryFromBackend = Number(
+      parsedData.verified_salary ??
+      (parsedData.salary_verification as { average_monthly_deposit?: number } | undefined)?.average_monthly_deposit ??
+      0
+    );
+    const liabilitiesFromBackend = Number(parsedData.total_monthly_obligations ?? 0);
+    const dtiFromBackend = Number(parsedData.total_dti_ratio ?? parsedData.debt_to_income_ratio ?? 0);
+
+    const verifiedSalary = salaryFromTransactions || salaryFromBackend;
+    const totalLiabilities = liabilitiesFromTransactions || liabilitiesFromBackend;
+    const dtiRatio = dtiFromTransactions || dtiFromBackend;
+
+    const clientName =
+      (parsedData.personal as { account_holder?: string } | undefined)?.account_holder ||
+      (parsedData.client as { full_name?: string } | undefined)?.full_name ||
+      undefined;
+
+    setAnalysisResult({
+      verifiedSalary,
+      totalLiabilities,
+      dtiRatio,
+      clientName,
+    });
+  };
 
   const analysis = result?.ai_analysis as Record<string, unknown> | undefined;
 
@@ -54,17 +132,17 @@ export default function BankStatementLanding() {
     recipient: string;
     category: string;
   }> | undefined;
-  const totalObligations = analysis?.total_monthly_obligations as number || 0;
-  const debtToIncome = analysis?.debt_to_income_ratio as number || 0;
+  const totalObligations = analysisResult?.totalLiabilities ?? ((analysis?.total_monthly_obligations as number) || 0);
+  const debtToIncome = analysisResult?.dtiRatio ?? ((analysis?.debt_to_income_ratio as number) || 0);
   const wowAlerts = analysis?.wow_alerts as string[] | undefined;
   const advisorSummary = analysis?.advisor_summary as string | undefined;
   const crossRefStatus = analysis?.cross_reference_status as string | undefined;
 
   const avgIncome = salaryVerification?.average_monthly_deposit || 0;
   const mortgagePayment = mortgage?.monthly_payment || 0;
-  const verifiedSalary = analysis?.verified_salary as number || 0;
+  const verifiedSalary = analysisResult?.verifiedSalary ?? ((analysis?.verified_salary as number) || 0);
   const verifiedBy = analysis?.verified_by as string || "";
-  const totalDtiRatio = analysis?.total_dti_ratio as number || 0;
+  const totalDtiRatio = analysisResult?.dtiRatio ?? ((analysis?.total_dti_ratio as number) || 0);
   const dtiStatus = analysis?.dti_status as "green" | "yellow" | "red" | undefined;
 
   const healthScore = analysis
@@ -120,7 +198,11 @@ export default function BankStatementLanding() {
             <CardContent className="p-6">
               <AIScannerWidget
                 type="bank_statement"
-                onSubmit={(data) => { setResult(data); setDeepScanMode(false); }}
+                onSubmit={(data) => {
+                  setResult(data);
+                  setDeepScanMode(false);
+                  mapAnalysisResult(data);
+                }}
                 extraBody={deepScanMode ? { deep_scan: true } : undefined}
                 key={deepScanMode ? "deep" : "normal"}
               />
@@ -170,7 +252,11 @@ export default function BankStatementLanding() {
                     size="sm"
                     variant="outline"
                     className="border-gold/30 text-gold hover:bg-gold/10"
-                    onClick={() => { setDeepScanMode(true); setResult(null); }}
+                    onClick={() => {
+                      setDeepScanMode(true);
+                      setResult(null);
+                      setAnalysisResult(null);
+                    }}
                   >
                     <Search className="w-3.5 h-3.5 ml-1.5" />
                     סריקה מעמיקה
@@ -179,6 +265,7 @@ export default function BankStatementLanding() {
               </Card>
             )}
 
+            <AnalysisResultDashboard analysisResult={analysisResult} />
             {/* Financial Health Score + Savings */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Health Score */}
