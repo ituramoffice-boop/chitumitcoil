@@ -71,6 +71,21 @@ serve(async (req) => {
 
 const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק ישראלי עם 20 שנות ניסיון כרואה חשבון בכיר. נתח את דף החשבון ותחזיר JSON בלבד.
 
+🔴 כללי קודי אסמכתא בנקאיים ישראליים (עדיפות עליונה!):
+חלץ את הקוד מעמודת 'מידע לשימושנו' או 'סוג פעולה / צרור / אסמכתא'.
+תמיד חלץ את המספר הראשון לפני הלוכסן (/).
+
+קודי הכנסה (זכות):
+- קוד 71 או 72 = משכורת מאומתת (MSB), confidence: 0.97, verification_method: "Verified by MSB code 71/72"
+- קוד 106360812 או 175 = העברת Bit, סווג כ-"bit_transfer", הכנסה מזדמנת
+- קוד 10734 = הפקדת צ'ק, סווג כ-"check"
+
+קודי הוצאה (חובה):
+- קוד 4153 או 6147 = חיוב ישיר (כרטיס אשראי / הוראת קבע), סווג כ-"direct_debit"
+- חיוב חוזר מגורם בנקאי = הלוואה פעילה, חשב השפעה על DTI
+
+⚠️ כלל עדיפות: אם התיאור סותר את הקוד – תמיד סמוך על הקוד!
+
 ⚠️ כלל קריטי לזיהוי הכנסה (משכורת):
 - הכנסת משכורת היא הפקדה החוזרת מדי חודש בסכום דומה, בדרך כלל הסכום הגדול ביותר שמופקד.
 - מילות מפתח: "משכורת", "שכר", "זיכוי משכורת", "העברת משכורת", "מ.ה.", "הפקדה", "העברה מ" + שם מעסיק.
@@ -78,6 +93,7 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 - אם אתה רואה הפקדה חוזרת של אלפי שקלים (למשל 5,000-30,000 ₪) – זו כנראה המשכורת.
 - הפקדה של מאות בודדות שקלים בלבד (100-500 ₪) היא כנראה לא משכורת אלא העברה קטנה או זיכוי.
 - תמיד בחר בהפקדה הגדולה והחוזרת כהכנסה הראשית.
+- אם קוד 71/72 מזוהה, זו משכורת מאומתת ללא קשר לתיאור!
 
 ⚠️ מילות מפתח לזיהוי בעברית:
 - תשלומי משכנתא: "משכנתא", "החזר משכנתא", "הלוואת דיור"
@@ -105,6 +121,8 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
     "discrepancy_amount": 0,
     "discrepancy_alert": "תיאור הפער אם קיים"
   },
+  "verified_salary": 0,
+  "verified_by": "MSB code 71|MSB code 72|recurring pattern|null",
   "mortgage": {
     "detected": true,
     "monthly_payment": 0,
@@ -115,7 +133,8 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
     {
       "description": "תיאור ההלוואה",
       "monthly_payment": 0,
-      "lender": "שם המלווה"
+      "lender": "שם המלווה",
+      "dti_impact": 0
     }
   ],
   "standing_orders": [
@@ -138,24 +157,31 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
       "date": "תאריך",
       "description": "תיאור הפעולה",
       "amount": 0,
-      "reference_code": "קוד אסמכתא",
-      "transaction_type": "salary|pension|loan|insurance|transfer|standing_order|other",
+      "reference_code": "קוד אסמכתא מלא",
+      "bank_code": "המספר הראשון לפני הלוכסן",
+      "verification_method": "Verified by MSB code 71|Bit transfer code 175|Direct debit code 4153|null",
+      "transaction_type": "salary|pension|loan|insurance|transfer|standing_order|direct_debit|bit_transfer|check|other",
       "confidence_score": 0.95,
-      "confidence_reason": "סיבת הסיווג"
+      "confidence_reason": "סיבת הסיווג",
+      "dti_impact": 0
     }
   ],
   "income_sources": [
     {
       "source_name": "שם המקור (מעסיק/פנסיה/השכרה)",
-      "source_type": "salary|pension|rental|freelance|other",
+      "source_type": "salary|pension|rental|freelance|bit_transfer|other",
       "monthly_amount": 0,
       "frequency": "monthly|irregular",
       "reference_codes": ["קודי אסמכתא קשורים"],
+      "bank_codes": ["71"],
+      "verification_method": "Verified by MSB code 71|recurring pattern|null",
       "confidence_score": 0.95,
       "confidence_reason": "סיבת הסיווג"
     }
   ],
   "total_monthly_obligations": 0,
+  "total_dti_ratio": 0,
+  "dti_status": "green|yellow|red",
   "wow_alerts": [
     "⚠️ הפקדת נטו נמוכה ב-800 ש״ח מהתלוש",
     "🏠 משכנתא: 3,200 ש״ח לחודש"
@@ -169,11 +195,13 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
 
 1. personal: חלץ שם בעל החשבון מכותרת הדף. שם הבנק מהלוגו/כותרת. מספר חשבון – 4 ספרות אחרונות בלבד.
 
-2. salary_verification: זהה כל הפקדות משכורת ("זיכוי משכורת", "העברת משכורת"). רשום כל הפקדה ב-net_deposits. חשב ממוצע ב-average_monthly_deposit.
+2. salary_verification: זהה כל הפקדות משכורת ("זיכוי משכורת", "העברת משכורת", או קוד 71/72). רשום כל הפקדה ב-net_deposits. חשב ממוצע ב-average_monthly_deposit.
+   - אם זוהה קוד 71 או 72 → עדכן verified_salary לסכום, ו-verified_by ל-"MSB code 71" או "MSB code 72".
+   - אם אין קוד MSB אבל יש דפוס חוזר → verified_by = "recurring pattern".
 
 3. mortgage: חפש "משכנתא" או "החזר משכנתא". זהה בנק, סכום חודשי. estimated_remaining – הערכה בלבד (אם לא ניתן, null).
 
-4. existing_loans: זהה כל החזרי הלוואות (מעל ₪300/חודש). רשום תיאור, סכום, ושם המלווה.
+4. existing_loans: זהה כל החזרי הלוואות (מעל ₪300/חודש). רשום תיאור, סכום, שם המלווה, ו-dti_impact (הסכום שמשפיע על יחס ההחזר).
 
 5. insurance_charges: זהה תשלומים לחברות ביטוח (הראל, מנורה, מגדל, כלל, הפניקס וכד'). רשום חברה, סכום חודשי, וסוג (בריאות/חיים/פנסיה/רכב/דירה/אחר).
 
@@ -181,48 +209,60 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
    - זהה כל חיוב חוזר שאינו משכנתא, הלוואה או ביטוח.
    - כולל: ועד בית, חוגים, מנויים (נטפליקס, ספוטיפיי, חדר כושר), גני ילדים, בתי ספר, תרומות, שירותי סלולר/אינטרנט.
    - מילות מפתח: "הוראת קבע", "הו״ק", "העברה קבועה", "חיוב חודשי", "מנוי".
+   - קוד 4153 או 6147 = הוראת קבע / חיוב ישיר.
    - רשום תיאור, סכום חודשי, שם מוטב, וקטגוריה.
    - ⚠️ אל תכפיל: אם חיוב כבר מופיע כביטוח או הלוואה, אל תרשום אותו גם כהוראת קבע.
 
-7. transactions (פירוט תנועות עם קוד אסמכתא):
+7. transactions (פירוט תנועות עם קודי בנק):
    ⚠️ חלק קריטי – חלץ כל תנועה שתוכל לזהות מדף החשבון.
    לכל תנועה חלץ:
    - date: תאריך הפעולה
    - description: תיאור הפעולה כפי שמופיע בדף
    - amount: סכום (חיובי = זיכוי/הפקדה, שלילי = חיוב)
-   - reference_code: קוד אסמכתא (מספר הייחוס של הפעולה). חפש עמודת "אסמכתא" או "אסמ'" בדף.
-   - transaction_type: סווג לפי הכללים הבאים
-   - confidence_score: רמת הביטחון בסיווג (0.0-1.0)
-   - confidence_reason: הסבר קצר לסיווג
+   - reference_code: קוד אסמכתא מלא כפי שמופיע בדף
+   - bank_code: המספר הראשון לפני הלוכסן (/) מתוך reference_code
+   - verification_method: שיטת האימות לפי הקוד (ראה כללי קודים למעלה)
+   - transaction_type: סווג לפי כללי הקודים הבנקאיים (עדיפות עליונה) ואז לפי תיאור
+   - confidence_score: לפי כללי הקודים
+   - confidence_reason: הסבר קצר
+   - dti_impact: סכום ההשפעה על יחס החזר (0 להכנסות, הסכום עצמו לחיובים קבועים)
 
-   כללי confidence_score לפי קוד אסמכתא:
-   a) קוד בפורמט MSB (מ.ש.ב) + זיכוי → salary או pension, confidence: 0.95, reason: "MSB format reference code detected"
-   b) אותו דפוס קוד חוזר מדי חודש + סכום דומה → הכנסה יציבה, confidence: 0.90, reason: "Recurring monthly pattern with consistent amount"
-   c) בלוק החזר הלוואה מזוהה (תיאור + קוד קבוע) → loan, confidence: 0.85, reason: "Known loan repayment block"
-   d) תיאור אומר "העברה" אבל קוד אסמכתא מצביע על עסק → תעדוף את הקוד, confidence: 0.80, reason: "Reference code indicates business transaction"
-   e) דפוס לא מזוהה → confidence: 0.60, reason: "Unknown pattern"
+   כללי confidence_score לפי קוד בנקאי (עדיפות עליונה):
+   a) קוד 71 או 72 + זכות → salary, confidence: 0.97, verification_method: "Verified by MSB code 71/72"
+   b) קוד 175 או 106360812 + זכות → bit_transfer, confidence: 0.85, verification_method: "Bit transfer code"
+   c) קוד 10734 + זכות → check, confidence: 0.80, verification_method: "Check deposit code 10734"
+   d) קוד 4153 או 6147 + חובה → direct_debit, confidence: 0.90, verification_method: "Direct debit code 4153/6147"
+   e) חיוב חוזר מגורם בנקאי → loan, confidence: 0.85, verification_method: "Recurring bank entity debit"
+   f) אותו דפוס קוד חוזר מדי חודש + סכום דומה → הכנסה יציבה, confidence: 0.90, reason: "Recurring monthly pattern"
+   g) דפוס לא מזוהה → confidence: 0.60, reason: "Unknown pattern"
 
 8. income_sources (מיפוי מקורות הכנסה):
    מפה כל מקור הכנסה שזוהה:
    - source_name: שם המעסיק/מקור
-   - source_type: salary (משכורת), pension (פנסיה), rental (שכירות), freelance (עצמאי), other
+   - source_type: salary (משכורת), pension (פנסיה), rental (שכירות), freelance (עצמאי), bit_transfer (Bit), other
    - monthly_amount: סכום חודשי
    - frequency: monthly (קבוע) או irregular (לא סדיר)
    - reference_codes: קודי אסמכתא שמשויכים למקור הזה
-   - confidence_score: רמת ביטחון בזיהוי המקור (לפי אותם כללים)
+   - bank_codes: קודי הבנק (71, 72, 175 וכו')
+   - verification_method: שיטת האימות
+   - confidence_score: רמת ביטחון בזיהוי המקור
    - confidence_reason: הסבר
 
 9. total_monthly_obligations: סכום כל ההתחייבויות (משכנתא + הלוואות + ביטוח + הוראות קבע).
    debt_to_income_ratio: (total_monthly_obligations / average_monthly_deposit) × 100. עגל למספר שלם.
+   total_dti_ratio: זהה ל-debt_to_income_ratio (סכום כל ה-dti_impact חלקי הכנסה מאומתת × 100).
+   dti_status: "green" אם מתחת ל-30%, "yellow" אם 30-40%, "red" אם מעל 40%.
 
 10. wow_alerts: צור התראות אימפקטיביות עם אימוג'ים. דוגמאות:
-   - "⚠️ יחס החזר של X% – מעל הסף הבנקאי של 40%!"
-   - "🔍 זוהו תשלומים ל-3 חברות ביטוח שונות – חשד לכפילויות"
-   - "💰 הלוואה של ₪X בחודש – שווה לבדוק מיחזור"
-   - "🏠 משכנתא: X ש״ח לחודש – בנק Y"
-   - "📊 זוהו X מקורות הכנסה – confidence ממוצע: Y%"
+    - "⚠️ יחס החזר של X% – מעל הסף הבנקאי של 40%!"
+    - "🔍 זוהו תשלומים ל-3 חברות ביטוח שונות – חשד לכפילויות"
+    - "💰 הלוואה של ₪X בחודש – שווה לבדוק מיחזור"
+    - "🏠 משכנתא: X ש״ח לחודש – בנק Y"
+    - "📊 זוהו X מקורות הכנסה – confidence ממוצע: Y%"
+    - "✅ משכורת מאומתת בקוד MSB 71: ₪X"
+    - "⚡ זוהו X העברות Bit – הכנסה מזדמנת"
 
-11. advisor_summary: סיכום קצר וממוקד (2-3 משפטים) לסוכן/יועץ. כלול מידע על מקורות הכנסה ורמת הביטחון.
+11. advisor_summary: סיכום קצר וממוקד (2-3 משפטים) לסוכן/יועץ. כלול מידע על מקורות הכנסה, רמת הביטחון, ושיטת האימות.
 
 12. cross_reference_status: "green" אם הכל תקין, "yellow" אם יש פערים קטנים (5-10%), "red" אם יש פערים גדולים (מעל 10%) או התראות קריטיות.
 ${crossRefInstruction}
