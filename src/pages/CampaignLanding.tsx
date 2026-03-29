@@ -898,19 +898,37 @@ export default function CampaignLanding() {
                                   <TableCell className="font-bold">₪{(analysis.mortgage.monthly_payment || 0).toLocaleString()}</TableCell>
                                 </TableRow>
                               )}
-                              {analysis.financial_summary.total_monthly_obligations > 0 && (
-                                <TableRow>
-                                  <TableCell className="font-medium">סך התחייבויות חודשיות</TableCell>
-                                  <TableCell className="font-bold">₪{analysis.financial_summary.total_monthly_obligations.toLocaleString()}</TableCell>
-                                </TableRow>
-                              )}
-                              <TableRow>
-                                <TableCell className="font-medium">יחס התחייבויות</TableCell>
-                                <TableCell className={`font-bold ${(analysis.financial_summary.obligation_ratio_percent || 0) > 40 ? 'text-destructive' : 'text-green-500'}`}>
-                                  {analysis.financial_summary.obligation_ratio_percent || 0}%
-                                  {(analysis.financial_summary.obligation_ratio_percent || 0) > 40 && ' ⚠️'}
-                                </TableCell>
-                              </TableRow>
+                              {(() => {
+                                // Filter out income sources mistakenly counted as obligations
+                                const incomeKeywords = ["בנק לאומי", "ביטוח לאומי"];
+                                const rawObligations = analysis.financial_summary.total_monthly_obligations || 0;
+                                const loans = analysis.existing_loans || [];
+                                const standingOrders = analysis.standing_orders || [];
+                                const allItems = [...loans, ...standingOrders];
+                                const excludedSum = allItems
+                                  .filter((item: any) => incomeKeywords.some(kw => (item.description || item.name || item.entity || "").includes(kw)))
+                                  .reduce((sum: number, item: any) => sum + Math.abs(item.amount || item.monthly_payment || 0), 0);
+                                const adjustedObligations = Math.max(0, rawObligations - excludedSum);
+                                const avgIncome = analysis.income?.average_monthly_net || 0;
+                                const adjustedDti = avgIncome > 0 ? Math.round((adjustedObligations / avgIncome) * 100) : 0;
+                                return (
+                                  <>
+                                    {adjustedObligations > 0 && (
+                                      <TableRow>
+                                        <TableCell className="font-medium">סך התחייבויות חודשיות</TableCell>
+                                        <TableCell className="font-bold">₪{adjustedObligations.toLocaleString()}</TableCell>
+                                      </TableRow>
+                                    )}
+                                    <TableRow>
+                                      <TableCell className="font-medium">יחס התחייבויות</TableCell>
+                                      <TableCell className={`font-bold ${adjustedDti > 40 ? 'text-destructive' : 'text-green-500'}`}>
+                                        {adjustedDti}%
+                                        {adjustedDti > 40 && ' ⚠️'}
+                                      </TableCell>
+                                    </TableRow>
+                                  </>
+                                );
+                              })()}
                               {analysis.financial_summary.free_cash_flow != null && (
                                 <TableRow>
                                   <TableCell className="font-medium">תזרים חופשי</TableCell>
