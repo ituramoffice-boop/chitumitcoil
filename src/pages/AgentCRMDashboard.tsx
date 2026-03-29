@@ -461,9 +461,11 @@ export default function AgentCRMDashboard() {
   }, [leads]);
   const { user } = useAuth();
   const { isDemoMode } = useDemo();
+  const urlDemo = new URLSearchParams(window.location.search).get("demo") === "true";
+  const isDemo = isDemoMode || urlDemo;
 
   useEffect(() => {
-    if (isDemoMode) {
+    if (isDemo) {
       setLeads(DEMO_LEADS);
       setLoading(false);
     } else {
