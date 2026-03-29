@@ -79,7 +79,9 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
     case "analysis_ready": {
       const findingsCount = data.findings_count || 0;
       const link = data.link || "#";
-      const clientName = data.client_name || "";
+      const rawClientName = data.client_name || "";
+      const clientName = rawClientName && rawClientName !== "לקוח חיתומית" ? rawClientName : "";
+      const greeting = clientName ? `שלום ${clientName},` : "שלום לקוח יקר,";
       const scanType = data.scan_type || "פיננסי";
       const wowAlerts = Array.isArray(data.wow_alerts)
         ? data.wow_alerts.slice(0, 3).map((a: string) => `<li style="margin:4px 0;padding:8px 12px;background:#ffffff0a;border-radius:8px;border-right:3px solid ${brandColor};">${a}</li>`).join("")
@@ -88,7 +90,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         subject: `✅ הדוח הפיננסי שלך מוכן${clientName ? ` — ${clientName}` : ""} — ${findingsCount} ממצאים`,
         html: wrapper(`
           <h2 style="color:${brandColor};margin:0 0 16px;">הדוח הפיננסי שלך מוכן! 🎉</h2>
-          ${clientName ? `<p style="font-size:16px;color:#ccc;">שלום <strong style="color:#fff;">${clientName}</strong>,</p>` : ""}
+          <p style="font-size:16px;color:#ccc;"><strong style="color:#fff;">${greeting}</strong></p>
           <p style="font-size:16px;line-height:1.6;color:#ccc;">
             סיימנו לנתח את ה${scanType} שלך ומצאנו
             <strong style="color:${brandColor};font-size:20px;"> ${findingsCount} </strong> ממצאים חשובים.
