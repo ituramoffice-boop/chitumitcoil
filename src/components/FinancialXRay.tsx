@@ -422,7 +422,6 @@ export function FinancialXRay({ leadId, clientName }: FinancialXRayProps) {
             );
           })}
         </div>
-        </div>
 
         {/* ── Scanning Animation ── */}
         <AnimatePresence>
