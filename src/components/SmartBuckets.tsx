@@ -221,7 +221,8 @@ const SmartBuckets = () => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const { classification, extractedData } = classifyByContent(file);
-      const filePath = `${user.id}/${leadId}/${Date.now()}_${file.name}`;
+      const ext = file.name.split(".").pop() || "pdf";
+      const filePath = `${user.id}/${leadId}/${Date.now()}.${ext}`;
       const fileIndex = startIndex + i;
 
       try {
