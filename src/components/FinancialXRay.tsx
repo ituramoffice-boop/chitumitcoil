@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   ScanLine, Shield, CreditCard, Landmark, Brain, AlertTriangle,
   Sparkles, Lock, CheckCircle2, Clock, Send, FileDown,
-  Activity, ChevronRight, Eye, Fingerprint,
+  Activity, ChevronRight, Eye, Fingerprint, MessageCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,9 +42,9 @@ const CONSENTS = [
 ];
 
 const SCAN_SOURCES = [
-  { id: "masleka", label: "סנכרן מסלקה פנסיונית", icon: Landmark, color: "from-cyan-500 to-blue-600" },
-  { id: "har", label: "סנכרן הר הביטוח", icon: Shield, color: "from-amber-500 to-orange-600" },
-  { id: "openbanking", label: "סרוק בנק וכרטיסי אשראי", icon: CreditCard, color: "from-emerald-500 to-teal-600" },
+  { id: "masleka", label: "סנכרן מסלקה פנסיונית", icon: Landmark, color: "from-cyan-500 to-blue-600", whatsappMsg: "שלום {name} 👋\nאני צריך לשלוף את נתוני המסלקה הפנסיונית שלך לצורך ניתוח מקיף. אפשר בבקשה להיכנס לאתר המסלקה ולשתף את הדוח? 📊\nתודה!" },
+  { id: "har", label: "סנכרן הר הביטוח", icon: Shield, color: "from-amber-500 to-orange-600", whatsappMsg: "שלום {name} 👋\nאני צריך גישה לנתוני הר הביטוח שלך כדי לזהות כפילויות ולבדוק פוליסות. אפשר להיכנס ל-https://har-habituach.gov.il ולשתף את הדוח? 🛡️\nתודה!" },
+  { id: "openbanking", label: "סרוק בנק וכרטיסי אשראי", icon: CreditCard, color: "from-emerald-500 to-teal-600", whatsappMsg: "שלום {name} 👋\nלצורך הניתוח הפיננסי, אני צריך תדפיסי עו\"ש ופירוט כרטיס אשראי (3 חודשים אחרונים). אפשר להוריד מהאפליקציה של הבנק ולשלוח? 🏦\nתודה!" },
 ];
 
 /* ── Helpers ── */
@@ -218,6 +218,29 @@ export function FinancialXRay({ leadId, clientName }: FinancialXRayProps) {
   const [activeScan, setActiveScan] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [clientPhone, setClientPhone] = useState<string | null>(null);
+
+  // Fetch client phone for WhatsApp
+  useEffect(() => {
+    if (!leadId) return;
+    supabase.from("leads").select("phone").eq("id", leadId).single().then(({ data }) => {
+      if (data?.phone) setClientPhone(data.phone);
+    });
+  }, [leadId]);
+
+  const handleWhatsAppSync = (src: typeof SCAN_SOURCES[0]) => {
+    const phone = clientPhone?.replace(/\D/g, "") || "";
+    if (!phone) {
+      // fallback: copy message
+      const msg = src.whatsappMsg.replace("{name}", clientName || "");
+      navigator.clipboard.writeText(msg);
+      alert("מספר טלפון לא נמצא – ההודעה הועתקה ללוח");
+      return;
+    }
+    const formattedPhone = phone.startsWith("0") ? "972" + phone.slice(1) : phone;
+    const msg = encodeURIComponent(src.whatsappMsg.replace("{name}", clientName || ""));
+    window.open(`https://wa.me/${formattedPhone}?text=${msg}`, "_blank");
+  };
 
   // Fetch real data when scanning completes
   const fetchRealData = async () => {
@@ -360,31 +383,42 @@ export function FinancialXRay({ leadId, clientName }: FinancialXRayProps) {
           {SCAN_SOURCES.map((src) => {
             const locked = !consentsVerified;
             return (
-              <motion.div
-                key={src.id}
-                animate={consentsVerified && !scanned ? { boxShadow: ["0 0 0px rgba(0,255,200,0)", "0 0 14px rgba(0,255,200,0.25)", "0 0 0px rgba(0,255,200,0)"] } : {}}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="rounded-xl"
-              >
-                <Button
-                  onClick={handleScan}
-                  disabled={locked || scanning}
-                  className={`w-full h-auto py-4 px-4 flex flex-col items-center gap-2 border-0 transition-all relative overflow-hidden group rounded-xl ${
-                    locked ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-60" : `bg-gradient-to-br ${src.color} text-white hover:opacity-90`
-                  }`}
+              <div key={src.id} className="rounded-xl flex flex-col gap-2">
+                <motion.div
+                  animate={consentsVerified && !scanned ? { boxShadow: ["0 0 0px rgba(0,255,200,0)", "0 0 14px rgba(0,255,200,0.25)", "0 0 0px rgba(0,255,200,0)"] } : {}}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="rounded-xl"
                 >
-                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative">
-                    <src.icon className="w-6 h-6" />
-                    {locked && <Lock className="w-3 h-3 absolute -bottom-1 -right-1 text-muted-foreground" />}
-                  </div>
-                  <span className="text-xs font-medium text-center leading-tight">{src.label}</span>
-                  {locked && <span className="text-[9px] text-muted-foreground/60">דרושה הסכמת לקוח</span>}
-                  {scanning && activeScan === "all" && !locked && (
-                    <motion.div className="absolute bottom-0 left-0 h-0.5 bg-white/60" initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 2.5 }} />
-                  )}
+                  <Button
+                    onClick={handleScan}
+                    disabled={locked || scanning}
+                    className={`w-full h-auto py-4 px-4 flex flex-col items-center gap-2 border-0 transition-all relative overflow-hidden group rounded-xl ${
+                      locked ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-60" : `bg-gradient-to-br ${src.color} text-white hover:opacity-90`
+                    }`}
+                  >
+                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <src.icon className="w-6 h-6" />
+                      {locked && <Lock className="w-3 h-3 absolute -bottom-1 -right-1 text-muted-foreground" />}
+                    </div>
+                    <span className="text-xs font-medium text-center leading-tight">{src.label}</span>
+                    {locked && <span className="text-[9px] text-muted-foreground/60">דרושה הסכמת לקוח</span>}
+                    {scanning && activeScan === "all" && !locked && (
+                      <motion.div className="absolute bottom-0 left-0 h-0.5 bg-white/60" initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 2.5 }} />
+                    )}
+                  </Button>
+                </motion.div>
+                {/* WhatsApp quick-send */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleWhatsAppSync(src)}
+                  className="h-8 gap-1.5 text-[10px] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                >
+                  <MessageCircle className="w-3 h-3" />
+                  שלח בקשה בוואטסאפ
                 </Button>
-              </motion.div>
+              </div>
             );
           })}
         </div>
