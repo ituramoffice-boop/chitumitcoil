@@ -151,6 +151,36 @@ function FullAnalysisPanel({ lead, open, onClose, heatStatus, onChangeHeat }: {
             )}
           </div>
 
+          {/* Employer */}
+          {ai?.employer?.name && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Building2 size={16} className="text-[hsl(var(--primary))]" />
+                <div>
+                  <p className="text-white/40 text-[10px]">מעסיק</p>
+                  <p className="text-white/80 text-sm font-semibold">{ai.employer.name}</p>
+                </div>
+              </div>
+              <Badge className={`text-[10px] ${
+                ai.employer.confidence === "high" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
+                ai.employer.confidence === "medium" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" :
+                "bg-red-500/20 text-red-400 border-red-500/30"
+              }`}>
+                {ai.employer.confidence === "high" ? "✓ מאומת" :
+                 ai.employer.confidence === "medium" ? "בינוני" : "לא מזוהה"}
+              </Badge>
+            </div>
+          )}
+          {ai?.employer_name && !ai?.employer?.name && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex items-center gap-2">
+              <Building2 size={16} className="text-[hsl(var(--primary))]" />
+              <div>
+                <p className="text-white/40 text-[10px]">מעסיק</p>
+                <p className="text-white/80 text-sm font-semibold">{ai.employer_name}</p>
+              </div>
+            </div>
+          )}
+
           {/* Heat selector */}
           <div>
             <p className="text-white/40 text-xs mb-2">סטטוס חום</p>
