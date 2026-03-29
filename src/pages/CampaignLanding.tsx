@@ -269,7 +269,12 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         {uploading ? (
           <div className="space-y-2">
             <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
-            <p className="text-accent font-bold">מנתח את התלוש...</p>
+            <p className="text-accent font-bold">
+              {pdfProgress ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...` : "מנתח את התלוש..."}
+            </p>
+            {pdfProgress && pdfProgress.total > 0 && (
+              <Progress value={Math.round((pdfProgress.current / pdfProgress.total) * 100)} className="h-2 w-48 mx-auto" />
+            )}
             <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : uploaded ? (
