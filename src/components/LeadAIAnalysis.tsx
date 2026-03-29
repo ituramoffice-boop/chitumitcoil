@@ -122,12 +122,16 @@ export function AIAnalysisTab({ lead }: { lead: any }) {
             <p className="text-accent font-bold text-sm">₪{ai.total_monthly_obligations.toLocaleString()}</p>
           </div>
         )}
-        {ai.debt_to_income_ratio != null && (
+        {(ai.debt_to_income_ratio != null || ai.dti_status === "data_error") && (
           <div className="glass-card p-3">
             <p className="text-muted-foreground text-[10px] mb-1">יחס חוב/הכנסה</p>
-            <p className={`font-bold text-sm ${ai.debt_to_income_ratio > 40 ? "text-destructive" : "text-emerald-500"}`}>
-              {ai.debt_to_income_ratio}%
-            </p>
+            {ai.dti_status === "data_error" ? (
+              <p className="font-bold text-sm text-warning">דורש בדיקה ידנית</p>
+            ) : (
+              <p className={`font-bold text-sm ${ai.debt_to_income_ratio > 40 ? "text-destructive" : "text-emerald-500"}`}>
+                {ai.debt_to_income_ratio}%
+              </p>
+            )}
           </div>
         )}
       </div>
