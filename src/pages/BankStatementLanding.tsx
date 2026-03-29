@@ -40,6 +40,12 @@ export default function BankStatementLanding() {
     monthly_amount: number;
     description: string;
   }> | undefined;
+  const standingOrders = analysis?.standing_orders as Array<{
+    description: string;
+    monthly_amount: number;
+    recipient: string;
+    category: string;
+  }> | undefined;
   const totalObligations = analysis?.total_monthly_obligations as number || 0;
   const debtToIncome = analysis?.debt_to_income_ratio as number || 0;
   const wowAlerts = analysis?.wow_alerts as string[] | undefined;
