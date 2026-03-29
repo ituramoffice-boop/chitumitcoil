@@ -217,17 +217,23 @@ export default function AIScannerWidget({
     setProgressMsgIdx(0);
 
     try {
-      // Upload original to storage
-      const filePath = `${crypto.randomUUID()}_${file.name}`;
-      console.log(`[Scanner] Uploading to storage: ${filePath}, type: ${file.type}, size: ${file.size}`);
-      const { error: uploadError } = await supabase.storage
-        .from(config.storageBucket)
-        .upload(filePath, file, { contentType: file.type });
-      if (uploadError) {
-        console.error("[Scanner] Storage upload error:", uploadError);
-        throw uploadError;
+      // Upload original to storage (optional — skip for unauthenticated users)
+      let filePath = "";
+      if (user) {
+        filePath = `${crypto.randomUUID()}_${file.name}`;
+        console.log(`[Scanner] Uploading to storage: ${filePath}, type: ${file.type}, size: ${file.size}`);
+        const { error: uploadError } = await supabase.storage
+          .from(config.storageBucket)
+          .upload(filePath, file, { contentType: file.type });
+        if (uploadError) {
+          console.warn("[Scanner] Storage upload failed (non-critical):", uploadError.message);
+          // Don't throw — storage is optional for public scanners
+        } else {
+          console.log("[Scanner] Storage upload successful");
+        }
+      } else {
+        console.log("[Scanner] Skipping storage upload (unauthenticated user)");
       }
-      console.log("[Scanner] Storage upload successful");
 
       // Convert to base64 images for AI
       let images: { base64: string; mime_type: string }[] = [];
@@ -235,13 +241,28 @@ export default function AIScannerWidget({
       if (file.type === "application/pdf") {
         console.log("[Scanner] Converting PDF to images...");
         setPdfProgress({ current: 0, total: 0 });
-        const pdfImages = await pdfToBase64Images(file, (current, total) => {
-          console.log(`[Scanner] PDF page ${current}/${total}`);
-          setPdfProgress({ current, total });
-        });
-        setPdfProgress(null);
-        console.log(`[Scanner] PDF converted: ${pdfImages.length} pages`);
-        images = pdfImages.map((b64) => ({ base64: b64, mime_type: "image/png" }));
+        try {
+          const pdfImages = await pdfToBase64Images(file, (current, total) => {
+            console.log(`[Scanner] PDF page ${current}/${total}`);
+            setPdfProgress({ current, total });
+          });
+          setPdfProgress(null);
+          console.log(`[Scanner] PDF converted: ${pdfImages.length} pages`);
+          
+          // Limit to first 5 pages to avoid payload size issues
+          const maxPages = Math.min(pdfImages.length, 5);
+          if (pdfImages.length > 5) {
+            console.warn(`[Scanner] PDF has ${pdfImages.length} pages, limiting to first ${maxPages}`);
+            toast.info(`ה-PDF מכיל ${pdfImages.length} עמודים – מנתח את 5 הראשונים`);
+          }
+          images = pdfImages.slice(0, maxPages).map((b64) => ({ base64: b64, mime_type: "image/png" }));
+        } catch (pdfErr: any) {
+          console.error("[Scanner] PDF conversion failed:", pdfErr);
+          setPdfProgress(null);
+          toast.error("שגיאה בקריאת ה-PDF – נסו להעלות כתמונה (JPG/PNG)");
+          setUploading(false);
+          return;
+        }
       } else {
         const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -255,18 +276,40 @@ export default function AIScannerWidget({
         images = [{ base64, mime_type: file.type }];
       }
 
+      if (images.length === 0) {
+        toast.error("לא הצלחנו לחלץ תוכן מהקובץ");
+        setUploading(false);
+        return;
+      }
+
       // Call the type-specific edge function
       console.log(`[Scanner] Calling edge function: ${config.edgeFunction}, images: ${images.length}`);
       const { data, error: fnError } = await supabase.functions.invoke(config.edgeFunction, {
         body: { images, ...extraBody },
       });
+      
       if (fnError) {
         console.error("[Scanner] Edge function error:", fnError);
         throw fnError;
       }
+      
+      if (data?.error) {
+        console.error("[Scanner] Edge function returned error:", data.error);
+        toast.error(data.error);
+        setUploading(false);
+        return;
+      }
+      
       console.log("[Scanner] Edge function response:", data);
 
       const analysis = data?.analysis || data;
+      
+      if (!analysis || (typeof analysis === "object" && Object.keys(analysis).length === 0)) {
+        toast.error("הניתוח לא החזיר תוצאות – נסו שנית עם קובץ ברור יותר");
+        setUploading(false);
+        return;
+      }
+      
       setUploaded(true);
       setUploading(false);
 
