@@ -698,6 +698,7 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string
+          heat_status: string | null
           id: string
           is_marketplace: boolean | null
           last_contact: string | null
@@ -724,6 +725,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name: string
+          heat_status?: string | null
           id?: string
           is_marketplace?: boolean | null
           last_contact?: string | null
@@ -750,6 +752,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string
+          heat_status?: string | null
           id?: string
           is_marketplace?: boolean | null
           last_contact?: string | null

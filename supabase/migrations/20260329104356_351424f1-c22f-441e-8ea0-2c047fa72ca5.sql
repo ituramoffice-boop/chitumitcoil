@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN heat_status text DEFAULT NULL;
