@@ -749,7 +749,7 @@ export default function CampaignLanding() {
   const handleToolSubmit = useCallback((data: Record<string, unknown>) => {
     setToolData(data);
 
-    // If payslip already analyzed (has ai_analysis), skip loading and show wow_alerts
+    // If payslip already analyzed (has ai_analysis), skip loading and show audit results
     if (data.ai_analysis) {
       const analysis = data.ai_analysis as any;
 
@@ -758,12 +758,16 @@ export default function CampaignLanding() {
       if (analysis.personal?.phone) setPrefillPhone(analysis.personal.phone);
 
       const alerts = analysis.wow_alerts || [];
-      if (alerts.length > 0) {
+      const hasMissingMoney = (analysis.pension_audit?.total_missing_money || 0) > 0;
+      const hasDoubleInsurance = analysis.insurance_audit?.has_double_insurance;
+
+      // Show audit results if there are any findings
+      if (alerts.length > 0 || hasMissingMoney || hasDoubleInsurance) {
         setWowAlerts(alerts);
         setPhase("wow_alerts");
         return;
       }
-      // No wow_alerts, go straight to capture
+      // No findings, go straight to capture
       setPhase("capture");
       return;
     }
