@@ -16,7 +16,7 @@ import {
 import {
   Shield, Lock, Calculator, Search, Brain, Sparkles,
   CheckCircle2, Upload, Fingerprint, User, Phone,
-  PiggyBank, BarChart3, FileText, ArrowRight, AlertTriangle, Building2
+  PiggyBank, BarChart3, FileText, ArrowRight, AlertTriangle, Building2, Landmark, CreditCard
 } from "lucide-react";
 
 // ── Funnel config ──────────────────────────────────────────
@@ -50,6 +50,12 @@ const FUNNEL_CONFIG: Record<string, { title: string; subtitle: string; cta: stri
     subtitle: "ניתוח AI לחיסכון שנתי אפשרי",
     cta: "נתח חיסכון",
     icon: BarChart3,
+  },
+  "bank-statement": {
+    title: "ביקורת דף חשבון בנק (עו״ש)",
+    subtitle: "ה-AI יזהה משכנתא, ביטוחים, הלוואות ויחס התחייבויות",
+    cta: "סרוק דף חשבון",
+    icon: Landmark,
   },
   "price-compare": {
     title: "השוואת מחירי ביטוח ומשכנתא",
@@ -587,9 +593,11 @@ export default function CampaignLanding() {
       const alerts = analysis.wow_alerts || [];
       const hasMissingMoney = (analysis.pension_audit?.total_missing_money || 0) > 0;
       const hasDoubleInsurance = analysis.insurance_audit?.has_double_insurance;
+      const hasBankFindings = analysis.financial_summary?.obligation_ratio_percent > 0;
+      const hasSalaryDiscrepancy = !!analysis.salary_discrepancy;
 
       // Show audit results if there are any findings
-      if (alerts.length > 0 || hasMissingMoney || hasDoubleInsurance) {
+      if (alerts.length > 0 || hasMissingMoney || hasDoubleInsurance || hasBankFindings || hasSalaryDiscrepancy) {
         setWowAlerts(alerts);
         setPhase("wow_alerts");
         return;
@@ -650,6 +658,8 @@ export default function CampaignLanding() {
         return <PlaceholderWidget label="מסלקה" onSubmit={handleToolSubmit} />;
       case "savings":
         return <PlaceholderWidget label="חיסכון" onSubmit={handleToolSubmit} />;
+      case "bank-statement":
+        return <AIScannerWidget type="bank_statement" onSubmit={handleToolSubmit} extraBody={toolData.ai_analysis ? { payslip_analysis: toolData.ai_analysis } : undefined} />;
       case "price-compare":
         return <PlaceholderWidget label="השוואת מחירים" onSubmit={handleToolSubmit} />;
       default:
@@ -852,6 +862,77 @@ export default function CampaignLanding() {
                         </div>
                       )}
 
+                      {/* Bank Statement Results */}
+                      {analysis?.financial_summary && (
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-3 py-2 text-sm font-bold text-foreground flex items-center gap-2">
+                            <Landmark className="w-4 h-4" /> סיכום דף חשבון בנק
+                          </div>
+                          <Table>
+                            <TableBody>
+                              {analysis.income?.average_monthly_net > 0 && (
+                                <TableRow>
+                                  <TableCell className="font-medium">הכנסה חודשית ממוצעת</TableCell>
+                                  <TableCell className="text-green-500 font-bold">₪{analysis.income.average_monthly_net.toLocaleString()}</TableCell>
+                                </TableRow>
+                              )}
+                              {analysis.mortgage?.found && (
+                                <TableRow>
+                                  <TableCell className="font-medium">תשלום משכנתא {analysis.mortgage.bank_name ? `(${analysis.mortgage.bank_name})` : ''}</TableCell>
+                                  <TableCell className="font-bold">₪{(analysis.mortgage.monthly_payment || 0).toLocaleString()}</TableCell>
+                                </TableRow>
+                              )}
+                              {analysis.financial_summary.total_monthly_obligations > 0 && (
+                                <TableRow>
+                                  <TableCell className="font-medium">סך התחייבויות חודשיות</TableCell>
+                                  <TableCell className="font-bold">₪{analysis.financial_summary.total_monthly_obligations.toLocaleString()}</TableCell>
+                                </TableRow>
+                              )}
+                              <TableRow>
+                                <TableCell className="font-medium">יחס התחייבויות</TableCell>
+                                <TableCell className={`font-bold ${(analysis.financial_summary.obligation_ratio_percent || 0) > 40 ? 'text-destructive' : 'text-green-500'}`}>
+                                  {analysis.financial_summary.obligation_ratio_percent || 0}%
+                                  {(analysis.financial_summary.obligation_ratio_percent || 0) > 40 && ' ⚠️'}
+                                </TableCell>
+                              </TableRow>
+                              {analysis.financial_summary.free_cash_flow != null && (
+                                <TableRow>
+                                  <TableCell className="font-medium">תזרים חופשי</TableCell>
+                                  <TableCell className={`font-bold ${analysis.financial_summary.free_cash_flow >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                                    ₪{analysis.financial_summary.free_cash_flow.toLocaleString()}
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+
+                      {/* Insurance payments from bank statement */}
+                      {analysis?.insurance_payments?.length > 0 && (
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-3 py-2 text-sm font-bold text-foreground flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" /> תשלומי ביטוח שזוהו
+                          </div>
+                          <div className="p-3 space-y-2 text-sm">
+                            {analysis.insurance_payments.map((p: any, i: number) => (
+                              <div key={i} className="flex justify-between items-center">
+                                <span>{p.company} {p.type ? `(${p.type})` : ''}</span>
+                                <span className="font-medium">₪{(p.monthly_amount || 0).toLocaleString()}/חודש</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Salary Discrepancy */}
+                      {analysis?.salary_discrepancy && (
+                        <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
+                          <p className="text-destructive font-bold text-sm">⚠️ אי-התאמת שכר</p>
+                          <p className="text-xs text-muted-foreground mt-1">{analysis.salary_discrepancy}</p>
+                        </div>
+                      )}
+
                       {/* Wow Alerts */}
                       {wowAlerts.length > 0 && (
                         <div className="space-y-2">
@@ -870,12 +951,14 @@ export default function CampaignLanding() {
                         </div>
                       )}
 
-                      {/* Total Missing Money */}
+                      {/* Total Summary */}
                       <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center space-y-1">
                         <p className="text-2xl font-black text-destructive">
-                          ₪{(analysis?.total_monthly_waste || pension?.total_missing_money || 0).toLocaleString()}
+                          ₪{(analysis?.total_monthly_waste || analysis?.financial_summary?.total_monthly_obligations || pension?.total_missing_money || 0).toLocaleString()}
                         </p>
-                        <p className="text-xs text-muted-foreground">כסף חסר / בזבוז חודשי שזיהינו</p>
+                        <p className="text-xs text-muted-foreground">
+                          {analysis?.financial_summary ? "סך התחייבויות חודשיות" : "כסף חסר / בזבוז חודשי שזיהינו"}
+                        </p>
                       </div>
                     </div>
                   );

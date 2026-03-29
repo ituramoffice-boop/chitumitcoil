@@ -35,7 +35,7 @@ async function pdfToBase64Images(
 }
 
 // ── Scanner type configs ───────────────────────────────────
-export type ScannerType = "payslip" | "pension" | "insurance";
+export type ScannerType = "payslip" | "pension" | "insurance" | "bank_statement";
 
 interface ScannerTypeConfig {
   edgeFunction: string;
@@ -90,6 +90,21 @@ const SCANNER_CONFIGS: Record<ScannerType, ScannerTypeConfig> = {
     uploadLabel: "גררו מסמך ביטוח לכאן או לחצו להעלאה",
     formatHint: "PDF, JPG, PNG – עד 10MB",
   },
+  bank_statement: {
+    edgeFunction: "analyze-bank-statement",
+    storageBucket: "payslips",
+    progressMessages: [
+      "הופך קובץ לתמונה לעיבוד...",
+      "סורק תנועות עו״ש וזיכויים...",
+      "מזהה תשלומי משכנתא וביטוח...",
+      "מחשב יחס התחייבויות להכנסה...",
+      "מצליב נתונים מול תלוש שכר...",
+    ],
+    successMessage: "ביקורת עו״ש הושלמה!",
+    acceptFormats: ".pdf,.jpg,.jpeg,.png,.webp",
+    uploadLabel: "גררו דף חשבון בנק לכאן או לחצו להעלאה",
+    formatHint: "PDF, JPG, PNG – עד 10MB",
+  },
 };
 
 // ── Generic AI Scanner Widget ──────────────────────────────
@@ -97,12 +112,15 @@ interface AIScannerWidgetProps {
   type: ScannerType;
   onSubmit: (data: Record<string, unknown>) => void;
   maxFileSizeMB?: number;
+  /** Extra fields to send in the edge function body (e.g. payslip_analysis for cross-ref) */
+  extraBody?: Record<string, unknown>;
 }
 
 export default function AIScannerWidget({
   type,
   onSubmit,
   maxFileSizeMB = 10,
+  extraBody,
 }: AIScannerWidgetProps) {
   const config = SCANNER_CONFIGS[type];
   const [dragging, setDragging] = useState(false);
@@ -171,7 +189,7 @@ export default function AIScannerWidget({
 
       // Call the type-specific edge function
       const { data, error: fnError } = await supabase.functions.invoke(config.edgeFunction, {
-        body: { images },
+        body: { images, ...extraBody },
       });
       if (fnError) throw fnError;
 
