@@ -638,6 +638,22 @@ export default function CampaignLanding() {
         ai_analysis: aiAnalysis,
       } as any);
       if (error) throw error;
+
+      // Send email notification with client name
+      try {
+        await supabase.functions.invoke("send-email", {
+          body: {
+            type: "new_lead",
+            client_name: name || "לקוח יקר",
+            phone,
+            lead_source: `campaign_${funnelType}`,
+            consultant_id: consultantId ?? null,
+          },
+        });
+      } catch (emailErr) {
+        console.warn("Email send failed:", emailErr);
+      }
+
       setPhase("done");
       toast.success("הדוח בדרך אליך!");
     } catch {
