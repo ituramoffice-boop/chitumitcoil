@@ -10,9 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
   Shield, Lock, Calculator, Search, Brain, Sparkles,
   CheckCircle2, Upload, Fingerprint, User, Phone,
-  PiggyBank, BarChart3, FileText, ArrowRight
+  PiggyBank, BarChart3, FileText, ArrowRight, AlertTriangle, Building2
 } from "lucide-react";
 
 // ── Funnel config ──────────────────────────────────────────
