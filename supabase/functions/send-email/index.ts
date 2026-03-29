@@ -90,7 +90,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         subject: `✅ הדוח הפיננסי שלך מוכן${clientName ? ` — ${clientName}` : ""} — ${findingsCount} ממצאים`,
         html: wrapper(`
           <h2 style="color:${brandColor};margin:0 0 16px;">הדוח הפיננסי שלך מוכן! 🎉</h2>
-          ${clientName ? `<p style="font-size:16px;color:#ccc;">שלום <strong style="color:#fff;">${clientName}</strong>,</p>` : ""}
+          <p style="font-size:16px;color:#ccc;"><strong style="color:#fff;">${greeting}</strong></p>
           <p style="font-size:16px;line-height:1.6;color:#ccc;">
             סיימנו לנתח את ה${scanType} שלך ומצאנו
             <strong style="color:${brandColor};font-size:20px;"> ${findingsCount} </strong> ממצאים חשובים.
