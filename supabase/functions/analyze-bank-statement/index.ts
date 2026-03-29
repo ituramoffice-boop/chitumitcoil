@@ -390,26 +390,64 @@ ${crossRefInstruction}
       analysis = { raw: content, error: "Failed to parse AI response" };
     }
 
-    // Post-process: recalculate DTI correctly on the server side
+    // Post-process: recalculate DTI from structured data (not AI's total)
     if (analysis && !analysis.error) {
       const income = Number(analysis.salary_verification?.average_monthly_deposit) || Number(analysis.verified_salary) || 0;
-      const obligations = Number(analysis.total_monthly_obligations) || 0;
 
-      if (income > 0 && obligations > 0) {
-        const dti = Math.round((obligations / income) * 100);
-        if (dti > 100) {
-          // Flag as data error - debts > income is almost certainly wrong extraction
+      // Sum recurring debits from structured fields instead of trusting AI total
+      let recurringDebits = 0;
+
+      // Mortgage payment
+      if (analysis.mortgage?.detected && analysis.mortgage?.monthly_payment) {
+        recurringDebits += Number(analysis.mortgage.monthly_payment) || 0;
+      }
+
+      // Existing loans
+      if (Array.isArray(analysis.existing_loans)) {
+        for (const loan of analysis.existing_loans) {
+          recurringDebits += Number(loan.monthly_payment) || 0;
+        }
+      }
+
+      // Insurance charges
+      if (Array.isArray(analysis.insurance_charges)) {
+        for (const ins of analysis.insurance_charges) {
+          recurringDebits += Number(ins.monthly_amount) || 0;
+        }
+      }
+
+      // Standing orders (הוראות קבע)
+      if (Array.isArray(analysis.standing_orders)) {
+        for (const so of analysis.standing_orders) {
+          recurringDebits += Number(so.monthly_amount) || 0;
+        }
+      }
+
+      // Update total_monthly_obligations with our recalculated sum
+      analysis.total_monthly_obligations = recurringDebits;
+
+      console.log(`[analyze-bank-statement] DTI recalc: income=${income}, recurringDebits=${recurringDebits}`);
+
+      if (income > 0 && recurringDebits > 0) {
+        const dti = parseFloat(((recurringDebits / income) * 100).toFixed(1));
+        if (dti > 150) {
+          // Something is wrong with extraction — flag it
           analysis.debt_to_income_ratio = null;
           analysis.total_dti_ratio = null;
-          analysis.dti_status = "data_error";
-          analysis.dti_display = "דורש בדיקה ידנית";
-          console.log(`[analyze-bank-statement] DTI ${dti}% exceeds 100% — flagged as data_error (obligations=${obligations}, income=${income})`);
+          analysis.dti_status = "calculation_error";
+          analysis.dti_display = "—";
+          console.log(`[analyze-bank-statement] DTI ${dti}% exceeds 150% — flagged as calculation_error`);
         } else {
           analysis.debt_to_income_ratio = dti;
           analysis.total_dti_ratio = dti;
           analysis.dti_status = dti < 30 ? "green" : dti <= 40 ? "yellow" : "red";
           analysis.dti_display = null;
         }
+      } else if (income === 0) {
+        analysis.debt_to_income_ratio = null;
+        analysis.total_dti_ratio = null;
+        analysis.dti_status = "calculation_error";
+        analysis.dti_display = "—";
       }
     }
 
