@@ -348,7 +348,7 @@ ${crossRefInstruction}
           { role: "system", content: systemPrompt },
           { role: "user", content: userContent },
         ],
-        max_tokens: 1500,
+        ...(deep_scan ? {} : { max_tokens: 1500 }),
         response_format: { type: "json_object" },
       }),
     });
