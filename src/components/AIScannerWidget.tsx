@@ -219,20 +219,28 @@ export default function AIScannerWidget({
     try {
       // Upload original to storage
       const filePath = `${crypto.randomUUID()}_${file.name}`;
+      console.log(`[Scanner] Uploading to storage: ${filePath}, type: ${file.type}, size: ${file.size}`);
       const { error: uploadError } = await supabase.storage
         .from(config.storageBucket)
         .upload(filePath, file, { contentType: file.type });
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("[Scanner] Storage upload error:", uploadError);
+        throw uploadError;
+      }
+      console.log("[Scanner] Storage upload successful");
 
       // Convert to base64 images for AI
       let images: { base64: string; mime_type: string }[] = [];
 
       if (file.type === "application/pdf") {
+        console.log("[Scanner] Converting PDF to images...");
         setPdfProgress({ current: 0, total: 0 });
         const pdfImages = await pdfToBase64Images(file, (current, total) => {
+          console.log(`[Scanner] PDF page ${current}/${total}`);
           setPdfProgress({ current, total });
         });
         setPdfProgress(null);
+        console.log(`[Scanner] PDF converted: ${pdfImages.length} pages`);
         images = pdfImages.map((b64) => ({ base64: b64, mime_type: "image/png" }));
       } else {
         const base64 = await new Promise<string>((resolve, reject) => {
@@ -248,10 +256,15 @@ export default function AIScannerWidget({
       }
 
       // Call the type-specific edge function
+      console.log(`[Scanner] Calling edge function: ${config.edgeFunction}, images: ${images.length}`);
       const { data, error: fnError } = await supabase.functions.invoke(config.edgeFunction, {
         body: { images, ...extraBody },
       });
-      if (fnError) throw fnError;
+      if (fnError) {
+        console.error("[Scanner] Edge function error:", fnError);
+        throw fnError;
+      }
+      console.log("[Scanner] Edge function response:", data);
 
       const analysis = data?.analysis || data;
       setUploaded(true);
