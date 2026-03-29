@@ -428,10 +428,15 @@ ${crossRefInstruction}
 
       console.log(`[analyze-bank-statement] DTI recalc: income=${income}, recurringDebits=${recurringDebits}`);
 
-      if (income > 0 && recurringDebits > 0) {
+      if (recurringDebits === 0) {
+        // No recurring debits found — DTI is 0%
+        analysis.debt_to_income_ratio = 0;
+        analysis.total_dti_ratio = 0;
+        analysis.dti_status = "green";
+        analysis.dti_display = null;
+      } else if (income > 0) {
         const dti = parseFloat(((recurringDebits / income) * 100).toFixed(1));
         if (dti > 150) {
-          // Something is wrong with extraction — flag it
           analysis.debt_to_income_ratio = null;
           analysis.total_dti_ratio = null;
           analysis.dti_status = "calculation_error";
@@ -443,7 +448,8 @@ ${crossRefInstruction}
           analysis.dti_status = dti < 30 ? "green" : dti <= 40 ? "yellow" : "red";
           analysis.dti_display = null;
         }
-      } else if (income === 0) {
+      } else {
+        // No income detected — can't calculate
         analysis.debt_to_income_ratio = null;
         analysis.total_dti_ratio = null;
         analysis.dti_status = "calculation_error";
