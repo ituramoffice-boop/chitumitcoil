@@ -112,12 +112,15 @@ interface AIScannerWidgetProps {
   type: ScannerType;
   onSubmit: (data: Record<string, unknown>) => void;
   maxFileSizeMB?: number;
+  /** Extra fields to send in the edge function body (e.g. payslip_analysis for cross-ref) */
+  extraBody?: Record<string, unknown>;
 }
 
 export default function AIScannerWidget({
   type,
   onSubmit,
   maxFileSizeMB = 10,
+  extraBody,
 }: AIScannerWidgetProps) {
   const config = SCANNER_CONFIGS[type];
   const [dragging, setDragging] = useState(false);
