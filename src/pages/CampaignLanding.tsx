@@ -10,9 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
   Shield, Lock, Calculator, Search, Brain, Sparkles,
   CheckCircle2, Upload, Fingerprint, User, Phone,
-  PiggyBank, BarChart3, FileText, ArrowRight
+  PiggyBank, BarChart3, FileText, ArrowRight, AlertTriangle, Building2
 } from "lucide-react";
 
 // ── Funnel config ──────────────────────────────────────────
@@ -164,6 +167,14 @@ async function pdfToBase64Images(
   return images;
 }
 
+// ── Payslip analysis progress messages ─────────────────────
+const PAYSLIP_PROGRESS_MESSAGES = [
+  "הופך קובץ לתמונה לעיבוד...",
+  "סורק הפרשות פנסיוניות מול החוק...",
+  "מזהה כפילויות ביטוח וחוסרים...",
+  "מכין סיכום מנהלים ליועץ...",
+];
+
 // ── Payslip Hook Widget ────────────────────────────────────
 function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>) => void }) {
   const [dragging, setDragging] = useState(false);
@@ -171,6 +182,16 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
   const [uploaded, setUploaded] = useState(false);
   const [fileName, setFileName] = useState("");
   const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
+  const [progressMsgIdx, setProgressMsgIdx] = useState(0);
+
+  // Cycle progress messages during analysis
+  useEffect(() => {
+    if (!uploading) return;
+    const iv = setInterval(() => {
+      setProgressMsgIdx((prev) => (prev + 1) % PAYSLIP_PROGRESS_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(iv);
+  }, [uploading]);
 
   const processFile = useCallback(async (file: File) => {
     if (!file) return;
@@ -187,17 +208,14 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
 
     setUploading(true);
     setFileName(file.name);
+    setProgressMsgIdx(0);
 
     try {
-      // 1) Upload original to Supabase Storage
       const filePath = `${crypto.randomUUID()}_${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("payslips")
         .upload(filePath, file, { contentType: file.type });
       if (uploadError) throw uploadError;
-
-      // 2) Convert to base64 image(s) for AI
-      let mimeType: string;
 
       let images: { base64: string; mime_type: string }[] = [];
 
@@ -221,7 +239,6 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         images = [{ base64, mime_type: file.type }];
       }
 
-      // 3) Call analyze-payslip edge function with all pages
       const { data, error: fnError } = await supabase.functions.invoke("analyze-payslip", {
         body: { images },
       });
@@ -267,20 +284,20 @@ function PayslipWidget({ onSubmit }: { onSubmit: (data: Record<string, unknown>)
         onClick={() => !uploading && !uploaded && handleFileSelect()}
       >
         {uploading ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Brain className="w-12 h-12 text-accent mx-auto animate-pulse" />
-            <p className="text-accent font-bold">
-              {pdfProgress ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...` : "מנתח את התלוש..."}
+            <p className="text-accent font-bold text-sm">
+              {pdfProgress && pdfProgress.total > 0
+                ? `ממיר עמוד ${pdfProgress.current} מתוך ${pdfProgress.total}...`
+                : PAYSLIP_PROGRESS_MESSAGES[progressMsgIdx]}
             </p>
-            {pdfProgress && pdfProgress.total > 0 && (
-              <Progress value={Math.round((pdfProgress.current / pdfProgress.total) * 100)} className="h-2 w-48 mx-auto" />
-            )}
+            <Progress value={pdfProgress && pdfProgress.total > 0 ? Math.round((pdfProgress.current / pdfProgress.total) * 100) : undefined} className="h-2 w-48 mx-auto" />
             <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : uploaded ? (
           <div className="space-y-2">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-green-400 font-bold">תלוש נותח בהצלחה!</p>
+            <p className="text-green-400 font-bold">ביקורת תלוש הושלמה!</p>
             <p className="text-xs text-muted-foreground">{fileName}</p>
           </div>
         ) : (
@@ -481,8 +498,8 @@ function WhatsAppMockup() {
 function LeadCaptureModal({
   open,
   onSubmit,
-  initialName = "ישראל ישראלי",
-  initialPhone = "050-1234567",
+  initialName = "",
+  initialPhone = "",
 }: {
   open: boolean;
   onSubmit: (name: string, phone: string) => void;
@@ -725,14 +742,14 @@ export default function CampaignLanding() {
   const [stepIdx, setStepIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [toolData, setToolData] = useState<Record<string, unknown>>({});
-  const [prefillName, setPrefillName] = useState("ישראל ישראלי");
-  const [prefillPhone, setPrefillPhone] = useState("050-1234567");
+  const [prefillName, setPrefillName] = useState("");
+  const [prefillPhone, setPrefillPhone] = useState("");
 
   // Trigger AI loading (for non-payslip funnels) or handle payslip result
   const handleToolSubmit = useCallback((data: Record<string, unknown>) => {
     setToolData(data);
 
-    // If payslip already analyzed (has ai_analysis), skip loading and show wow_alerts
+    // If payslip already analyzed (has ai_analysis), skip loading and show audit results
     if (data.ai_analysis) {
       const analysis = data.ai_analysis as any;
 
@@ -741,12 +758,16 @@ export default function CampaignLanding() {
       if (analysis.personal?.phone) setPrefillPhone(analysis.personal.phone);
 
       const alerts = analysis.wow_alerts || [];
-      if (alerts.length > 0) {
+      const hasMissingMoney = (analysis.pension_audit?.total_missing_money || 0) > 0;
+      const hasDoubleInsurance = analysis.insurance_audit?.has_double_insurance;
+
+      // Show audit results if there are any findings
+      if (alerts.length > 0 || hasMissingMoney || hasDoubleInsurance) {
         setWowAlerts(alerts);
         setPhase("wow_alerts");
         return;
       }
-      // No wow_alerts, go straight to capture
+      // No findings, go straight to capture
       setPhase("capture");
       return;
     }
@@ -894,34 +915,142 @@ export default function CampaignLanding() {
             )}
 
             {phase === "wow_alerts" && (
-              <motion.div key="wow_alerts" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5 py-4">
+              <motion.div key="wow_alerts" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="space-y-5 py-4" dir="rtl">
                 <div className="text-center space-y-2">
                   <div className="w-14 h-14 rounded-full bg-destructive/20 mx-auto flex items-center justify-center">
-                    <Sparkles className="w-7 h-7 text-destructive" />
+                    <AlertTriangle className="w-7 h-7 text-destructive" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">ממצאים חשובים!</h3>
-                  <p className="text-sm text-muted-foreground">הנה מה שגילינו בתלוש שלך:</p>
+                  <h3 className="text-xl font-bold text-foreground">ביקורת תלוש – ממצאים</h3>
+                  <p className="text-sm text-muted-foreground">סיכום ביקורת AI מקצועית:</p>
                 </div>
-                <div className="space-y-2">
-                  {wowAlerts.map((alert, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: 15 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.2 }}
-                      className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2"
-                    >
-                      <span className="text-lg shrink-0">⚠️</span>
-                      <p className="text-sm text-foreground font-medium">{alert}</p>
-                    </motion.div>
-                  ))}
-                </div>
-                <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center space-y-1">
-                  <p className="text-2xl font-black text-accent">
-                    ₪{((toolData.ai_analysis as any)?.total_monthly_waste || 0).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground">בזבוז חודשי שזיהינו</p>
-                </div>
+
+                {/* Audit Summary Table */}
+                {(() => {
+                  const analysis = toolData.ai_analysis as any;
+                  const pension = analysis?.pension_audit;
+                  const insurance = analysis?.insurance_audit;
+                  return (
+                    <div className="space-y-4">
+                      {/* Personal & Salary */}
+                      {analysis?.personal?.employer && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Building2 className="w-4 h-4" />
+                          <span>מעסיק: <span className="text-foreground font-medium">{analysis.personal.employer}</span></span>
+                        </div>
+                      )}
+
+                      {/* Pension Audit Table */}
+                      {pension && (
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-3 py-2 text-sm font-bold text-foreground">בדיקת הפרשות פנסיה</div>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-right">סעיף</TableHead>
+                                <TableHead className="text-right">בפועל</TableHead>
+                                <TableHead className="text-right">מינימום חוקי</TableHead>
+                                <TableHead className="text-right">פער ₪</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell className="font-medium">הפרשת מעסיק</TableCell>
+                                <TableCell>{pension.employer_contribution_percent ?? '—'}%</TableCell>
+                                <TableCell>6.5%</TableCell>
+                                <TableCell className={pension.employer_gap_shekel > 0 ? "text-destructive font-bold" : "text-green-500 font-bold"}>
+                                  {pension.employer_gap_shekel > 0 ? `₪${pension.employer_gap_shekel.toLocaleString()}-` : '✓ תקין'}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">הפרשת עובד</TableCell>
+                                <TableCell>{pension.employee_contribution_percent ?? '—'}%</TableCell>
+                                <TableCell>6.0%</TableCell>
+                                <TableCell className={pension.employee_gap_shekel > 0 ? "text-destructive font-bold" : "text-green-500 font-bold"}>
+                                  {pension.employee_gap_shekel > 0 ? `₪${pension.employee_gap_shekel.toLocaleString()}-` : '✓ תקין'}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">פיצויים</TableCell>
+                                <TableCell>{pension.severance_contribution_percent ?? '—'}%</TableCell>
+                                <TableCell>8.33%</TableCell>
+                                <TableCell className={pension.severance_gap_shekel > 0 ? "text-destructive font-bold" : "text-green-500 font-bold"}>
+                                  {pension.severance_gap_shekel > 0 ? `₪${pension.severance_gap_shekel.toLocaleString()}-` : '✓ תקין'}
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                          {pension.destination_institution && (
+                            <div className="px-3 py-2 border-t border-border text-xs text-muted-foreground">
+                              גוף מנהל: <span className="text-foreground font-medium">{pension.destination_institution}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Insurance Findings */}
+                      {insurance && (insurance.has_double_insurance || insurance.health_insurance_deduction || insurance.life_risk_deduction || insurance.group_insurance_deduction) && (
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-3 py-2 text-sm font-bold text-foreground">ממצאי ביטוח</div>
+                          <div className="p-3 space-y-2 text-sm">
+                            {insurance.health_insurance_deduction != null && (
+                              <div className="flex justify-between">
+                                <span>ביטוח בריאות</span>
+                                <span className="font-medium">₪{insurance.health_insurance_deduction.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {insurance.life_risk_deduction != null && (
+                              <div className="flex justify-between">
+                                <span>ביטוח חיים/ריסק</span>
+                                <span className="font-medium">₪{insurance.life_risk_deduction.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {insurance.group_insurance_deduction != null && (
+                              <div className="flex justify-between">
+                                <span>ביטוח קבוצתי</span>
+                                <span className="font-medium">₪{insurance.group_insurance_deduction.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {insurance.has_double_insurance && (
+                              <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-2 mt-2">
+                                <p className="text-destructive font-bold text-sm">⚠️ כפל ביטוח!</p>
+                                {insurance.double_insurance_details && (
+                                  <p className="text-xs text-muted-foreground mt-1">{insurance.double_insurance_details}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Wow Alerts */}
+                      {wowAlerts.length > 0 && (
+                        <div className="space-y-2">
+                          {wowAlerts.map((alert, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: 15 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.15 }}
+                              className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 flex items-start gap-2"
+                            >
+                              <span className="text-lg shrink-0">⚠️</span>
+                              <p className="text-sm text-foreground font-medium">{alert}</p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Total Missing Money */}
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center space-y-1">
+                        <p className="text-2xl font-black text-destructive">
+                          ₪{(analysis?.total_monthly_waste || pension?.total_missing_money || 0).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">כסף חסר / בזבוז חודשי שזיהינו</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <Button
                   className="w-full h-12 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
                   onClick={() => setPhase("capture")}
