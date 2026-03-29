@@ -133,6 +133,28 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
       "description": "סוג הביטוח"
     }
   ],
+  "transactions": [
+    {
+      "date": "תאריך",
+      "description": "תיאור הפעולה",
+      "amount": 0,
+      "reference_code": "קוד אסמכתא",
+      "transaction_type": "salary|pension|loan|insurance|transfer|standing_order|other",
+      "confidence_score": 0.95,
+      "confidence_reason": "סיבת הסיווג"
+    }
+  ],
+  "income_sources": [
+    {
+      "source_name": "שם המקור (מעסיק/פנסיה/השכרה)",
+      "source_type": "salary|pension|rental|freelance|other",
+      "monthly_amount": 0,
+      "frequency": "monthly|irregular",
+      "reference_codes": ["קודי אסמכתא קשורים"],
+      "confidence_score": 0.95,
+      "confidence_reason": "סיבת הסיווג"
+    }
+  ],
   "total_monthly_obligations": 0,
   "wow_alerts": [
     "⚠️ הפקדת נטו נמוכה ב-800 ש״ח מהתלוש",
@@ -162,18 +184,47 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
    - רשום תיאור, סכום חודשי, שם מוטב, וקטגוריה.
    - ⚠️ אל תכפיל: אם חיוב כבר מופיע כביטוח או הלוואה, אל תרשום אותו גם כהוראת קבע.
 
-7. total_monthly_obligations: סכום כל ההתחייבויות (משכנתא + הלוואות + ביטוח + הוראות קבע).
+7. transactions (פירוט תנועות עם קוד אסמכתא):
+   ⚠️ חלק קריטי – חלץ כל תנועה שתוכל לזהות מדף החשבון.
+   לכל תנועה חלץ:
+   - date: תאריך הפעולה
+   - description: תיאור הפעולה כפי שמופיע בדף
+   - amount: סכום (חיובי = זיכוי/הפקדה, שלילי = חיוב)
+   - reference_code: קוד אסמכתא (מספר הייחוס של הפעולה). חפש עמודת "אסמכתא" או "אסמ'" בדף.
+   - transaction_type: סווג לפי הכללים הבאים
+   - confidence_score: רמת הביטחון בסיווג (0.0-1.0)
+   - confidence_reason: הסבר קצר לסיווג
+
+   כללי confidence_score לפי קוד אסמכתא:
+   a) קוד בפורמט MSB (מ.ש.ב) + זיכוי → salary או pension, confidence: 0.95, reason: "MSB format reference code detected"
+   b) אותו דפוס קוד חוזר מדי חודש + סכום דומה → הכנסה יציבה, confidence: 0.90, reason: "Recurring monthly pattern with consistent amount"
+   c) בלוק החזר הלוואה מזוהה (תיאור + קוד קבוע) → loan, confidence: 0.85, reason: "Known loan repayment block"
+   d) תיאור אומר "העברה" אבל קוד אסמכתא מצביע על עסק → תעדוף את הקוד, confidence: 0.80, reason: "Reference code indicates business transaction"
+   e) דפוס לא מזוהה → confidence: 0.60, reason: "Unknown pattern"
+
+8. income_sources (מיפוי מקורות הכנסה):
+   מפה כל מקור הכנסה שזוהה:
+   - source_name: שם המעסיק/מקור
+   - source_type: salary (משכורת), pension (פנסיה), rental (שכירות), freelance (עצמאי), other
+   - monthly_amount: סכום חודשי
+   - frequency: monthly (קבוע) או irregular (לא סדיר)
+   - reference_codes: קודי אסמכתא שמשויכים למקור הזה
+   - confidence_score: רמת ביטחון בזיהוי המקור (לפי אותם כללים)
+   - confidence_reason: הסבר
+
+9. total_monthly_obligations: סכום כל ההתחייבויות (משכנתא + הלוואות + ביטוח + הוראות קבע).
    debt_to_income_ratio: (total_monthly_obligations / average_monthly_deposit) × 100. עגל למספר שלם.
 
-7. wow_alerts: צור התראות אימפקטיביות עם אימוג'ים. דוגמאות:
+10. wow_alerts: צור התראות אימפקטיביות עם אימוג'ים. דוגמאות:
    - "⚠️ יחס החזר של X% – מעל הסף הבנקאי של 40%!"
    - "🔍 זוהו תשלומים ל-3 חברות ביטוח שונות – חשד לכפילויות"
    - "💰 הלוואה של ₪X בחודש – שווה לבדוק מיחזור"
    - "🏠 משכנתא: X ש״ח לחודש – בנק Y"
+   - "📊 זוהו X מקורות הכנסה – confidence ממוצע: Y%"
 
-8. advisor_summary: סיכום קצר וממוקד (2-3 משפטים) לסוכן/יועץ.
+11. advisor_summary: סיכום קצר וממוקד (2-3 משפטים) לסוכן/יועץ. כלול מידע על מקורות הכנסה ורמת הביטחון.
 
-9. cross_reference_status: "green" אם הכל תקין, "yellow" אם יש פערים קטנים (5-10%), "red" אם יש פערים גדולים (מעל 10%) או התראות קריטיות.
+12. cross_reference_status: "green" אם הכל תקין, "yellow" אם יש פערים קטנים (5-10%), "red" אם יש פערים גדולים (מעל 10%) או התראות קריטיות.
 ${crossRefInstruction}
 
 אם שדה לא נמצא, השתמש ב-null. החזר JSON בלבד, ללא טקסט נוסף.`;
