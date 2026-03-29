@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import AIScannerWidget from "@/components/AIScannerWidget";
 import { useParams, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
