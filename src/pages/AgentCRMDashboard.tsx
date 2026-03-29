@@ -471,7 +471,7 @@ export default function AgentCRMDashboard() {
     } else {
       fetchLeads();
     }
-  }, [user, isDemoMode]);
+  }, [user, isDemo]);
 
   const fetchLeads = async () => {
     setLoading(true);
