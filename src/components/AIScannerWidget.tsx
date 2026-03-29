@@ -1,9 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, CheckCircle2, Upload } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Brain, CheckCircle2, Upload, UserPlus, Search } from "lucide-react";
 
 // ── PDF to Image converter ─────────────────────────────────
 async function pdfToBase64Images(
@@ -35,7 +39,7 @@ async function pdfToBase64Images(
 }
 
 // ── Scanner type configs ───────────────────────────────────
-export type ScannerType = "payslip" | "pension" | "insurance" | "bank_statement";
+export type ScannerType = "payslip" | "pension" | "insurance" | "bank_statement" | "credit_card";
 
 interface ScannerTypeConfig {
   edgeFunction: string;
@@ -105,15 +109,38 @@ const SCANNER_CONFIGS: Record<ScannerType, ScannerTypeConfig> = {
     uploadLabel: "גררו דף חשבון בנק לכאן או לחצו להעלאה",
     formatHint: "PDF, JPG, PNG – עד 10MB",
   },
+  credit_card: {
+    edgeFunction: "analyze-credit-card",
+    storageBucket: "payslips",
+    progressMessages: [
+      "הופך קובץ לתמונה לעיבוד...",
+      "מזהה הלוואות חוץ-בנקאיות...",
+      "מאתר תשלומי ביטוח באשראי...",
+      "מסווג חיובים קבועים ומנויים...",
+      "מכין סיכום פיננסי ליועץ...",
+    ],
+    successMessage: "ביקורת כרטיס אשראי הושלמה!",
+    acceptFormats: ".pdf,.jpg,.jpeg,.png,.webp",
+    uploadLabel: "גררו פירוט כרטיס אשראי לכאן או לחצו להעלאה",
+    formatHint: "PDF, JPG, PNG – עד 10MB",
+  },
 };
+
+// ── Client search result ───────────────────────────────────
+interface ClientOption {
+  id: string;
+  full_name: string;
+  phone?: string | null;
+}
 
 // ── Generic AI Scanner Widget ──────────────────────────────
 interface AIScannerWidgetProps {
   type: ScannerType;
   onSubmit: (data: Record<string, unknown>) => void;
   maxFileSizeMB?: number;
-  /** Extra fields to send in the edge function body (e.g. payslip_analysis for cross-ref) */
   extraBody?: Record<string, unknown>;
+  /** Hide advisor upload even for consultants */
+  hideAdvisorUpload?: boolean;
 }
 
 export default function AIScannerWidget({
@@ -121,14 +148,25 @@ export default function AIScannerWidget({
   onSubmit,
   maxFileSizeMB = 10,
   extraBody,
+  hideAdvisorUpload = false,
 }: AIScannerWidgetProps) {
   const config = SCANNER_CONFIGS[type];
+  const { role, user } = useAuth();
+  const isAdvisor = role === "consultant" || role === "admin";
+
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [fileName, setFileName] = useState("");
   const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
   const [progressMsgIdx, setProgressMsgIdx] = useState(0);
+
+  // Advisor upload state
+  const [advisorMode, setAdvisorMode] = useState(false);
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientResults, setClientResults] = useState<ClientOption[]>([]);
+  const [selectedClient, setSelectedClient] = useState<ClientOption | null>(null);
+  const [searchingClients, setSearchingClients] = useState(false);
 
   // Cycle progress messages during analysis
   useEffect(() => {
@@ -138,6 +176,22 @@ export default function AIScannerWidget({
     }, 2500);
     return () => clearInterval(iv);
   }, [uploading, config.progressMessages.length]);
+
+  // Search clients when advisor types
+  useEffect(() => {
+    if (!advisorMode || clientSearch.length < 2 || !user) return;
+    const timer = setTimeout(async () => {
+      setSearchingClients(true);
+      const { data } = await supabase
+        .from("leads")
+        .select("id, full_name, phone")
+        .or(`full_name.ilike.%${clientSearch}%,phone.ilike.%${clientSearch}%`)
+        .limit(5);
+      setClientResults(data || []);
+      setSearchingClients(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [clientSearch, advisorMode, user]);
 
   const processFile = useCallback(async (file: File) => {
     if (!file) return;
@@ -149,6 +203,12 @@ export default function AIScannerWidget({
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       toast.error("פורמט לא נתמך – PDF, JPG, PNG בלבד");
+      return;
+    }
+
+    // If advisor mode, must select a client
+    if (advisorMode && !selectedClient) {
+      toast.error("יש לבחור לקוח לפני העלאה");
       return;
     }
 
@@ -197,17 +257,41 @@ export default function AIScannerWidget({
       setUploaded(true);
       setUploading(false);
 
-      onSubmit({
+      // Build result payload
+      const resultPayload: Record<string, unknown> = {
         tool: `${type}_scan`,
         file_path: filePath,
         ai_analysis: analysis,
-      });
+      };
+
+      // Tag advisor uploads
+      if (advisorMode && selectedClient) {
+        resultPayload.uploaded_by_advisor = true;
+        resultPayload.advisor_user_id = user?.id;
+        resultPayload.client_lead_id = selectedClient.id;
+        resultPayload.client_name = selectedClient.full_name;
+
+        // Save analysis to the lead's ai_analysis field
+        await supabase
+          .from("leads")
+          .update({
+            ai_analysis: {
+              ...(typeof analysis === "object" ? analysis : {}),
+              _scan_type: type,
+              _uploaded_by: "advisor",
+              _scan_date: new Date().toISOString(),
+            },
+          })
+          .eq("id", selectedClient.id);
+      }
+
+      onSubmit(resultPayload);
     } catch (err: any) {
       console.error(`${type} scanner error:`, err);
       setUploading(false);
       toast.error("שגיאה בניתוח – נסו שנית");
     }
-  }, [type, config, maxFileSizeMB, onSubmit]);
+  }, [type, config, maxFileSizeMB, onSubmit, extraBody, advisorMode, selectedClient, user]);
 
   const handleFileSelect = useCallback(() => {
     const input = document.createElement("input");
@@ -222,6 +306,92 @@ export default function AIScannerWidget({
 
   return (
     <div className="space-y-4">
+      {/* Advisor Upload Toggle */}
+      {isAdvisor && !hideAdvisorUpload && !uploading && !uploaded && (
+        <div className="space-y-3">
+          <Button
+            variant={advisorMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setAdvisorMode(!advisorMode);
+              setSelectedClient(null);
+              setClientSearch("");
+              setClientResults([]);
+            }}
+            className="w-full gap-2 text-xs"
+          >
+            <UserPlus className="w-4 h-4" />
+            {advisorMode ? "ביטול מצב יועץ" : "העלאה עבור לקוח"}
+          </Button>
+
+          {advisorMode && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="space-y-2"
+            >
+              {selectedClient ? (
+                <div className="flex items-center justify-between bg-accent/10 border border-accent/20 rounded-lg px-3 py-2">
+                  <div className="text-sm">
+                    <span className="font-semibold text-foreground">{selectedClient.full_name}</span>
+                    {selectedClient.phone && (
+                      <span className="text-muted-foreground mr-2 text-xs"> · {selectedClient.phone}</span>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className="text-[10px]">נבחר</Badge>
+                  <button
+                    onClick={() => { setSelectedClient(null); setClientSearch(""); }}
+                    className="text-xs text-muted-foreground hover:text-foreground mr-2"
+                  >
+                    שנה
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="חפש לקוח לפי שם או טלפון..."
+                      value={clientSearch}
+                      onChange={(e) => setClientSearch(e.target.value)}
+                      className="pr-9 text-sm"
+                      dir="rtl"
+                    />
+                  </div>
+                  {searchingClients && (
+                    <p className="text-xs text-muted-foreground text-center">מחפש...</p>
+                  )}
+                  {clientResults.length > 0 && (
+                    <div className="border border-border rounded-lg overflow-hidden">
+                      {clientResults.map((client) => (
+                        <button
+                          key={client.id}
+                          onClick={() => {
+                            setSelectedClient(client);
+                            setClientSearch("");
+                            setClientResults([]);
+                          }}
+                          className="w-full text-right px-3 py-2 hover:bg-accent/10 transition-colors border-b border-border last:border-0 text-sm"
+                        >
+                          <span className="font-medium text-foreground">{client.full_name}</span>
+                          {client.phone && (
+                            <span className="text-muted-foreground mr-2 text-xs">{client.phone}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {clientSearch.length >= 2 && clientResults.length === 0 && !searchingClients && (
+                    <p className="text-xs text-muted-foreground text-center">לא נמצאו לקוחות</p>
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Upload Zone */}
       <div
         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
           dragging
@@ -263,12 +433,22 @@ export default function AIScannerWidget({
               className="h-2 w-48 mx-auto"
             />
             <p className="text-xs text-muted-foreground">{fileName}</p>
+            {advisorMode && selectedClient && (
+              <Badge variant="outline" className="text-[10px]">
+                סריקה עבור: {selectedClient.full_name}
+              </Badge>
+            )}
           </motion.div>
         ) : uploaded ? (
           <div className="space-y-2">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
             <p className="text-green-400 font-bold">{config.successMessage}</p>
             <p className="text-xs text-muted-foreground">{fileName}</p>
+            {advisorMode && selectedClient && (
+              <Badge className="bg-accent/20 text-accent border-accent/30 text-[10px]">
+                הועלה עבור: {selectedClient.full_name}
+              </Badge>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
