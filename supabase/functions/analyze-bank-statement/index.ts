@@ -194,6 +194,11 @@ const systemPrompt = `אתה מומחה לניתוח דפי חשבון בנק י
     "needs_manual_verification": false
   },
   "employer_name": "שם המעסיק (לתצוגה מהירה)",
+  "health_insurance": {
+    "provider": "מכבי|מאוחדת|כללית|לאומית|unknown",
+    "monthly_payment": 0,
+    "confidence": "high|medium|low"
+  },
   "wow_alerts": [
     "⚠️ הפקדת נטו נמוכה ב-800 ש״ח מהתלוש",
     "🏠 משכנתא: 3,200 ש״ח לחודש"
