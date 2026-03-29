@@ -643,7 +643,7 @@ export default function CampaignLanding() {
       case "mortgage":
         return <MortgageWidget onSubmit={handleToolSubmit} />;
       case "payslip":
-        return <PayslipWidget onSubmit={handleToolSubmit} />;
+        return <AIScannerWidget type="payslip" onSubmit={handleToolSubmit} />;
       case "har-habituach":
         return <HarHabituachWidget onSubmit={handleToolSubmit} />;
       case "masleka":
