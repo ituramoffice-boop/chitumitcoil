@@ -16,7 +16,7 @@ import {
 import {
   Shield, Lock, Calculator, Search, Brain, Sparkles,
   CheckCircle2, Upload, Fingerprint, User, Phone,
-  PiggyBank, BarChart3, FileText, ArrowRight, AlertTriangle, Building2
+  PiggyBank, BarChart3, FileText, ArrowRight, AlertTriangle, Building2, Landmark, CreditCard
 } from "lucide-react";
 
 // ── Funnel config ──────────────────────────────────────────
@@ -50,6 +50,12 @@ const FUNNEL_CONFIG: Record<string, { title: string; subtitle: string; cta: stri
     subtitle: "ניתוח AI לחיסכון שנתי אפשרי",
     cta: "נתח חיסכון",
     icon: BarChart3,
+  },
+  "bank-statement": {
+    title: "ביקורת דף חשבון בנק (עו״ש)",
+    subtitle: "ה-AI יזהה משכנתא, ביטוחים, הלוואות ויחס התחייבויות",
+    cta: "סרוק דף חשבון",
+    icon: Landmark,
   },
   "price-compare": {
     title: "השוואת מחירי ביטוח ומשכנתא",
