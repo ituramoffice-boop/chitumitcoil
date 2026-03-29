@@ -184,18 +184,18 @@ export default function BankStatementLanding() {
                   <div className="bg-white/5 rounded-lg p-3">
                     <p className="text-blue-200/50 text-xs">החזר משכנתא</p>
                     <p className="text-lg font-bold text-white">₪{mortgagePayment?.toLocaleString() || "—"}</p>
-                    {mortgageBank && <p className="text-[10px] text-blue-200/40">{mortgageBank}</p>}
+                    {mortgage?.bank_name && <p className="text-[10px] text-blue-200/40">{mortgage.bank_name}</p>}
                   </div>
                   <div className="bg-white/5 rounded-lg p-3">
                     <p className="text-blue-200/50 text-xs">סה״כ התחייבויות</p>
                     <p className="text-lg font-bold text-white">₪{totalObligations.toLocaleString()}</p>
                   </div>
-                  <div className={`rounded-lg p-3 ${(obligationRatio || 0) > 40 ? "bg-red-500/10 border border-red-500/20" : "bg-white/5"}`}>
+                  <div className={`rounded-lg p-3 ${debtToIncome > 40 ? "bg-red-500/10 border border-red-500/20" : "bg-white/5"}`}>
                     <p className="text-blue-200/50 text-xs">יחס התחייבויות/הכנסה</p>
-                    <p className={`text-lg font-bold ${(obligationRatio || 0) > 40 ? "text-red-400" : "text-emerald-300"}`}>
-                      {obligationRatio ? `${obligationRatio}%` : "—"}
+                    <p className={`text-lg font-bold ${debtToIncome > 40 ? "text-red-400" : "text-emerald-300"}`}>
+                      {debtToIncome ? `${debtToIncome}%` : "—"}
                     </p>
-                    {(obligationRatio || 0) > 40 && (
+                    {debtToIncome > 40 && (
                       <p className="text-[10px] text-red-300 flex items-center gap-1 mt-1">
                         <AlertTriangle className="w-3 h-3" />
                         מעל הסף המומלץ
@@ -207,7 +207,7 @@ export default function BankStatementLanding() {
             </Card>
 
             {/* Insurance Payments */}
-            {insurancePayments && insurancePayments.length > 0 && (
+            {insuranceCharges && insuranceCharges.length > 0 && (
               <Card className="bg-white/5 backdrop-blur-xl border-gold/10">
                 <CardContent className="p-5 space-y-3">
                   <h3 className="text-sm font-bold text-gold flex items-center gap-2">
@@ -215,11 +215,11 @@ export default function BankStatementLanding() {
                     תשלומי ביטוח שזוהו
                   </h3>
                   <div className="space-y-2">
-                    {insurancePayments.map((p, i) => (
+                    {insuranceCharges.map((p, i) => (
                       <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2">
                         <div>
                           <p className="text-sm font-medium text-white">{p.company}</p>
-                          <p className="text-xs text-blue-200/40">{p.type}</p>
+                          <p className="text-xs text-blue-200/40">{p.description}</p>
                         </div>
                         <p className="text-sm font-bold text-amber-300">₪{p.monthly_amount.toLocaleString()}</p>
                       </div>
@@ -230,7 +230,7 @@ export default function BankStatementLanding() {
             )}
 
             {/* Salary Discrepancy */}
-            {salaryDiscrepancy && Math.abs(salaryDiscrepancy.difference) > 100 && (
+            {salaryVerification && !salaryVerification.matches_payslip && salaryVerification.discrepancy_amount && Math.abs(salaryVerification.discrepancy_amount) > 100 && (
               <Card className="bg-red-500/10 backdrop-blur-xl border-red-500/20">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-3">
@@ -238,7 +238,7 @@ export default function BankStatementLanding() {
                     <div>
                       <p className="text-sm font-bold text-red-300">פער בין תלוש לזיכוי בבנק</p>
                       <p className="text-xs text-red-200/60 mt-1">
-                        נטו בתלוש: ₪{salaryDiscrepancy.payslip_net.toLocaleString()} · זיכוי בבנק: ₪{salaryDiscrepancy.bank_deposit.toLocaleString()} · הפרש: ₪{Math.abs(salaryDiscrepancy.difference).toLocaleString()}
+                        {salaryVerification.discrepancy_alert || `הפרש: ₪${Math.abs(salaryVerification.discrepancy_amount).toLocaleString()}`}
                       </p>
                     </div>
                   </div>
