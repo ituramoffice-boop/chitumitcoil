@@ -218,6 +218,29 @@ export function FinancialXRay({ leadId, clientName }: FinancialXRayProps) {
   const [activeScan, setActiveScan] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [clientPhone, setClientPhone] = useState<string | null>(null);
+
+  // Fetch client phone for WhatsApp
+  useEffect(() => {
+    if (!leadId) return;
+    supabase.from("leads").select("phone").eq("id", leadId).single().then(({ data }) => {
+      if (data?.phone) setClientPhone(data.phone);
+    });
+  }, [leadId]);
+
+  const handleWhatsAppSync = (src: typeof SCAN_SOURCES[0]) => {
+    const phone = clientPhone?.replace(/\D/g, "") || "";
+    if (!phone) {
+      // fallback: copy message
+      const msg = src.whatsappMsg.replace("{name}", clientName || "");
+      navigator.clipboard.writeText(msg);
+      alert("מספר טלפון לא נמצא – ההודעה הועתקה ללוח");
+      return;
+    }
+    const formattedPhone = phone.startsWith("0") ? "972" + phone.slice(1) : phone;
+    const msg = encodeURIComponent(src.whatsappMsg.replace("{name}", clientName || ""));
+    window.open(`https://wa.me/${formattedPhone}?text=${msg}`, "_blank");
+  };
 
   // Fetch real data when scanning completes
   const fetchRealData = async () => {
