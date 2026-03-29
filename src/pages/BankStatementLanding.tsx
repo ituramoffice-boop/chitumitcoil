@@ -15,39 +15,51 @@ export default function BankStatementLanding() {
 
   const analysis = result?.ai_analysis as Record<string, unknown> | undefined;
 
-  const avgIncome = analysis?.average_monthly_net_income as number | undefined;
-  const mortgagePayment = analysis?.mortgage_monthly_payment as number | undefined;
-  const mortgageBank = analysis?.mortgage_bank as string | undefined;
-  const obligationRatio = analysis?.obligation_ratio as number | undefined;
-  const insurancePayments = analysis?.identified_insurance_payments as Array<{
+  // New schema mappings
+  const personal = analysis?.personal as { account_holder?: string; bank_name?: string; account_number?: string } | undefined;
+  const salaryVerification = analysis?.salary_verification as {
+    net_deposits?: number[];
+    average_monthly_deposit?: number;
+    matches_payslip?: boolean;
+    discrepancy_amount?: number;
+    discrepancy_alert?: string;
+  } | undefined;
+  const mortgage = analysis?.mortgage as {
+    detected?: boolean;
+    monthly_payment?: number;
+    bank_name?: string;
+    estimated_remaining?: string;
+  } | undefined;
+  const existingLoans = analysis?.existing_loans as Array<{
+    description: string;
+    monthly_payment: number;
+    lender: string;
+  }> | undefined;
+  const insuranceCharges = analysis?.insurance_charges as Array<{
     company: string;
     monthly_amount: number;
-    type: string;
-  }> | undefined;
-  const recurringLoans = analysis?.recurring_loan_repayments as Array<{
     description: string;
-    monthly_amount: number;
   }> | undefined;
-  const salaryDiscrepancy = analysis?.salary_discrepancy as {
-    payslip_net: number;
-    bank_deposit: number;
-    difference: number;
-  } | undefined;
-  const totalObligations = (mortgagePayment || 0) +
-    (insurancePayments?.reduce((s, p) => s + p.monthly_amount, 0) || 0) +
-    (recurringLoans?.reduce((s, l) => s + l.monthly_amount, 0) || 0);
+  const totalObligations = analysis?.total_monthly_obligations as number || 0;
+  const debtToIncome = analysis?.debt_to_income_ratio as number || 0;
+  const wowAlerts = analysis?.wow_alerts as string[] | undefined;
+  const advisorSummary = analysis?.advisor_summary as string | undefined;
+  const crossRefStatus = analysis?.cross_reference_status as string | undefined;
+
+  const avgIncome = salaryVerification?.average_monthly_deposit || 0;
+  const mortgagePayment = mortgage?.monthly_payment || 0;
 
   const healthScore = analysis
     ? Math.max(0, Math.min(100, Math.round(
-        100 - (obligationRatio || 0) * 1.2 -
-        (insurancePayments && insurancePayments.length > 3 ? 10 : 0) -
-        (salaryDiscrepancy && Math.abs(salaryDiscrepancy.difference) > 500 ? 15 : 0)
+        100 - (debtToIncome || 0) * 1.2 -
+        (insuranceCharges && insuranceCharges.length > 3 ? 10 : 0) -
+        (salaryVerification && !salaryVerification.matches_payslip ? 15 : 0)
       )))
     : 0;
 
   const estimatedSavings = analysis
     ? Math.round(
-        (insurancePayments?.reduce((s, p) => s + p.monthly_amount * 0.15, 0) || 0) +
+        (insuranceCharges?.reduce((s, p) => s + p.monthly_amount * 0.15, 0) || 0) +
         (mortgagePayment ? mortgagePayment * 0.08 : 0)
       )
     : 0;
