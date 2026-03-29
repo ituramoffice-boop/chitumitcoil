@@ -638,6 +638,31 @@ export default function CampaignLanding() {
         ai_analysis: aiAnalysis,
       } as any);
       if (error) throw error;
+
+      // Send notification email to consultant with client_name
+      if (consultantId) {
+        const analysis = aiAnalysis as any;
+        const scanTypeHeb = funnelType === "payslip" ? "תלוש שכר" : funnelType === "bank-statement" ? "דף בנק" : funnelType === "mortgage" ? "משכנתא" : funnelType;
+        const wowAlerts = analysis?.wow_alerts || [];
+        const findingsCount = (wowAlerts.length || 0) + (analysis?.risks?.length || 0);
+
+        supabase.functions.invoke("send-email", {
+          body: {
+            type: "new_lead",
+            to: null,
+            consultant_id: consultantId,
+            data: {
+              client_name: name,
+              client_phone: phone,
+              scan_type: scanTypeHeb,
+              findings_count: findingsCount,
+              wow_alerts: wowAlerts,
+              source: `campaign_${funnelType}`,
+            },
+          },
+        }).catch((e: any) => console.warn("[Campaign] Email notification failed:", e));
+      }
+
       setPhase("done");
       toast.success("הדוח בדרך אליך!");
     } catch {
