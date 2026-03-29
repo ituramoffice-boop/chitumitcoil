@@ -327,11 +327,11 @@ function FullAnalysisPanel({ lead, open, onClose, heatStatus, onChangeHeat }: {
               )}
 
               {/* Debt to income */}
-              {(ai.debt_to_income_ratio != null || ai.dti_status === "data_error") && (
+              {(ai.debt_to_income_ratio != null || ai.dti_status === "data_error" || ai.dti_status === "calculation_error") && (
                 <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 flex items-center justify-between">
                   <span className="text-white/40 text-xs">יחס חוב להכנסה</span>
-                  {ai.dti_status === "data_error" ? (
-                    <span className="font-bold text-yellow-400">דורש בדיקה ידנית</span>
+                  {(ai.dti_status === "data_error" || ai.dti_status === "calculation_error") ? (
+                    <span className="font-bold text-yellow-400">{ai.dti_display || "דורש בדיקה ידנית"}</span>
                   ) : (
                     <span className={`font-bold ${ai.debt_to_income_ratio > 40 ? "text-red-400" : "text-emerald-400"}`}>
                       {ai.debt_to_income_ratio}%
