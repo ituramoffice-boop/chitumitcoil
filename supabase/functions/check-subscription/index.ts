@@ -17,27 +17,32 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const token = authHeader?.replace("Bearer ", "") ?? "";
 
-    const token = authHeader.replace("Bearer ", "");
+    // If there is no token, or the token is just the anon/publishable key, return unsubscribed (no user signed in)
+    const unsubscribed = () => new Response(
+      JSON.stringify({ subscribed: false, product_id: null, subscription_end: null }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+    );
 
-    // Use anon key client with the user's token to validate via getClaims
+    if (!token || token === anonKey || token === (Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "")) {
+      return unsubscribed();
+    }
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } }
+      anonKey,
+      { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } }
     );
 
     const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      });
+      return unsubscribed();
     }
 
     const userEmail = claimsData.claims.email as string | undefined;
-    if (!userEmail) throw new Error("User email not available in token");
+    if (!userEmail) return unsubscribed();
     const user = { email: userEmail };
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
