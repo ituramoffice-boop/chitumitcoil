@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import type { User, Session } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 
 type AppRole = "consultant" | "client" | "admin";
@@ -42,19 +44,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastRoleFetchKey = useRef<string | null>(null);
 
-  const fetchRoleAndProfession = async (userId: string, attempt = 0): Promise<void> => {
+  const fetchRoleAndProfession = async (userId: string, accessToken: string, attempt = 0): Promise<void> => {
     try {
+      const authedClient = createClient<Database>(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        {
+          global: { headers: { Authorization: `Bearer ${accessToken}` } },
+          auth: { persistSession: false, autoRefreshToken: false },
+        },
+      );
       const [roleRes, profileRes] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
-        supabase.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
+        authedClient.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+        authedClient.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
       ]);
       if (roleRes.data) {
         setRole(roleRes.data.role as AppRole);
       } else if (attempt < 2) {
         // Retry — race with token propagation can yield 0 rows under RLS
         await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
-        return fetchRoleAndProfession(userId, attempt + 1);
+        return fetchRoleAndProfession(userId, accessToken, attempt + 1);
       }
       if (profileRes.data) setProfession((profileRes.data as any).profession as Profession);
     } catch (e) {
@@ -69,8 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRoleAndProfession(session.user.id).finally(() => {
+      if (session?.user && session.access_token) {
+        const roleFetchKey = `${session.user.id}:${session.access_token}`;
+        if (lastRoleFetchKey.current === roleFetchKey) {
+          setLoading(false);
+          return;
+        }
+        lastRoleFetchKey.current = roleFetchKey;
+        fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
           if (mounted) setLoading(false);
         });
       } else {
@@ -81,15 +98,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchRoleAndProfession(session.user.id).finally(() => {
+        if (event === "TOKEN_REFRESHED") {
+          setLoading(false);
+          return;
+        }
+        if (session?.user && session.access_token) {
+          const roleFetchKey = `${session.user.id}:${session.access_token}`;
+          if (lastRoleFetchKey.current === roleFetchKey) {
+            setLoading(false);
+            return;
+          }
+          lastRoleFetchKey.current = roleFetchKey;
+          fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
             if (mounted) setLoading(false);
           });
         } else {
+          lastRoleFetchKey.current = null;
           setRole(null);
           setProfession(null);
           setLoading(false);

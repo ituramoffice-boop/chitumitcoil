@@ -52,6 +52,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) {
       setLoading(false);
+      setIsSubscribed(false);
+      setSubscriptionEnd(null);
+      setSubscriptionTier(null);
       return;
     }
 
@@ -68,13 +71,6 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       });
 
     refreshSubscription();
-  }, [user, refreshSubscription]);
-
-  // Auto-refresh subscription every 60 seconds
-  useEffect(() => {
-    if (!user) return;
-    const interval = setInterval(refreshSubscription, 60_000);
-    return () => clearInterval(interval);
   }, [user, refreshSubscription]);
 
   const setBusinessType = async (type: BusinessType) => {
