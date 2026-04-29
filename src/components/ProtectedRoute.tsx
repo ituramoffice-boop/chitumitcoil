@@ -16,7 +16,8 @@ export function ProtectedRoute({ children, allowedRoles = DEFAULT_ALLOWED_ROLES 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isDemo = isDemoMode || searchParams.get("demo") === "true";
-  const roleDenied = !!user && !!role && allowedRoles.length > 0 && !allowedRoles.includes(role);
+  const requiresRole = allowedRoles.length > 0;
+  const roleDenied = !!user && requiresRole && (!role || !allowedRoles.includes(role));
 
   useEffect(() => {
     if (isDemo || loading) return;
@@ -33,7 +34,7 @@ export function ProtectedRoute({ children, allowedRoles = DEFAULT_ALLOWED_ROLES 
     return <>{children}</>;
   }
 
-  if (loading || !user || roleDenied || (allowedRoles.length > 0 && !role)) {
+  if (loading || !user || roleDenied) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
