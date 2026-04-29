@@ -65,21 +65,22 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     setLoading(true);
 
-    supabase
-      .from("profiles")
-      .select("business_type")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("business_type")
+          .eq("user_id", user.id)
+          .maybeSingle();
         if (cancelled) return;
         if (data?.business_type) {
           setBusinessTypeState(data.business_type as BusinessType);
         }
         setLoading(false);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
 
     if (role === "consultant") {
       refreshSubscription();
