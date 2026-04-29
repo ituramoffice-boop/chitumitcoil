@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, allowedRoles = ["consultant", "admin"
   }
 
   if (allowedRoles.length > 0 && role && !allowedRoles.includes(role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
