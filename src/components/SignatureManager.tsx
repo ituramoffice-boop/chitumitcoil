@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { forwardRef, useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,7 +35,7 @@ interface Lead {
   created_at: string;
 }
 
-export function SignatureManager() {
+export const SignatureManager = forwardRef<HTMLDivElement>(function SignatureManager(_, ref) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -173,7 +173,7 @@ export function SignatureManager() {
   }
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div ref={ref} className="space-y-6" dir="rtl">
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         <Card className="border-border/50">
@@ -407,4 +407,4 @@ export function SignatureManager() {
       )}
     </div>
   );
-}
+});
