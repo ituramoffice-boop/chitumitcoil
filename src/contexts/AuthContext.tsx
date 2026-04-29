@@ -43,24 +43,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
   const fetchedForUserRef = useRef<string | null>(null);
-  const fetchInFlightRef = useRef(false);
+  const roleFetchPromiseRef = useRef<Promise<void> | null>(null);
+  const roleFetchUserRef = useRef<string | null>(null);
 
   const fetchRoleAndProfession = async (userId: string): Promise<void> => {
-    if (fetchInFlightRef.current) return;
-    fetchInFlightRef.current = true;
-    try {
+    if (fetchedForUserRef.current === userId) return;
+    if (roleFetchPromiseRef.current && roleFetchUserRef.current === userId) {
+      return roleFetchPromiseRef.current;
+    }
+
+    roleFetchUserRef.current = userId;
+    roleFetchPromiseRef.current = (async () => {
       // Use the global authenticated client — it sends the user's JWT automatically.
       const [roleRes, profileRes] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
         supabase.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
       ]);
-      if (roleRes.data) setRole(roleRes.data.role as AppRole);
-      if (profileRes.data) setProfession((profileRes.data as any).profession as Profession);
-    } catch (e) {
-      console.error("Failed to fetch role/profession:", e);
-    } finally {
-      fetchInFlightRef.current = false;
-    }
+      if (roleRes.error) throw roleRes.error;
+      if (profileRes.error) throw profileRes.error;
+      setRole((roleRes.data?.role as AppRole) ?? null);
+      setProfession(((profileRes.data as any)?.profession as Profession) ?? null);
+      fetchedForUserRef.current = userId;
+    })()
+      .catch((e) => {
+        console.error("Failed to fetch role/profession:", e);
+      })
+      .finally(() => {
+        if (roleFetchUserRef.current === userId) {
+          roleFetchPromiseRef.current = null;
+          roleFetchUserRef.current = null;
+        }
+      });
+
+    return roleFetchPromiseRef.current;
   };
 
   useEffect(() => {
@@ -72,20 +87,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
-      // Token refresh: keep existing role/profession, no refetch needed.
-      if (event === "TOKEN_REFRESHED") return;
-
       if (event === "SIGNED_OUT" || !newSession?.user) {
         fetchedForUserRef.current = null;
+        roleFetchPromiseRef.current = null;
+        roleFetchUserRef.current = null;
         setRole(null);
         setProfession(null);
         setLoading(false);
         return;
       }
 
+      // Token refresh: keep existing role/profession and never trigger a route denial.
+      if (event === "TOKEN_REFRESHED" && fetchedForUserRef.current === newSession.user.id) {
+        setLoading(false);
+        return;
+      }
+
       // SIGNED_IN / INITIAL_SESSION — defer DB call to avoid deadlock with auth lock.
       if (fetchedForUserRef.current !== newSession.user.id) {
-        fetchedForUserRef.current = newSession.user.id;
+        setLoading(true);
         setTimeout(() => {
           if (!mounted) return;
           fetchRoleAndProfession(newSession.user.id).finally(() => {
@@ -95,27 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setLoading(false);
       }
-    });
-
-    // THEN check for existing session.
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      if (!mounted) return;
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
-      if (existingSession?.user) {
-        if (fetchedForUserRef.current !== existingSession.user.id) {
-          fetchedForUserRef.current = existingSession.user.id;
-          fetchRoleAndProfession(existingSession.user.id).finally(() => {
-            if (mounted) setLoading(false);
-          });
-        } else {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => {
-      if (mounted) setLoading(false);
     });
 
     return () => {
