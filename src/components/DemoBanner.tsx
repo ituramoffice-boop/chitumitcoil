@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDemo } from "@/contexts/DemoContext";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,14 +13,15 @@ export function useDemoBannerVisible() {
   return isDemoMode || (searchParams.get("demo") === "true" && !user);
 }
 
-export function DemoBannerSpacer() {
+export const DemoBannerSpacer = forwardRef<HTMLDivElement>((_props, ref) => {
   const { isDemoMode } = useDemo();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const isUrlDemo = searchParams.get("demo") === "true" && !user;
-  if (isUrlDemo && !isDemoMode) return <div className="h-10" />;
+  if (isUrlDemo && !isDemoMode) return <div ref={ref} className="h-10" />;
   return null;
-}
+});
+DemoBannerSpacer.displayName = "DemoBannerSpacer";
 
 export function DemoBanner() {
   const { isDemoMode, demoRole, disableDemo } = useDemo();

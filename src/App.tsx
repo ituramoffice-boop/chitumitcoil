@@ -11,6 +11,7 @@ import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SubscriptionRoute } from "@/components/SubscriptionRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -75,6 +76,7 @@ const App = () => {
   const handleSplashComplete = useCallback(() => setSplashDone(true), []);
 
   return (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
@@ -154,11 +156,6 @@ const App = () => {
                <Route path="/dashboard/:section" element={
                  <ProtectedRoute allowedRoles={["consultant", "admin"]}>
                    <Dashboard />
-                 </ProtectedRoute>
-               } />
-               <Route path="/consultant-dashboard" element={
-                 <ProtectedRoute allowedRoles={["consultant", "admin"]}>
-                   <SalesAcademy />
                  </ProtectedRoute>
                } />
                <Route path="/consultant-dashboard" element={
@@ -253,6 +250,7 @@ const App = () => {
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
   );
 };
 
