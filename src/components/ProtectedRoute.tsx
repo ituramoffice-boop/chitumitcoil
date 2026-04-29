@@ -18,10 +18,17 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(
   const navigate = useNavigate();
   const isDemo = isDemoMode || searchParams.get("demo") === "true";
   const requiresRole = allowedRoles.length > 0;
-  const roleDenied = !!user && requiresRole && (!role || !allowedRoles.includes(role));
+
+  // KEY INSIGHT: if a user is signed in but role is not yet resolved,
+  // we are still in a loading state — NOT a denial. This eliminates the
+  // window where ProtectedRoute would redirect during the brief gap
+  // between SIGNED_IN and the role fetch completing.
+  const rolePending = !!user && requiresRole && role === null;
+  const roleDenied = !!user && requiresRole && role !== null && !allowedRoles.includes(role);
+  const stillLoading = loading || rolePending;
 
   useEffect(() => {
-    if (isDemo || loading) return;
+    if (isDemo || stillLoading) return;
     if (!user) {
       navigate("/auth", { replace: true });
       return;
@@ -29,13 +36,13 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(
     if (roleDenied) {
       navigate("/", { replace: true });
     }
-  }, [isDemo, loading, user, roleDenied, navigate]);
+  }, [isDemo, stillLoading, user, roleDenied, navigate]);
 
   if (isDemo) {
     return <>{children}</>;
   }
 
-  if (loading || !user || roleDenied) {
+  if (stillLoading || !user || roleDenied) {
     return (
       <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
