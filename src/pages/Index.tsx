@@ -282,7 +282,7 @@ const Index = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => navigate("/mortgage-calculator")}
+                  onClick={() => navigate("/calculator")}
                   className="group hover:border-gold/50 text-base h-14 px-8 border-border/60"
                 >
                   <Sparkles className="w-5 h-5 ml-2 text-gold group-hover:animate-pulse" />
