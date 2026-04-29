@@ -103,9 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // SIGNED_IN / INITIAL_SESSION — defer DB call to avoid deadlock with auth lock.
+      // SIGNED_IN / INITIAL_SESSION — defer DB call to avoid deadlock with auth lock,
+      // but flip loading=true SYNCHRONOUSLY so consumers never see the gap.
       if (fetchedForUserRef.current !== newSession.user.id) {
         setLoading(true);
+        setRole(null);
+        setProfession(null);
         setTimeout(() => {
           if (!mounted) return;
           fetchRoleAndProfession(newSession.user.id).finally(() => {
