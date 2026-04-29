@@ -158,11 +158,6 @@ const App = () => {
                } />
                <Route path="/consultant-dashboard" element={
                  <ProtectedRoute allowedRoles={["consultant", "admin"]}>
-                   <SalesAcademy />
-                 </ProtectedRoute>
-               } />
-               <Route path="/consultant-dashboard" element={
-                 <ProtectedRoute allowedRoles={["consultant", "admin"]}>
                    <ConsultantDashboard />
                  </ProtectedRoute>
                } />
