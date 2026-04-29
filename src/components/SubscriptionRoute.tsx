@@ -25,7 +25,7 @@ export function SubscriptionRoute({ children, allowedRoles = ["consultant", "adm
   }
 
   if (allowedRoles.length > 0 && role && !allowedRoles.includes(role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // Admins always have access
