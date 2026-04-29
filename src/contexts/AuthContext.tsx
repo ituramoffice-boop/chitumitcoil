@@ -79,8 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRoleAndProfession(session.user.id).finally(() => {
+      if (session?.user && session.access_token) {
+        fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
           if (mounted) setLoading(false);
         });
       } else {
@@ -95,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchRoleAndProfession(session.user.id).finally(() => {
+        if (session?.user && session.access_token) {
+          fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
             if (mounted) setLoading(false);
           });
         } else {
