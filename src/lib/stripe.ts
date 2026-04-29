@@ -41,8 +41,10 @@ export async function createCheckoutSession(priceId: string) {
   return data as { url: string };
 }
 
-export async function checkSubscription() {
-  const { data, error } = await supabase.functions.invoke("check-subscription");
+export async function checkSubscription(accessToken?: string) {
+  const { data, error } = await supabase.functions.invoke("check-subscription", {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+  });
   if (error) throw error;
   return data as {
     subscribed: boolean;
