@@ -1195,4 +1195,4 @@ const LeadCard = forwardRef<HTMLDivElement, LeadCardProps>(function LeadCard({
       </div>
     </motion.div>
   );
-}
+});
