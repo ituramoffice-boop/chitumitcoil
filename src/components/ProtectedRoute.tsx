@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { forwardRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
@@ -10,7 +10,8 @@ interface ProtectedRouteProps {
 
 const DEFAULT_ALLOWED_ROLES: ("consultant" | "client" | "admin")[] = ["consultant", "admin"];
 
-export function ProtectedRoute({ children, allowedRoles = DEFAULT_ALLOWED_ROLES }: ProtectedRouteProps) {
+export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(
+  function ProtectedRoute({ children, allowedRoles = DEFAULT_ALLOWED_ROLES }, ref) {
   const { user, role, loading } = useAuth();
   const { isDemoMode } = useDemo();
   const [searchParams] = useSearchParams();
@@ -36,11 +37,11 @@ export function ProtectedRoute({ children, allowedRoles = DEFAULT_ALLOWED_ROLES 
 
   if (loading || !user || roleDenied) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return <>{children}</>;
-}
+});
