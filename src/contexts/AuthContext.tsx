@@ -43,13 +43,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoleAndProfession = async (userId: string) => {
+  const fetchRoleAndProfession = async (userId: string, attempt = 0): Promise<void> => {
     try {
       const [roleRes, profileRes] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", userId).single(),
-        supabase.from("profiles").select("profession").eq("user_id", userId).single(),
+        supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+        supabase.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
       ]);
-      if (roleRes.data) setRole(roleRes.data.role as AppRole);
+      if (roleRes.data) {
+        setRole(roleRes.data.role as AppRole);
+      } else if (attempt < 2) {
+        // Retry — race with token propagation can yield 0 rows under RLS
+        await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+        return fetchRoleAndProfession(userId, attempt + 1);
+      }
       if (profileRes.data) setProfession((profileRes.data as any).profession as Profession);
     } catch (e) {
       console.error("Failed to fetch role/profession:", e);
