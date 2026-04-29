@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
@@ -1060,16 +1060,7 @@ export function PriorityBoard({
   );
 }
 
-function LeadCard({
-  lead,
-  index,
-  isSelected,
-  isBulkSelected,
-  onSelect,
-  onToggleBulk,
-  onWhatsApp,
-  listMode = false,
-}: {
+interface LeadCardProps {
   lead: LeadWithAI;
   index: number;
   isSelected: boolean;
@@ -1078,12 +1069,24 @@ function LeadCard({
   onToggleBulk: () => void;
   onWhatsApp: (phone: string, name: string, doc?: string) => void;
   listMode?: boolean;
-}) {
+}
+
+const LeadCard = forwardRef<HTMLDivElement, LeadCardProps>(function LeadCard({
+  lead,
+  index,
+  isSelected,
+  isBulkSelected,
+  onSelect,
+  onToggleBulk,
+  onWhatsApp,
+  listMode = false,
+}, ref) {
   const probConfig = PROB_CONFIG[lead.closingProbability];
   const healthConfig = DOC_HEALTH_CONFIG[lead.docHealth];
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
