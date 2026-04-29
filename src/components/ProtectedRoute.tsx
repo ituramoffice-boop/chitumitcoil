@@ -1,4 +1,5 @@
-import { Navigate, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 
@@ -7,30 +8,37 @@ interface ProtectedRouteProps {
   allowedRoles?: ("consultant" | "client" | "admin")[];
 }
 
-export function ProtectedRoute({ children, allowedRoles = ["consultant", "admin"] }: ProtectedRouteProps) {
+const DEFAULT_ALLOWED_ROLES: ("consultant" | "client" | "admin")[] = ["consultant", "admin"];
+
+export function ProtectedRoute({ children, allowedRoles = DEFAULT_ALLOWED_ROLES }: ProtectedRouteProps) {
   const { user, role, loading } = useAuth();
   const { isDemoMode } = useDemo();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const isDemo = isDemoMode || searchParams.get("demo") === "true";
+  const roleDenied = !!user && !!role && allowedRoles.length > 0 && !allowedRoles.includes(role);
+
+  useEffect(() => {
+    if (isDemo || loading) return;
+    if (!user) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    if (roleDenied) {
+      navigate("/", { replace: true });
+    }
+  }, [isDemo, loading, user, roleDenied, navigate]);
 
   if (isDemo) {
     return <>{children}</>;
   }
 
-  if (loading) {
+  if (loading || !user || roleDenied || (allowedRoles.length > 0 && !role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  if (allowedRoles.length > 0 && role && !allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
