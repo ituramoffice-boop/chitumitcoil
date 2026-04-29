@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { forwardRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DashboardOverview = () => {
+const DashboardOverview = forwardRef<HTMLDivElement>((_, ref) => {
   const navigate = useNavigate();
 
   const { data: leads = [], isLoading } = useQuery({
@@ -50,7 +50,7 @@ const DashboardOverview = () => {
   const todayStr = new Date().toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" });
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div ref={ref} className="space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold gradient-header flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-cyan-glow" />
@@ -169,7 +169,9 @@ const DashboardOverview = () => {
       </div>
     </div>
   );
-};
+});
+
+DashboardOverview.displayName = "DashboardOverview";
 
 function KPI({ icon: Icon, label, value, color, glow, onClick }: { icon: any; label: string; value: any; color?: string; glow?: string; onClick?: () => void }) {
   return (
