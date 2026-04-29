@@ -62,7 +62,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       .from("profiles")
       .select("business_type")
       .eq("user_id", user.id)
-      .single()
+      .maybeSingle()
       .then(({ data }) => {
         if (data?.business_type) {
           setBusinessTypeState(data.business_type as BusinessType);
@@ -71,7 +71,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       });
 
     refreshSubscription();
-  }, [user, refreshSubscription]);
+    // Only re-run when the user identity changes, not on every refreshSubscription identity change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const setBusinessType = async (type: BusinessType) => {
     if (!user) return;
