@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import type { User, Session } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 
 type AppRole = "consultant" | "client" | "admin";
@@ -43,18 +45,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoleAndProfession = async (userId: string, attempt = 0): Promise<void> => {
+  const fetchRoleAndProfession = async (userId: string, accessToken: string, attempt = 0): Promise<void> => {
     try {
+      const authedClient = createClient<Database>(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        {
+          global: { headers: { Authorization: `Bearer ${accessToken}` } },
+          auth: { persistSession: false, autoRefreshToken: false },
+        },
+      );
       const [roleRes, profileRes] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
-        supabase.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
+        authedClient.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+        authedClient.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
       ]);
       if (roleRes.data) {
         setRole(roleRes.data.role as AppRole);
       } else if (attempt < 2) {
         // Retry — race with token propagation can yield 0 rows under RLS
         await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
-        return fetchRoleAndProfession(userId, attempt + 1);
+        return fetchRoleAndProfession(userId, accessToken, attempt + 1);
       }
       if (profileRes.data) setProfession((profileRes.data as any).profession as Profession);
     } catch (e) {
