@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createClient } from "@supabase/supabase-js";
 import type { User, Session } from "@supabase/supabase-js";
@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastRoleFetchKey = useRef<string | null>(null);
 
   const fetchRoleAndProfession = async (userId: string, accessToken: string, attempt = 0): Promise<void> => {
     try {
@@ -80,6 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user && session.access_token) {
+        const roleFetchKey = `${session.user.id}:${session.access_token}`;
+        if (lastRoleFetchKey.current === roleFetchKey) {
+          setLoading(false);
+          return;
+        }
+        lastRoleFetchKey.current = roleFetchKey;
         fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
           if (mounted) setLoading(false);
         });
@@ -91,15 +98,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
+        if (event === "TOKEN_REFRESHED") {
+          setLoading(false);
+          return;
+        }
         if (session?.user && session.access_token) {
+          const roleFetchKey = `${session.user.id}:${session.access_token}`;
+          if (lastRoleFetchKey.current === roleFetchKey) {
+            setLoading(false);
+            return;
+          }
+          lastRoleFetchKey.current = roleFetchKey;
           fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
             if (mounted) setLoading(false);
           });
         } else {
+          lastRoleFetchKey.current = null;
           setRole(null);
           setProfession(null);
           setLoading(false);
