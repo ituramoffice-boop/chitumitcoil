@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { createClient } from "@supabase/supabase-js";
 import type { User, Session } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 
 type AppRole = "consultant" | "client" | "admin";
@@ -44,86 +42,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [profession, setProfession] = useState<Profession | null>(null);
   const [loading, setLoading] = useState(true);
-  const lastRoleFetchKey = useRef<string | null>(null);
+  const fetchedForUserRef = useRef<string | null>(null);
+  const fetchInFlightRef = useRef(false);
 
-  const fetchRoleAndProfession = async (userId: string, accessToken: string, attempt = 0): Promise<void> => {
+  const fetchRoleAndProfession = async (userId: string): Promise<void> => {
+    if (fetchInFlightRef.current) return;
+    fetchInFlightRef.current = true;
     try {
-      const authedClient = createClient<Database>(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        {
-          global: { headers: { Authorization: `Bearer ${accessToken}` } },
-          auth: { persistSession: false, autoRefreshToken: false },
-        },
-      );
+      // Use the global authenticated client — it sends the user's JWT automatically.
       const [roleRes, profileRes] = await Promise.all([
-        authedClient.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
-        authedClient.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+        supabase.from("profiles").select("profession").eq("user_id", userId).maybeSingle(),
       ]);
-      if (roleRes.data) {
-        setRole(roleRes.data.role as AppRole);
-      } else if (attempt < 2) {
-        // Retry — race with token propagation can yield 0 rows under RLS
-        await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
-        return fetchRoleAndProfession(userId, accessToken, attempt + 1);
-      }
+      if (roleRes.data) setRole(roleRes.data.role as AppRole);
       if (profileRes.data) setProfession((profileRes.data as any).profession as Profession);
     } catch (e) {
       console.error("Failed to fetch role/profession:", e);
+    } finally {
+      fetchInFlightRef.current = false;
     }
   };
 
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Set up listener FIRST (Supabase best practice) — synchronous state updates only.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user && session.access_token) {
-        const roleFetchKey = `${session.user.id}:${session.access_token}`;
-        if (lastRoleFetchKey.current === roleFetchKey) {
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+
+      // Token refresh: keep existing role/profession, no refetch needed.
+      if (event === "TOKEN_REFRESHED") return;
+
+      if (event === "SIGNED_OUT" || !newSession?.user) {
+        fetchedForUserRef.current = null;
+        setRole(null);
+        setProfession(null);
+        setLoading(false);
+        return;
+      }
+
+      // SIGNED_IN / INITIAL_SESSION — defer DB call to avoid deadlock with auth lock.
+      if (fetchedForUserRef.current !== newSession.user.id) {
+        fetchedForUserRef.current = newSession.user.id;
+        setTimeout(() => {
+          if (!mounted) return;
+          fetchRoleAndProfession(newSession.user.id).finally(() => {
+            if (mounted) setLoading(false);
+          });
+        }, 0);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // THEN check for existing session.
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      if (!mounted) return;
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
+      if (existingSession?.user) {
+        if (fetchedForUserRef.current !== existingSession.user.id) {
+          fetchedForUserRef.current = existingSession.user.id;
+          fetchRoleAndProfession(existingSession.user.id).finally(() => {
+            if (mounted) setLoading(false);
+          });
+        } else {
           setLoading(false);
-          return;
         }
-        lastRoleFetchKey.current = roleFetchKey;
-        fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
-          if (mounted) setLoading(false);
-        });
       } else {
         setLoading(false);
       }
     }).catch(() => {
       if (mounted) setLoading(false);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (event === "TOKEN_REFRESHED") {
-          setLoading(false);
-          return;
-        }
-        if (session?.user && session.access_token) {
-          const roleFetchKey = `${session.user.id}:${session.access_token}`;
-          if (lastRoleFetchKey.current === roleFetchKey) {
-            setLoading(false);
-            return;
-          }
-          lastRoleFetchKey.current = roleFetchKey;
-          fetchRoleAndProfession(session.user.id, session.access_token).finally(() => {
-            if (mounted) setLoading(false);
-          });
-        } else {
-          lastRoleFetchKey.current = null;
-          setRole(null);
-          setProfession(null);
-          setLoading(false);
-        }
-      }
-    );
 
     return () => {
       mounted = false;
