@@ -30,7 +30,7 @@ const WorkspaceContext = createContext<WorkspaceContextType>({
 export const useWorkspace = () => useContext(WorkspaceContext);
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, session, role, loading: authLoading } = useAuth();
   const [businessType, setBusinessTypeState] = useState<BusinessType>("solo");
   const [loading, setLoading] = useState(true);
   const [subscriptionTier, setSubscriptionTier] = useState<StripeTierKey | null>(null);
@@ -38,19 +38,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
 
   const refreshSubscription = useCallback(async () => {
-    if (!user) return;
+    const accessToken = session?.access_token;
+    if (!user || !accessToken) return;
     try {
-      const data = await checkSubscription();
+      const data = await checkSubscription(accessToken);
       setIsSubscribed(data.subscribed);
       setSubscriptionEnd(data.subscription_end);
       setSubscriptionTier(data.product_id ? getTierByProductId(data.product_id) : null);
     } catch (e) {
       console.error("Failed to check subscription:", e);
     }
-  }, [user]);
+  }, [user?.id, session?.access_token]);
 
   useEffect(() => {
-    if (!user) {
+    let cancelled = false;
+
+    if (authLoading) return;
+
+    if (!user || !session?.access_token) {
       setLoading(false);
       setIsSubscribed(false);
       setSubscriptionEnd(null);
@@ -58,22 +63,36 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    setLoading(true);
+
     supabase
       .from("profiles")
       .select("business_type")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
+        if (cancelled) return;
         if (data?.business_type) {
           setBusinessTypeState(data.business_type as BusinessType);
         }
         setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
       });
 
-    refreshSubscription();
-    // Only re-run when the user identity changes, not on every refreshSubscription identity change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+    if (role === "consultant") {
+      refreshSubscription();
+    } else {
+      setIsSubscribed(false);
+      setSubscriptionEnd(null);
+      setSubscriptionTier(null);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.id, session?.access_token, role, refreshSubscription]);
 
   const setBusinessType = async (type: BusinessType) => {
     if (!user) return;
