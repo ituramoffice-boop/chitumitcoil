@@ -21,16 +21,17 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authLoading && user && role) {
-      if (role === "consultant" || role === "admin") {
-        if (userProfession === "insurance_agent") {
-          navigate("/insurance-dashboard", { replace: true });
-        } else {
-          navigate("/dashboard", { replace: true });
-        }
+    if (authLoading || !user) return;
+    // Default redirect when role hasn't loaded yet (RLS race) — assume consultant flow
+    const effectiveRole = role ?? "consultant";
+    if (effectiveRole === "consultant" || effectiveRole === "admin") {
+      if (userProfession === "insurance_agent") {
+        navigate("/insurance-dashboard", { replace: true });
       } else {
-        navigate("/client-dashboard", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
+    } else {
+      navigate("/client-dashboard", { replace: true });
     }
   }, [authLoading, user, role, userProfession, navigate]);
 
